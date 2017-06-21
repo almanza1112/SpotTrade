@@ -1,5 +1,6 @@
 package almanza1112.spottrade;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -37,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import almanza1112.spottrade.nonActivity.HttpConnection;
+import almanza1112.spottrade.nonActivity.login.LoginActivity;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -69,7 +71,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                jsonObjectDELETERequest();
+                startActivity(new Intent(MapsActivity.this, LoginActivity.class));
             }
         });
     }

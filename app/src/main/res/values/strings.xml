@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">SpotTrade</string>
     <string name="title_activity_maps">Map</string>
+    <string name="Email">Email</string>
+    <string name="Password">Password</string>
+    <string name="Log_In">Log In</string>
 </resources>
