@@ -12,6 +12,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -31,11 +32,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import almanza1112.spottrade.nonActivity.HttpConnection;
 
@@ -70,9 +69,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                jsonArrayRequest();
-                jsonObjectRequest();
-                stringRequest();
+                jsonObjectDELETERequest();
             }
         });
     }
@@ -109,6 +106,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
+
     private void jsonArrayRequest(){
         RequestQueue queue = Volley.newRequestQueue(this);
 
@@ -140,7 +138,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         );
         queue.add(jsonArrayRequest);
     }
-    private void jsonObjectRequest(){
+
+    private void jsonObjectGETRequest(){
         RequestQueue queue = Volley.newRequestQueue(this);
 
         HttpConnection httpConnection = new HttpConnection();
@@ -167,9 +166,117 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 });
 
-// Access the RequestQueue through your singleton class.
+        // Access the RequestQueue through your singleton class.
+        queue.add(jsObjRequest);
+    }
+    private void jsonObjectPUTRequest(){
+        RequestQueue queue = Volley.newRequestQueue(this);
+        final JSONObject jObject = new JSONObject();
+        try {
+            jObject.put("username", "porkchoplaya23");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        HttpConnection httpConnection = new HttpConnection();
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.PUT, httpConnection.htppConnectionURL() +"/user/update/594a34ed4f9cdd3f0c23e750", jObject, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.e("PUT", response + "");
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+                        error.printStackTrace();
+                    }
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+            @Override
+            public String getBodyContentType() {
+                return "application/json";
+            }
+        };
+
+        // Access the RequestQueue through your singleton class.
         queue.add(jsObjRequest);
 
+    }
+    private void jsonObjectPOSTRequest(){
+        RequestQueue queue = Volley.newRequestQueue(this);
+        final JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("username", "porkchoplaya");
+            jsonObject.put("firstName", "Steve");
+            jsonObject.put("lastName", "Matos");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        HttpConnection httpConnection = new HttpConnection();
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.POST, httpConnection.htppConnectionURL() +"/user", jsonObject, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.e("POST", response + "");
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+                        error.printStackTrace();
+                    }
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+            @Override
+            public String getBodyContentType() {
+                return "application/json";
+            }
+        };
+
+        // Access the RequestQueue through your singleton class.
+        queue.add(jsObjRequest);
+
+    }
+
+    private void jsonObjectDELETERequest(){
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        HttpConnection httpConnection = new HttpConnection();
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.DELETE, httpConnection.htppConnectionURL() +"/user/remove/594a34ed4f9cdd3f0c23e750", null, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                        Log.e("DELETE",response + "");
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+                        error.printStackTrace();
+                    }
+                });
+
+        // Access the RequestQueue through your singleton class.
+        queue.add(jsObjRequest);
     }
 
     private void stringRequest(){
