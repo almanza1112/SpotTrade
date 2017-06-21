@@ -20,5 +20,7 @@
     Once you have your key (it starts with "AIza"), replace the "google_maps_key"
     string in this file.
     -->
-    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">YOUR_KEY_HERE</string>
+
+    <!-- USED API KEY FROM BUBBLES -->
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyBOXDvMjCoG8Tr4oBx6si6YLzKcg_0c8r0</string>
 </resources>

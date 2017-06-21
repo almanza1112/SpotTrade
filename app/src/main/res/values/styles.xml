@@ -6,6 +6,10 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
-
+    <dimen name="contentPadding">16dp</dimen>
+    <dimen name="halfContentPadding">8dp</dimen>
+    <dimen name="quarterContentPadding">4dp</dimen>
 </resources>
