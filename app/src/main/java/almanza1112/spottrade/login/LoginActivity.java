@@ -1,4 +1,4 @@
-package almanza1112.spottrade.nonActivity.login;
+package almanza1112.spottrade.login;
 
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
@@ -37,6 +37,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             default:
                 Toast.makeText(this, "onClick not implemented for this", Toast.LENGTH_SHORT).show();
                 break;
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (getFragmentManager().getBackStackEntryCount() > 0){
+            getFragmentManager().popBackStack();
+        }
+        else {
+            super.onBackPressed();
         }
     }
 }

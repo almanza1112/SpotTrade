@@ -1,7 +1,6 @@
 package almanza1112.spottrade;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -9,7 +8,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
@@ -38,7 +36,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import almanza1112.spottrade.nonActivity.HttpConnection;
-import almanza1112.spottrade.nonActivity.login.LoginActivity;
+import almanza1112.spottrade.login.LoginActivity;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
