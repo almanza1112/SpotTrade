@@ -169,6 +169,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Access the RequestQueue through your singleton class.
         queue.add(jsObjRequest);
     }
+
     private void jsonObjectPUTRequest(){
         RequestQueue queue = Volley.newRequestQueue(this);
         final JSONObject jObject = new JSONObject();
