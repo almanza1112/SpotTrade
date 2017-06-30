@@ -21,5 +21,9 @@
             android:textColor="@android:color/black"
             android:textColorHint="@android:color/white"/>
     </android.support.v7.widget.Toolbar>
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvLocations"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
 </LinearLayout>

@@ -1,4 +1,4 @@
-package almanza1112.spottrade;
+package almanza1112.spottrade.search;
 
 import android.content.Context;
 import android.location.Criteria;
@@ -7,6 +7,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -28,7 +30,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import almanza1112.spottrade.nonActivity.HttpConnection;
+import almanza1112.spottrade.R;
 
 /**
  * Created by almanza1112 on 6/27/17.
@@ -38,6 +40,9 @@ public class SearchActivity extends AppCompatActivity {
     private EditText etSearch;
     private double latitude, longitude;
     private String apiKey, query;
+    RecyclerView rvLocations;
+    RecyclerView.Adapter adapter;
+    RecyclerView.LayoutManager layoutManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,9 +92,10 @@ public class SearchActivity extends AppCompatActivity {
                 query = "query=" + etSearch.getText().toString();
                 String searchURL = "https://maps.googleapis.com/maps/api/place/textsearch/json?" + query + "&location="+latitude+"," + longitude + "&radius=300&key=" + apiKey;
                 searchPlaces(searchURL);
-                Log.e("serachurl", searchURL);
             }
         });
+
+        rvLocations = (RecyclerView) findViewById(R.id.rvLocations);
     }
 
     @Override
@@ -120,11 +126,6 @@ public class SearchActivity extends AppCompatActivity {
         searchPlaces(mapsURL);
     }
 
-    List<String> locationAddress = new ArrayList<>();
-    List<String> locationName = new ArrayList<>();
-    List<Double> locationLat = new ArrayList<>();
-    List<Double> locationLng = new ArrayList<>();
-
     private void searchPlaces(String url){
         RequestQueue queue = Volley.newRequestQueue(this);
 
@@ -133,6 +134,10 @@ public class SearchActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(JSONObject response) {
+                        List<String> locationAddress = new ArrayList<>();
+                        List<String> locationName = new ArrayList<>();
+                        List<Double> locationLat = new ArrayList<>();
+                        List<Double> locationLng = new ArrayList<>();
                         try {
                             String results = response.getString("results");
                             JSONArray jsonArray = new JSONArray(results);
@@ -161,6 +166,10 @@ public class SearchActivity extends AppCompatActivity {
                                 locationName.add(name);
                                 locationAddress.add(address);
                             }
+                            adapter = new SearchAdapter(SearchActivity.this, locationName, locationAddress, locationLat, locationLng);
+                            layoutManager = new LinearLayoutManager(SearchActivity.this);
+                            rvLocations.setLayoutManager(layoutManager);
+                            rvLocations.setAdapter(adapter);
 
                         }
                         catch (JSONException e){

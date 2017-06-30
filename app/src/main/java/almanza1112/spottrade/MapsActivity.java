@@ -3,7 +3,6 @@ package almanza1112.spottrade;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -23,6 +22,8 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.github.clans.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -39,14 +40,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 import almanza1112.spottrade.nonActivity.HttpConnection;
-import almanza1112.spottrade.login.LoginActivity;
+import almanza1112.spottrade.search.SearchActivity;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
-
+    FloatingActionMenu fabMenu;
+    FloatingActionButton fabSell, fabRequest;
+    View llWhite;
     Toolbar toolbar;
-    FloatingActionButton fab;
     private GoogleMap mMap;
 
+    private double latitude =0, longitude=0;
+    private String locationName="empty", locationAddress="empty";
+    private int SEARCH_CODE = 0;
+    private int SELL_CODE = 1;
+    private int REQUEST_CODE = 2;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,8 +66,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         setSupportActionBar(toolbar);
@@ -68,11 +74,39 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        llWhite = findViewById(R.id.llWhite);
+        fabMenu = (FloatingActionMenu) findViewById(R.id.fabMenu);
+        fabMenu.setOnMenuToggleListener(new FloatingActionMenu.OnMenuToggleListener() {
+            @Override
+            public void onMenuToggle(boolean opened) {
+                if (opened) {
+                    llWhite.setVisibility(View.VISIBLE);
+                }
+                else {
+                    llWhite.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        fabRequest = (FloatingActionButton) findViewById(R.id.fabRequest);
+        fabRequest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MapsActivity.this, LoginActivity.class));
+                fabMenu.close(true);
+                startActivityForResult(new Intent(MapsActivity.this, RequestActivity.class), REQUEST_CODE);
+            }
+        });
+
+        fabSell = (FloatingActionButton) findViewById(R.id.fabSell);
+        fabSell.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fabMenu.close(true);
+                startActivityForResult(new Intent(MapsActivity.this, SellActivity.class)
+                        .putExtra("locationName", locationName)
+                        .putExtra("locationAddress", locationAddress)
+                        .putExtra("latitude", latitude)
+                        .putExtra("longitude", longitude), SELL_CODE);
             }
         });
     }
@@ -87,9 +121,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.search){
-            startActivityForResult(new Intent(this, SearchActivity.class), 0);
+            startActivityForResult(new Intent(this, SearchActivity.class), SEARCH_CODE);
         }
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == SEARCH_CODE){
+            if (resultCode == RESULT_OK){
+                latitude = data.getDoubleExtra("latitude", 0);
+                longitude = data.getDoubleExtra("longitude", 0);
+                locationName = data.getStringExtra("locationName");
+                locationAddress = data.getStringExtra("locationAddress");
+                LatLng sydney = new LatLng(latitude, longitude);
+                mMap.addMarker(new MarkerOptions().position(sydney).title(locationName));
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+            }
+        }
     }
 
     // A method to find height of the status bar
@@ -119,8 +170,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mMap.addMarker(new MarkerOptions().position(sydney).title("You"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
+        mMap.getUiSettings().setMapToolbarEnabled(false); //disables the bottom right buttons that appear when you click on a marker
+        mMap.getUiSettings().setRotateGesturesEnabled(false);
     }
 
 
@@ -229,49 +283,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         queue.add(jsObjRequest);
 
     }
-    private void jsonObjectPOSTRequest(){
-        RequestQueue queue = Volley.newRequestQueue(this);
-        final JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("username", "porkchoplaya");
-            jsonObject.put("firstName", "Steve");
-            jsonObject.put("lastName", "Matos");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
-        HttpConnection httpConnection = new HttpConnection();
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.POST, httpConnection.htppConnectionURL() +"/user", jsonObject, new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.e("POST", response + "");
-                    }
-                }, new Response.ErrorListener() {
-
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-                        error.printStackTrace();
-                    }
-                }){
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json");
-                return headers;
-            }
-            @Override
-            public String getBodyContentType() {
-                return "application/json";
-            }
-        };
-
-        // Access the RequestQueue through your singleton class.
-        queue.add(jsObjRequest);
-
-    }
 
     private void jsonObjectDELETERequest(){
         RequestQueue queue = Volley.newRequestQueue(this);

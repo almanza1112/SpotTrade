@@ -2,8 +2,10 @@
     <string name="app_name">SpotTrade</string>
     <string name="title_activity_maps">Map</string>
 
+    <string name="Add_Location">Add Location</string>
     <string name="Add_profile_photo">Add Profile Photo</string>
     <string name="Confirm_Password">Confirm Password</string>
+    <string name="Description">Description</string>
     <string name="Email">Email</string>
     <string name="Field_cant_be_empty">Field can\'t be empty</string>
     <string name="First_Name">First Name</string>
@@ -14,4 +16,6 @@
     <string name="Password">Password</string>
     <string name="Password_doesnt_match">Password doesn\'t match</string>
     <string name="Phone_Number">Phone Number</string>
+    <string name="Request_a_Spot">Request a Spot</string>
+    <string name="Sell_a_Spot">Sell a Spot</string>
 </resources>
