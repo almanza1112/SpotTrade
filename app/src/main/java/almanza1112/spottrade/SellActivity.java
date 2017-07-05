@@ -37,7 +37,7 @@ public class SellActivity extends AppCompatActivity implements View.OnClickListe
 
     private TextView tvLocationName, tvLocationAddress, tvAddLocation;
     private TextInputEditText tietDescription;
-    private int ADD_LOCATION_CODE;
+    private int ADD_LOCATION_CODE = 0;
     private double latitude, longitude;
     private String locationName, locationAddress;
 
@@ -137,25 +137,16 @@ public class SellActivity extends AppCompatActivity implements View.OnClickListe
         RequestQueue queue = Volley.newRequestQueue(this);
         final JSONObject jsonObject = new JSONObject();
         try {
-            /*
             jsonObject.put("sellerID", SharedPref.getID(this));
             jsonObject.put("name", locationName);
             jsonObject.put("address", locationAddress);
             jsonObject.put("latitude", String.valueOf(latitude));
             jsonObject.put("longitude", String.valueOf(longitude));
             jsonObject.put("description", tietDescription.getText().toString());
-            */
-            jsonObject.put("sellerID", "123");
-            jsonObject.put("name", "nombre");
-            jsonObject.put("address", "nose");
-            jsonObject.put("latitude", "lati");
-            jsonObject.put("longitude", "longy");
-            jsonObject.put("description", "halgo");
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             e.printStackTrace();
         }
-
-        Log.e("json", jsonObject+ "");
 
         HttpConnection httpConnection = new HttpConnection();
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
@@ -175,7 +166,7 @@ public class SellActivity extends AppCompatActivity implements View.OnClickListe
                 }){
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> headers = new HashMap<String, String>();
+                Map<String, String> headers = new HashMap<>();
                 headers.put("Content-Type", "application/json");
                 return headers;
             }
