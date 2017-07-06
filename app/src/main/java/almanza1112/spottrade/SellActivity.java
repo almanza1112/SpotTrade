@@ -4,11 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.android.volley.AuthFailureError;
@@ -36,7 +37,9 @@ import almanza1112.spottrade.search.SearchActivity;
 public class SellActivity extends AppCompatActivity implements View.OnClickListener{
 
     private TextView tvLocationName, tvLocationAddress, tvAddLocation;
-    private TextInputEditText tietDescription;
+    private TextInputLayout tilPrice;
+    private TextInputEditText tietDescription, tietPrice;
+    private CheckBox cbBids;
     private int ADD_LOCATION_CODE = 0;
     private double latitude, longitude;
     private String locationName, locationAddress;
@@ -77,6 +80,9 @@ public class SellActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         tietDescription = (TextInputEditText) findViewById(R.id.tietDescription);
+        tilPrice = (TextInputLayout) findViewById(R.id.tilPrice);
+        tietPrice = (TextInputEditText) findViewById(R.id.tietPrice);
+        cbBids = (CheckBox) findViewById(R.id.cbBids);
 
         final FloatingActionButton fabDone = (FloatingActionButton) findViewById(R.id.fabDone);
         fabDone.setOnClickListener(this);
@@ -99,7 +105,9 @@ public class SellActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.fabDone:
-                postSell();
+                if (validatePrice()){
+                    postSell();
+                }
                 break;
         }
     }
@@ -133,11 +141,28 @@ public class SellActivity extends AppCompatActivity implements View.OnClickListe
         return true;
     }
 
+    private boolean validatePrice(){
+        boolean sitch;
+        if (tietPrice.getText().toString().isEmpty()){
+            sitch = false;
+            tilPrice.setError(getResources().getString(R.string.Must_have_price));
+        }
+        else {
+            tilPrice.setErrorEnabled(false);
+            sitch = true;
+        }
+        return sitch;
+    }
+
     private void postSell(){
         RequestQueue queue = Volley.newRequestQueue(this);
         final JSONObject jsonObject = new JSONObject();
         try {
+            jsonObject.put("type", "selling");
+            jsonObject.put("transaction", "available");
             jsonObject.put("sellerID", SharedPref.getID(this));
+            jsonObject.put("price", tietPrice.getText().toString());
+            jsonObject.put("bids", cbBids.isChecked());
             jsonObject.put("name", locationName);
             jsonObject.put("address", locationAddress);
             jsonObject.put("latitude", String.valueOf(latitude));
@@ -150,11 +175,21 @@ public class SellActivity extends AppCompatActivity implements View.OnClickListe
 
         HttpConnection httpConnection = new HttpConnection();
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.POST, httpConnection.htppConnectionURL() +"/location/sell", jsonObject, new Response.Listener<JSONObject>() {
+                (Request.Method.POST, httpConnection.htppConnectionURL() +"/location/add", jsonObject, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.e("POST", response + "");
+                        try {
+                            String status = response.getString("status");
+                            if (status.equals("success")){
+                                Intent intent = getIntent();
+                                intent.putExtra("latitude", response.getString("latitude"));
+                                intent.putExtra("longitude", response.getString("longitude"));
+                            }
+                        }
+                        catch (JSONException e){
+                            e.printStackTrace();
+                        }
                     }
                 }, new Response.ErrorListener() {
 

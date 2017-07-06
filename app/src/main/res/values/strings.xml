@@ -4,6 +4,7 @@
 
     <string name="Add_Location">Add Location</string>
     <string name="Add_profile_photo">Add Profile Photo</string>
+    <string name="Allow_bids">Allow bids</string>
     <string name="Confirm_Password">Confirm Password</string>
     <string name="Description">Description</string>
     <string name="Email">Email</string>
@@ -13,9 +14,11 @@
     <string name="Last_Name">Last Name</string>
     <string name="Log_In">Log In</string>
     <string name="Minimum_8_characters">Minimum 8 characters</string>
+    <string name="Must_have_price">Must have a price</string>
     <string name="Password">Password</string>
     <string name="Password_doesnt_match">Password doesn\'t match</string>
     <string name="Phone_Number">Phone Number</string>
-    <string name="Request_a_Spot">Request a Spot</string>
+    <string name="Price">Price</string>
+    <string name="Request_a_Spot">Request a Spotter</string>
     <string name="Sell_a_Spot">Sell a Spot</string>
 </resources>

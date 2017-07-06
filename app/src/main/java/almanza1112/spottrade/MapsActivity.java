@@ -1,6 +1,10 @@
 package almanza1112.spottrade;
 
+import android.content.Context;
 import android.content.Intent;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,8 +14,12 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -29,6 +37,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
@@ -40,15 +49,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import almanza1112.spottrade.nonActivity.HttpConnection;
+
 import almanza1112.spottrade.search.SearchActivity;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
-    FloatingActionMenu fabMenu;
-    FloatingActionButton fabSell, fabRequest;
-    View llWhite;
-    Toolbar toolbar;
-    private GoogleMap mMap;
 
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
+    private FloatingActionMenu fabMenu;
+    private FloatingActionButton fabSell, fabRequest;
+    private View llWhite;
+    private Toolbar toolbar;
+    private GoogleMap mMap;
+    private ViewGroup hiddenPanel;
+    private Animation bottomUp, bottomDown;
+    private TextView tvLocationName, tvLocationAddress;
+
+    private boolean isFabMenuClicked, isMarkerClicked;
     private double latitude =0, longitude=0;
     private String locationName="empty", locationAddress="empty";
     private int SEARCH_CODE = 0;
@@ -74,15 +89,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        bottomUp = AnimationUtils.loadAnimation(this, R.anim.bottom_up);
+        bottomDown = AnimationUtils.loadAnimation(this, R.anim.bottom_down);
+        hiddenPanel = (ViewGroup)findViewById(R.id.hidden_panel);
+        tvLocationAddress = (TextView) findViewById(R.id.tvLocationAddress);
+        tvLocationName = (TextView) findViewById(R.id.tvLocationName);
+
         llWhite = findViewById(R.id.llWhite);
         fabMenu = (FloatingActionMenu) findViewById(R.id.fabMenu);
         fabMenu.setOnMenuToggleListener(new FloatingActionMenu.OnMenuToggleListener() {
             @Override
             public void onMenuToggle(boolean opened) {
                 if (opened) {
+                    isFabMenuClicked = true;
                     llWhite.setVisibility(View.VISIBLE);
                 }
                 else {
+                    isFabMenuClicked = false;
                     llWhite.setVisibility(View.GONE);
                 }
             }
@@ -93,7 +116,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View v) {
                 fabMenu.close(true);
-                startActivityForResult(new Intent(MapsActivity.this, RequestActivity.class), REQUEST_CODE);
+                fabMenu.close(true);
+                startActivityForResult(new Intent(MapsActivity.this, RequestActivity.class)
+                        .putExtra("locationName", locationName)
+                        .putExtra("locationAddress", locationAddress)
+                        .putExtra("latitude", latitude)
+                        .putExtra("longitude", longitude), REQUEST_CODE);
             }
         });
 
@@ -127,6 +155,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
+    public void onBackPressed() {
+        if (isFabMenuClicked){
+            fabMenu.close(true);
+            isFabMenuClicked = false;
+        }
+        else if (isMarkerClicked){
+            isMarkerClicked = false;
+            hiddenPanel.startAnimation(bottomDown);
+            hiddenPanel.setVisibility(View.INVISIBLE);
+        }
+        else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == SEARCH_CODE){
@@ -135,10 +179,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 longitude = data.getDoubleExtra("longitude", 0);
                 locationName = data.getStringExtra("locationName");
                 locationAddress = data.getStringExtra("locationAddress");
-                LatLng sydney = new LatLng(latitude, longitude);
-                mMap.addMarker(new MarkerOptions().position(sydney).title(locationName));
+                LatLng locash = new LatLng(latitude, longitude);
                 mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(locash));
+            }
+        }
+        else if (requestCode == SELL_CODE){
+            if (resultCode == RESULT_OK){
+                latitude = Double.valueOf(data.getStringExtra("latitude"));
+                longitude = Double.valueOf(data.getStringExtra("longitude"));
+                LatLng locash = new LatLng(latitude, longitude);
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(locash));            }
+        }
+        else if (requestCode == REQUEST_CODE){
+            if (resultCode == RESULT_OK){
+                latitude = Double.valueOf(data.getStringExtra("latitude"));
+                longitude = Double.valueOf(data.getStringExtra("longitude"));
+                LatLng locash = new LatLng(latitude, longitude);
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(locash));
             }
         }
     }
@@ -168,16 +228,98 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        // Get LocationManager object from System Service LOCATION_SERVICE
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        // Create a criteria object to retrieve provider
+        Criteria criteria = new Criteria();
+
+        // Get the name of the best provider
+        String provider = locationManager.getBestProvider(criteria, true);
+
+        // Get Current Location
+        Location myLocation = locationManager.getLastKnownLocation(provider);
+
+        // set map type
+        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        double latitude = 0;
+        double longitude = 0;
+
+        try {
+            // Get latitude of the current location
+            latitude = myLocation.getLatitude();
+            longitude = myLocation.getLongitude();
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
+        }
+
+        // Create a LatLng object for the current location
+        LatLng currentLocation = new LatLng(latitude, longitude);
+
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("You"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
         mMap.getUiSettings().setMapToolbarEnabled(false); //disables the bottom right buttons that appear when you click on a marker
         mMap.getUiSettings().setRotateGesturesEnabled(false);
+        mMap.setOnMarkerClickListener(this);
+
+        getAvailableSpots();
     }
 
+    private void getAvailableSpots(){
+        RequestQueue queue = Volley.newRequestQueue(this);
 
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/all?sellerID=all&transaction=available&type=all", null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try{
+                    if (response.getString("status").equals("success")){
+                        String locations = response.getString("location");
+                        JSONArray jsonArray = new JSONArray(locations);
+
+                        for (int i = 0; i < jsonArray.length(); i++){
+                            JSONObject locationObj = jsonArray.getJSONObject(i);
+                            Double lat = Double.valueOf(locationObj.getString("latitude"));
+                            Double lng = Double.valueOf(locationObj.getString("longitude"));
+                            LatLng locash = new LatLng(lat, lng);
+                            Marker marker;
+                            marker = mMap.addMarker(new MarkerOptions().position(locash).title(locationObj.getString("name")));
+                            marker.setTag(locationObj);
+                        }
+                    }
+                }
+                catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        }
+        );
+        queue.add(jsonObjectRequest);
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        isMarkerClicked = true;
+        try {
+            JSONObject jsonObject = (JSONObject) marker.getTag();
+            tvLocationName.setText(jsonObject.getString("name"));
+            tvLocationAddress.setText(jsonObject.getString("address"));
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+        hiddenPanel.startAnimation(bottomUp);
+        hiddenPanel.setVisibility(View.VISIBLE);
+
+        return false;
+    }
 
     private void jsonArrayRequest(){
         RequestQueue queue = Volley.newRequestQueue(this);
