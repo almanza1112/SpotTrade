@@ -12,10 +12,12 @@ public class SharedPref {
 
     private static final String PREF_USER_ID = "uid";
     private static final String PREF_USER_PASSWORD = "password";
-    private static final String PREF_USER_FIRSTNAME = "first name";
-    private static final String PREF_USER_LASTNAME = "last name";
+    private static final String PREF_USER_FIRSTNAME = "firstName";
+    private static final String PREF_USER_LASTNAME = "lastName";
     private static final String PREF_USER_EMAIL = "email";
-    private static final String PREF_USER_PHONE_NUMBER = "phone number";
+    private static final String PREF_USER_PHONE_NUMBER = "phoneNumber";
+    private static final String PREF_USER_TOTAL_RATINGS = "totalRatings";
+    private static final String PREF_USER_OVERALL_RATING = "overallRating";
 
 
     static SharedPreferences getSharedPreferences(Context ctx) {
@@ -112,6 +114,7 @@ public class SharedPref {
         editor.remove(PREF_USER_EMAIL);
         editor.apply();
     }
+
     public static void setPassword(Context ctx, String password){
         SharedPreferences.Editor editor = getSharedPreferences(ctx).edit();
         editor.putString(PREF_USER_PASSWORD, password);
@@ -127,4 +130,40 @@ public class SharedPref {
         editor.remove(PREF_USER_PASSWORD);
         editor.apply();
     }
+
+
+    public static void setTotalRatings(Context ctx, String password){
+        SharedPreferences.Editor editor = getSharedPreferences(ctx).edit();
+        editor.putString(PREF_USER_TOTAL_RATINGS, password);
+        editor.apply();
+    }
+
+    public static String getTotalRatings(Context ctx){
+        return getSharedPreferences(ctx).getString(PREF_USER_TOTAL_RATINGS, "");
+    }
+
+    public static void clearTotalRatings(Context ctx){
+        SharedPreferences.Editor editor = getSharedPreferences(ctx).edit();
+        editor.remove(PREF_USER_TOTAL_RATINGS);
+        editor.apply();
+    }
+
+    public static void setOverallRating(Context ctx, String password){
+        SharedPreferences.Editor editor = getSharedPreferences(ctx).edit();
+        editor.putString(PREF_USER_OVERALL_RATING, password);
+        editor.apply();
+    }
+
+    public static String getOverallRating(Context ctx){
+        return getSharedPreferences(ctx).getString(PREF_USER_OVERALL_RATING, "");
+    }
+
+    public static void clearOverallRating(Context ctx){
+        SharedPreferences.Editor editor = getSharedPreferences(ctx).edit();
+        editor.remove(PREF_USER_OVERALL_RATING);
+        editor.apply();
+    }
+
+
+
 }

@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -61,7 +62,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     private ViewGroup hiddenPanel;
     private Animation bottomUp, bottomDown;
-    private TextView tvLocationName, tvLocationAddress;
+    private TextView tvFullName, tvUserRating, tvTotalRating, tvLocationName, tvLocationAddress, tvTransaction, tvDescription;
+    private Button bBuyNow, bPlaceBid;
 
     private boolean isFabMenuClicked, isMarkerClicked;
     private double latitude =0, longitude=0;
@@ -72,7 +74,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
+        setContentView(R.layout.maps_activity);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
@@ -92,8 +94,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         bottomUp = AnimationUtils.loadAnimation(this, R.anim.bottom_up);
         bottomDown = AnimationUtils.loadAnimation(this, R.anim.bottom_down);
         hiddenPanel = (ViewGroup)findViewById(R.id.hidden_panel);
+        tvFullName = (TextView) findViewById(R.id.tvFullName);
+        tvUserRating = (TextView) findViewById(R.id.tvUserRating);
+        tvTotalRating = (TextView) findViewById(R.id.tvTotalRating);
+        tvTransaction = (TextView) findViewById(R.id.tvTransaction);
+        tvDescription = (TextView) findViewById(R.id.tvDescription);
         tvLocationAddress = (TextView) findViewById(R.id.tvLocationAddress);
         tvLocationName = (TextView) findViewById(R.id.tvLocationName);
+        bBuyNow = (Button) findViewById(R.id.bBuyNow);
+        bPlaceBid = (Button) findViewById(R.id.bPlaceBid);
 
         llWhite = findViewById(R.id.llWhite);
         fabMenu = (FloatingActionMenu) findViewById(R.id.fabMenu);
@@ -286,7 +295,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             LatLng locash = new LatLng(lat, lng);
                             Marker marker;
                             marker = mMap.addMarker(new MarkerOptions().position(locash).title(locationObj.getString("name")));
-                            marker.setTag(locationObj);
+                            marker.setTag(locationObj.getString("_id"));
                         }
                     }
                 }
@@ -307,14 +316,55 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public boolean onMarkerClick(Marker marker) {
         isMarkerClicked = true;
-        try {
-            JSONObject jsonObject = (JSONObject) marker.getTag();
-            tvLocationName.setText(jsonObject.getString("name"));
-            tvLocationAddress.setText(jsonObject.getString("address"));
+        bPlaceBid.setVisibility(View.VISIBLE);
+
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/" + marker.getTag(), null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try{
+                    Log.e("json", response + "");
+                    tvLocationName.setText(response.getString("name"));
+                    tvLocationAddress.setText(response.getString("address"));
+                    JSONObject sellerInfoObj = response.getJSONObject("sellerInfo");
+                    tvFullName.setText(sellerInfoObj.getString("sellerFirstName") + " " + sellerInfoObj.getString("sellerLastName"));
+                    tvUserRating.setText(" - "+sellerInfoObj.getString("sellerOverallRating"));
+                    tvTotalRating.setText("("+sellerInfoObj.getString("sellerTotalRatings")+")");
+
+                    if (response.getString("bids").equals("false")){
+                        bPlaceBid.setVisibility(View.GONE);
+                    }
+                    if (response.getString("type").equals("selling")){
+                        tvTransaction.setText(getResources().getString(R.string.Selling) + "$" + response.getString("price"));
+                        bBuyNow.setText(getResources().getString(R.string.Buy_Now));
+                    }
+                    else if (response.getString("type").equals("requesting")){
+                        tvTransaction.setText(getResources().getString(R.string.Requesting) + "$" + response.getString("price"));
+                        bBuyNow.setText(getResources().getString(R.string.Accept));
+                    }
+
+                    if (!response.getString("description").isEmpty()){
+                        tvDescription.setText("\""+response.getString("description")+"\"");
+                    }
+                    else {
+                        tvDescription.setVisibility(View.GONE);
+                    }
+                }
+                catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
         }
-        catch (JSONException e) {
-            e.printStackTrace();
-        }
+        );
+        queue.add(jsonObjectRequest);
+
         hiddenPanel.startAnimation(bottomUp);
         hiddenPanel.setVisibility(View.VISIBLE);
 

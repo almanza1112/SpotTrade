@@ -8,6 +8,7 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -168,6 +169,8 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
             jObject.put("email", email);
             jObject.put("password", password);
             jObject.put("phoneNumber", phoneNumber);
+            jObject.put("totalRatings", 0);
+            jObject.put("overallRating", 0);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -186,6 +189,8 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                                 SharedPref.setEmail(getActivity(), response.getString("email"));
                                 SharedPref.setPassword(getActivity(), response.getString("password"));
                                 SharedPref.setPhoneNumber(getActivity(), response.getString("phoneNumber"));
+                                SharedPref.setTotalRatings(getActivity(), response.getString("totalRatings"));
+                                SharedPref.setOverallRating(getActivity(), response.getString("overallRating"));
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
