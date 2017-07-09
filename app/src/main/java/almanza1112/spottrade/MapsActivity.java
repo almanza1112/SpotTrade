@@ -7,6 +7,10 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -51,10 +55,11 @@ import java.util.Map;
 
 import almanza1112.spottrade.nonActivity.HttpConnection;
 
+import almanza1112.spottrade.nonActivity.SharedPref;
 import almanza1112.spottrade.search.SearchActivity;
 
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener{
     private FloatingActionMenu fabMenu;
     private FloatingActionButton fabSell, fabRequest;
     private View llWhite;
@@ -146,6 +151,49 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         .putExtra("longitude", longitude), SELL_CODE);
             }
         });
+
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        View navHeaderView = navigationView.getHeaderView(0);
+        TextView tvLoggedInFullName = (TextView) navHeaderView.findViewById(R.id.tvLoggedInFullName);
+        tvLoggedInFullName.setText(SharedPref.getFirstName(this) + " " + SharedPref.getLastName(this));
+        TextView tvLoggedInEmail = (TextView) navHeaderView.findViewById(R.id.tvLoggedInEmail);
+        tvLoggedInEmail.setText(SharedPref.getEmail(this));
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        /*
+        if (id == R.id.nav_camera) {
+            // Handle the camera action
+        } else if (id == R.id.nav_gallery) {
+
+        } else if (id == R.id.nav_slideshow) {
+
+        } else if (id == R.id.nav_manage) {
+
+        } else if (id == R.id.nav_share) {
+
+        } else if (id == R.id.nav_send) {
+
+        }
+        */
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 
     @Override
@@ -165,7 +213,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onBackPressed() {
-        if (isFabMenuClicked){
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        }
+        else if (isFabMenuClicked){
             fabMenu.close(true);
             isFabMenuClicked = false;
         }
@@ -369,161 +421,5 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         hiddenPanel.setVisibility(View.VISIBLE);
 
         return false;
-    }
-
-    private void jsonArrayRequest(){
-        RequestQueue queue = Volley.newRequestQueue(this);
-
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/user", null, new Response.Listener<JSONArray>() {
-            @Override
-            public void onResponse(JSONArray response) {
-                try{
-
-                    for (int i = 0; i < response.length(); i++){
-                        JSONObject jsonObject = response.getJSONObject(i);
-                        String username = jsonObject.getString("username");
-                        String firstName = jsonObject.getString("firstName");
-                        String lastName = jsonObject.getString("lastName");
-
-                        Log.e("jsonArray",username +"\n" + firstName + "\n" + lastName);
-                    }
-                }
-                catch (JSONException e){
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
-            }
-        }
-        );
-        queue.add(jsonArrayRequest);
-    }
-
-    private void jsonObjectGETRequest(){
-        RequestQueue queue = Volley.newRequestQueue(this);
-
-        HttpConnection httpConnection = new HttpConnection();
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.GET, httpConnection.htppConnectionURL() +"/user/594a200a7918ffde96803087", null, new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            String username = response.getString("username");
-                            String firstName = response.getString("firstName");
-                            String lastName = response.getString("lastName");
-                            Log.e("jsonObject",username +"\n" + firstName + "\n" + lastName);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-                        error.printStackTrace();
-                    }
-                });
-
-        // Access the RequestQueue through your singleton class.
-        queue.add(jsObjRequest);
-    }
-
-    private void jsonObjectPUTRequest(){
-        RequestQueue queue = Volley.newRequestQueue(this);
-        final JSONObject jObject = new JSONObject();
-        try {
-            jObject.put("username", "porkchoplaya23");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        HttpConnection httpConnection = new HttpConnection();
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.PUT, httpConnection.htppConnectionURL() +"/user/update/594a34ed4f9cdd3f0c23e750", jObject, new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.e("PUT", response + "");
-                    }
-                }, new Response.ErrorListener() {
-
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-                        error.printStackTrace();
-                    }
-                }){
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json");
-                return headers;
-            }
-            @Override
-            public String getBodyContentType() {
-                return "application/json";
-            }
-        };
-
-        // Access the RequestQueue through your singleton class.
-        queue.add(jsObjRequest);
-
-    }
-
-
-    private void jsonObjectDELETERequest(){
-        RequestQueue queue = Volley.newRequestQueue(this);
-
-        HttpConnection httpConnection = new HttpConnection();
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.DELETE, httpConnection.htppConnectionURL() +"/user/remove/594a34ed4f9cdd3f0c23e750", null, new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-
-                        Log.e("DELETE",response + "");
-                    }
-                }, new Response.ErrorListener() {
-
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-                        error.printStackTrace();
-                    }
-                });
-
-        // Access the RequestQueue through your singleton class.
-        queue.add(jsObjRequest);
-    }
-
-    private void stringRequest(){
-        RequestQueue queue = Volley.newRequestQueue(this);
-
-        HttpConnection httpConnection = new HttpConnection();
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, httpConnection.htppConnectionURL(),
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        Log.d("get", "Response is: "+ response);
-                        //mTextView.setText("Response is: "+ response.substring(0,500));
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        //mTextView.setText("That didn't work!");
-                        Log.d("get", "That didn't work!");
-                        error.printStackTrace();
-                    }
-        });
-// Add the request to the RequestQueue.
-        queue.add(stringRequest);
     }
 }

@@ -2,7 +2,12 @@
     <string name="app_name">SpotTrade</string>
     <string name="title_activity_maps">Map</string>
 
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
     <string name="Accept">Accept</string>
+    <string name="Account">Account</string>
+    <string name="Active_Spots">Active Spots</string>
     <string name="Add_Location">Add Location</string>
     <string name="Add_profile_photo">Add Profile Photo</string>
     <string name="Allow_bids">Allow bids</string>
@@ -10,20 +15,27 @@
     <string name="Confirm_Password">Confirm Password</string>
     <string name="Description">Description</string>
     <string name="Email">Email</string>
+    <string name="Feedback">Feedback</string>
     <string name="Field_cant_be_empty">Field can\'t be empty</string>
     <string name="First_Name">First Name</string>
+    <string name="History">History</string>
+    <string name="Home">Home</string>
     <string name="Invalid_email_format">Invalid email format</string>
     <string name="Last_Name">Last Name</string>
     <string name="Log_In">Log In</string>
+    <string name="Log_Out">Log Out</string>
     <string name="Minimum_8_characters">Minimum 8 characters</string>
     <string name="Must_have_price">Must have a price</string>
+    <string name="Notifications">Notifications</string>
     <string name="Password">Password</string>
     <string name="Password_doesnt_match">Password doesn\'t match</string>
     <string name="Phone_Number">Phone Number</string>
     <string name="Place_Bid">Place Bid</string>
     <string name="Price">Price</string>
+    <string name="Request">Request</string>
     <string name="Request_a_Spot">Request a Spotter</string>
     <string name="Requesting">Requesting -&#160;</string>
+    <string name="Sell">Sell</string>
     <string name="Sell_a_Spot">Sell a Spot</string>
     <string name="Selling">Selling -&#160;</string>
 </resources>
