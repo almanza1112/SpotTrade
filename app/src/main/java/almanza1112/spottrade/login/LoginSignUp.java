@@ -21,6 +21,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -171,7 +172,9 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
             jObject.put("phoneNumber", phoneNumber);
             jObject.put("totalRatings", 0);
             jObject.put("overallRating", 0);
-        } catch (JSONException e) {
+            jObject.put("firebaseTokenID", FirebaseInstanceId.getInstance().getToken());
+        }
+        catch (JSONException e) {
             e.printStackTrace();
         }
 

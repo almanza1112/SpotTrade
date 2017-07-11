@@ -1,25 +1,59 @@
 package almanza1112.spottrade.nonActivity.firebase;
 
-/**
- * Created by almanza1112 on 7/9/17.
+/*
+  Created by almanza1112 on 7/9/17.
  */
 
 import android.util.Log;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 
-public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
+import org.json.JSONException;
+import org.json.JSONObject;
 
-    private static final String TAG = "MyAndroidFCMIIDService";
+import almanza1112.spottrade.nonActivity.HttpConnection;
+import almanza1112.spottrade.nonActivity.SharedPref;
+
+public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
 
     @Override
     public void onTokenRefresh() {
         //Get hold of the registration token
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
-        //Log the token
-        Log.d(TAG, "Refreshed token: " + refreshedToken);
+        sendRegistrationToServer(refreshedToken);
     }
+
+    //Implement this method if you want to store the token on your server
     private void sendRegistrationToServer(String token) {
-        //Implement this method if you want to store the token on your server
+        final JSONObject jObject = new JSONObject();
+        try {
+            jObject.put("firebaseTokenID", token);
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getID(this), jObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.e("responseUp", response +"");
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        }
+        );
+        queue.add(jsonObjectRequest);
     }
 }

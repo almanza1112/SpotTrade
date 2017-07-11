@@ -185,6 +185,12 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/Place_Bid"/>
+                    <Button
+                        android:id="@+id/bDelete"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/Delete"/>
                 </LinearLayout>
             </LinearLayout>
         </android.support.v7.widget.CardView>

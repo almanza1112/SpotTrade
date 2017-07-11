@@ -26,14 +26,11 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
@@ -44,14 +41,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-
-import java.util.HashMap;
-import java.util.Map;
 
 import almanza1112.spottrade.nonActivity.HttpConnection;
 
@@ -59,16 +53,15 @@ import almanza1112.spottrade.nonActivity.SharedPref;
 import almanza1112.spottrade.search.SearchActivity;
 
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener{
+public class MapsActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener{
     private FloatingActionMenu fabMenu;
-    private FloatingActionButton fabSell, fabRequest;
     private View llWhite;
     private Toolbar toolbar;
     private GoogleMap mMap;
     private ViewGroup hiddenPanel;
     private Animation bottomUp, bottomDown;
     private TextView tvFullName, tvUserRating, tvTotalRating, tvLocationName, tvLocationAddress, tvTransaction, tvDescription;
-    private Button bBuyNow, bPlaceBid;
+    private Button bBuyNow, bPlaceBid, bDelete;
 
     private boolean isFabMenuClicked, isMarkerClicked;
     private double latitude =0, longitude=0;
@@ -76,6 +69,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private int SEARCH_CODE = 0;
     private int SELL_CODE = 1;
     private int REQUEST_CODE = 2;
+    private String lid;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,7 +101,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         tvLocationAddress = (TextView) findViewById(R.id.tvLocationAddress);
         tvLocationName = (TextView) findViewById(R.id.tvLocationName);
         bBuyNow = (Button) findViewById(R.id.bBuyNow);
+        bBuyNow.setOnClickListener(this);
         bPlaceBid = (Button) findViewById(R.id.bPlaceBid);
+        bPlaceBid.setOnClickListener(this);
+        bDelete = (Button) findViewById(R.id.bDelete);
+        bDelete.setOnClickListener(this);
 
         llWhite = findViewById(R.id.llWhite);
         fabMenu = (FloatingActionMenu) findViewById(R.id.fabMenu);
@@ -125,37 +123,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        fabRequest = (FloatingActionButton) findViewById(R.id.fabRequest);
-        fabRequest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fabMenu.close(true);
-                fabMenu.close(true);
-                startActivityForResult(new Intent(MapsActivity.this, RequestActivity.class)
-                        .putExtra("locationName", locationName)
-                        .putExtra("locationAddress", locationAddress)
-                        .putExtra("latitude", latitude)
-                        .putExtra("longitude", longitude), REQUEST_CODE);
-            }
-        });
+        FloatingActionButton fabRequest = (FloatingActionButton) findViewById(R.id.fabRequest);
+        fabRequest.setOnClickListener(this);
 
-        fabSell = (FloatingActionButton) findViewById(R.id.fabSell);
-        fabSell.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fabMenu.close(true);
-                startActivityForResult(new Intent(MapsActivity.this, SellActivity.class)
-                        .putExtra("locationName", locationName)
-                        .putExtra("locationAddress", locationAddress)
-                        .putExtra("latitude", latitude)
-                        .putExtra("longitude", longitude), SELL_CODE);
-            }
-        });
-
+        FloatingActionButton fabSell = (FloatingActionButton) findViewById(R.id.fabSell);
+        fabSell.setOnClickListener(this);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
@@ -167,6 +142,33 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         tvLoggedInFullName.setText(SharedPref.getFirstName(this) + " " + SharedPref.getLastName(this));
         TextView tvLoggedInEmail = (TextView) navHeaderView.findViewById(R.id.tvLoggedInEmail);
         tvLoggedInEmail.setText(SharedPref.getEmail(this));
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.fabSell:
+                fabMenu.close(true);
+                startActivityForResult(new Intent(MapsActivity.this, SellActivity.class)
+                        .putExtra("locationName", locationName)
+                        .putExtra("locationAddress", locationAddress)
+                        .putExtra("latitude", latitude)
+                        .putExtra("longitude", longitude), SELL_CODE);
+                break;
+
+            case R.id.fabRequest:
+                fabMenu.close(true);
+                fabMenu.close(true);
+                startActivityForResult(new Intent(MapsActivity.this, RequestActivity.class)
+                        .putExtra("locationName", locationName)
+                        .putExtra("locationAddress", locationAddress)
+                        .putExtra("latitude", latitude)
+                        .putExtra("longitude", longitude), REQUEST_CODE);
+                break;
+            case R.id.bBuyNow:
+
+                break;
+        }
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -369,6 +371,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public boolean onMarkerClick(Marker marker) {
         isMarkerClicked = true;
         bPlaceBid.setVisibility(View.VISIBLE);
+        bBuyNow.setVisibility(View.VISIBLE);
+        bDelete.setVisibility(View.VISIBLE);
 
         RequestQueue queue = Volley.newRequestQueue(this);
 
@@ -377,7 +381,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onResponse(JSONObject response) {
                 try{
-                    Log.e("json", response + "");
+                    lid = response.getString("_id");
                     tvLocationName.setText(response.getString("name"));
                     tvLocationAddress.setText(response.getString("address"));
                     JSONObject sellerInfoObj = response.getJSONObject("sellerInfo");
@@ -385,20 +389,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     tvUserRating.setText(" - "+sellerInfoObj.getString("sellerOverallRating"));
                     tvTotalRating.setText("("+sellerInfoObj.getString("sellerTotalRatings")+")");
 
-                    if (response.getString("bids").equals("false")){
-                        bPlaceBid.setVisibility(View.GONE);
-                    }
-                    if (response.getString("type").equals("selling")){
+                    if (response.getString("type").equals("selling")) {
                         tvTransaction.setText(getResources().getString(R.string.Selling) + "$" + response.getString("price"));
                         bBuyNow.setText(getResources().getString(R.string.Buy_Now));
                     }
-                    else if (response.getString("type").equals("requesting")){
+                    else if (response.getString("type").equals("requesting")) {
                         tvTransaction.setText(getResources().getString(R.string.Requesting) + "$" + response.getString("price"));
                         bBuyNow.setText(getResources().getString(R.string.Accept));
                     }
 
-                    if (!response.getString("description").isEmpty()){
-                        tvDescription.setText("\""+response.getString("description")+"\"");
+                    if (response.getString("sellerID").equals(SharedPref.getID(MapsActivity.this))){
+                        bPlaceBid.setVisibility(View.GONE);
+                        bBuyNow.setVisibility(View.GONE);
+                    }
+                    else {
+                        bDelete.setVisibility(View.GONE);
+                        if (response.getString("bids").equals("false")) {
+                            bPlaceBid.setVisibility(View.GONE);
+                        }
+                    }
+
+                    if (!response.getString("description").isEmpty()) {
+                        tvDescription.setText("\"" + response.getString("description") + "\"");
                     }
                     else {
                         tvDescription.setVisibility(View.GONE);
