@@ -6,12 +6,12 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -21,6 +21,9 @@ import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import almanza1112.spottrade.MapsActivity;
 import almanza1112.spottrade.R;
@@ -89,15 +92,22 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void authenticateUserLogin(){
+        final JSONObject jObject = new JSONObject();
+        try {
+            jObject.put("email", tietEmail.getText().toString());
+            jObject.put("password", tietPassword.getText().toString());
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
         RequestQueue queue = Volley.newRequestQueue(this);
 
         HttpConnection httpConnection = new HttpConnection();
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.GET, httpConnection.htppConnectionURL() +"/user/login?email=" + tietEmail.getText().toString() + "&password=" + tietPassword.getText().toString(), null, new Response.Listener<JSONObject>() {
+                (Request.Method.POST, httpConnection.htppConnectionURL() + "/user/login", jObject, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                            Log.e("loginResponse", response + "");
                             try{
                                 if (response.getString("status").equals("success")) {
                                     String id = response.getString("_id");
@@ -139,7 +149,18 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         // TODO Auto-generated method stub
                         error.printStackTrace();
                     }
-                });
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+            @Override
+            public String getBodyContentType() {
+                return "application/json";
+            }
+        };
 
         // Access the RequestQueue through your singleton class.
         queue.add(jsObjRequest);

@@ -7,6 +7,7 @@ import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
@@ -34,32 +35,39 @@ import almanza1112.spottrade.search.SearchActivity;
  * Created by almanza1112 on 6/29/17.
  */
 
-public class RequestActivity extends AppCompatActivity implements View.OnClickListener{
+public class SpotActivity extends AppCompatActivity implements View.OnClickListener{
     private TextView tvLocationName, tvLocationAddress, tvAddLocation;
     private TextInputLayout tilPrice;
     private TextInputEditText tietDescription, tietPrice;
     private CheckBox cbBids;
     private int ADD_LOCATION_CODE = 0;
     private double latitude, longitude;
-    private String locationName, locationAddress;
+    private String locationName, locationAddress, type;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
+        type = intent.getStringExtra("type");
         locationName = intent.getStringExtra("locationName");
         locationAddress = intent.getStringExtra("locationAddress");
         latitude = intent.getDoubleExtra("latitude", 0);
         longitude = intent.getDoubleExtra("longitude", 0);
 
-        setContentView(R.layout.sell_activity);
+        setContentView(R.layout.spot_actiivty);
 
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle(R.string.Request_a_Spot);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        if (type.equals("requesting")){
+            toolbar.setTitle(R.string.Request_a_Spot);
+        }
+        else if (type.equals("selling")){
+            toolbar.setTitle(R.string.Sell_a_Spot);
+        }
 
         tvLocationName = (TextView) findViewById(R.id.tvLocationName);
         tvLocationName.setOnClickListener(this);
@@ -156,12 +164,12 @@ public class RequestActivity extends AppCompatActivity implements View.OnClickLi
         RequestQueue queue = Volley.newRequestQueue(this);
         final JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("type", "requesting");
+            jsonObject.put("type", type);
             jsonObject.put("transaction", "available");
             jsonObject.put("sellerID", SharedPref.getID(this));
             jsonObject.put("name", locationName);
             jsonObject.put("price", tietPrice.getText().toString());
-            jsonObject.put("bids", cbBids.isChecked());
+            jsonObject.put("bidAllowed", cbBids.isChecked());
             jsonObject.put("address", locationAddress);
             jsonObject.put("latitude", String.valueOf(latitude));
             jsonObject.put("longitude", String.valueOf(longitude));
@@ -183,6 +191,10 @@ public class RequestActivity extends AppCompatActivity implements View.OnClickLi
                                 Intent intent = getIntent();
                                 intent.putExtra("latitude", response.getString("latitude"));
                                 intent.putExtra("longitude", response.getString("longitude"));
+                                intent.putExtra("id", response.getString("_id"));
+                                intent.putExtra("name", response.getString("name"));
+                                setResult(RESULT_OK, intent);
+                                finish();
                             }
                         }
                         catch (JSONException e){

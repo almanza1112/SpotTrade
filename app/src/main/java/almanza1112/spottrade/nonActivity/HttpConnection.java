@@ -5,11 +5,9 @@ package almanza1112.spottrade.nonActivity;
  */
 
 public class HttpConnection {
-    //linux command for finding IP = ifconfig -a
-    private final String localURL = "http://192.168.1.8";
-    private final String localPort = "3000";
-
     public String htppConnectionURL(){
+        String localURL = "http://192.168.1.9";
+        String localPort = "3000";
         return localURL + ":" + localPort;
     }
 }

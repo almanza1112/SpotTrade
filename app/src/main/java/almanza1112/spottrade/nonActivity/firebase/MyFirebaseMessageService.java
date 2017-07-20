@@ -29,12 +29,6 @@ public class MyFirebaseMessageService extends FirebaseMessagingService {
         //createNotification(remoteMessage.getNotification().getBody());
     }
 
-    @Override
-    public void onMessageSent(String s) {
-        super.onMessageSent(s);
-        Log.e(TAG, s);
-
-    }
     /*
     private void createNotification( String messageBody) {
         Intent intent = new Intent( this , ResultActivity. class );

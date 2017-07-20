@@ -1,6 +1,9 @@
 package almanza1112.spottrade;
 
+import android.app.AlertDialog;
+import android.support.annotation.NonNull;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Criteria;
 import android.location.Location;
@@ -14,6 +17,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -23,6 +27,8 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -41,12 +47,13 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.android.gms.vision.text.Line;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import almanza1112.spottrade.login.LoginActivity;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 
 import almanza1112.spottrade.nonActivity.SharedPref;
@@ -67,9 +74,9 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private double latitude =0, longitude=0;
     private String locationName="empty", locationAddress="empty";
     private int SEARCH_CODE = 0;
-    private int SELL_CODE = 1;
-    private int REQUEST_CODE = 2;
+    private int SPOT_CODE = 1;
     private String lid;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -149,49 +156,47 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()){
             case R.id.fabSell:
                 fabMenu.close(true);
-                startActivityForResult(new Intent(MapsActivity.this, SellActivity.class)
+                startActivityForResult(new Intent(MapsActivity.this, SpotActivity.class)
+                        .putExtra("type", "selling")
                         .putExtra("locationName", locationName)
                         .putExtra("locationAddress", locationAddress)
                         .putExtra("latitude", latitude)
-                        .putExtra("longitude", longitude), SELL_CODE);
+                        .putExtra("longitude", longitude), SPOT_CODE);
                 break;
 
             case R.id.fabRequest:
                 fabMenu.close(true);
-                fabMenu.close(true);
-                startActivityForResult(new Intent(MapsActivity.this, RequestActivity.class)
+                startActivityForResult(new Intent(MapsActivity.this, SpotActivity.class)
+                        .putExtra("type", "requesting")
                         .putExtra("locationName", locationName)
                         .putExtra("locationAddress", locationAddress)
                         .putExtra("latitude", latitude)
-                        .putExtra("longitude", longitude), REQUEST_CODE);
+                        .putExtra("longitude", longitude), SPOT_CODE);
                 break;
-            case R.id.bBuyNow:
 
+            case R.id.bBuyNow:
+                transactionBuyNow();
+                break;
+
+            case R.id.bPlaceBid:
+                placeBid();
                 break;
         }
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
-        int id = item.getItemId();
 
-        /*
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        switch (item.getItemId()){
+            case R.id.nav_payment:
+                startActivity(new Intent(this, Payment.class));
+                break;
+            case R.id.nav_log_out:
+                logOut();
+                break;
         }
-        */
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -247,21 +252,18 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(locash));
             }
         }
-        else if (requestCode == SELL_CODE){
+        else if (requestCode == SPOT_CODE){
             if (resultCode == RESULT_OK){
                 latitude = Double.valueOf(data.getStringExtra("latitude"));
                 longitude = Double.valueOf(data.getStringExtra("longitude"));
+                String name = data.getStringExtra("name");
+                String id = data.getStringExtra("id");
                 LatLng locash = new LatLng(latitude, longitude);
-                mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(locash));            }
-        }
-        else if (requestCode == REQUEST_CODE){
-            if (resultCode == RESULT_OK){
-                latitude = Double.valueOf(data.getStringExtra("latitude"));
-                longitude = Double.valueOf(data.getStringExtra("longitude"));
-                LatLng locash = new LatLng(latitude, longitude);
-                mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(locash));
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(18));
+                Marker marker;
+                marker = mMap.addMarker(new MarkerOptions().position(locash).title(name));
+                marker.setTag(id);
             }
         }
     }
@@ -404,7 +406,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     }
                     else {
                         bDelete.setVisibility(View.GONE);
-                        if (response.getString("bids").equals("false")) {
+                        if (!response.getBoolean("bidAllowed")) {
                             bPlaceBid.setVisibility(View.GONE);
                         }
                     }
@@ -433,5 +435,88 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         hiddenPanel.setVisibility(View.VISIBLE);
 
         return false;
+    }
+
+    private void transactionBuyNow() {
+        final JSONObject jObject = new JSONObject();
+        try {
+            jObject.put("transaction", "complete");
+            jObject.put("buyerID", SharedPref.getID(this));
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/buy/" + lid, jObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try{
+                    if (response.getString("status").equals("success")){
+
+                    }
+                }
+                catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        }
+        );
+        queue.add(jsonObjectRequest);
+    }
+
+    private void transactionPlaceBid(){
+
+    }
+
+    private void placeBid(){
+        LayoutInflater inflater = getLayoutInflater();
+        View alertLayout = inflater.inflate(R.layout.maps_activity_place_bid_alertdialog, null);
+
+        EditText etBid = (EditText) alertLayout.findViewById(R.id.etBid);
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setView(alertLayout);
+        alertDialogBuilder.setTitle(R.string.Place_Bid);
+        alertDialogBuilder.setPositiveButton(R.string.Bid, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1) {
+
+            }
+        });
+        alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    private void logOut(){
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setMessage(R.string.Are_you_sure_you_want_to_log_out);
+        alertDialogBuilder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1) {
+                SharedPref.clearAll(MapsActivity.this);
+                startActivity(new Intent(MapsActivity.this, LoginActivity.class));
+                finish();
+            }
+        });
+        alertDialogBuilder.setNegativeButton(R.string.No, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 }

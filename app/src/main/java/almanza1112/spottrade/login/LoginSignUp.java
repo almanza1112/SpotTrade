@@ -8,7 +8,6 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -172,6 +171,7 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
             jObject.put("phoneNumber", phoneNumber);
             jObject.put("totalRatings", 0);
             jObject.put("overallRating", 0);
+            jObject.put("loggedIn", true);
             jObject.put("firebaseTokenID", FirebaseInstanceId.getInstance().getToken());
         }
         catch (JSONException e) {

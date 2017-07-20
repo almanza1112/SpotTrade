@@ -11,7 +11,10 @@
     <string name="Add_Location">Add Location</string>
     <string name="Add_profile_photo">Add Profile Photo</string>
     <string name="Allow_bids">Allow bids</string>
+    <string name="Are_you_sure_you_want_to_log_out">Are you sure you want to log out?</string>
+    <string name="Bid">Bid</string>
     <string name="Buy_Now">Buy Now</string>
+    <string name="Cancel">Cancel</string>
     <string name="Confirm_Password">Confirm Password</string>
     <string name="Delete">Delete</string>
     <string name="Description">Description</string>
@@ -27,9 +30,11 @@
     <string name="Log_Out">Log Out</string>
     <string name="Minimum_8_characters">Minimum 8 characters</string>
     <string name="Must_have_price">Must have a price</string>
+    <string name="No">No</string>
     <string name="Notifications">Notifications</string>
     <string name="Password">Password</string>
     <string name="Password_doesnt_match">Password doesn\'t match</string>
+    <string name="Payment">Payment</string>
     <string name="Phone_Number">Phone Number</string>
     <string name="Place_Bid">Place Bid</string>
     <string name="Price">Price</string>
@@ -39,4 +44,5 @@
     <string name="Sell">Sell</string>
     <string name="Sell_a_Spot">Sell a Spot</string>
     <string name="Selling">Selling -&#160;</string>
+    <string name="Yes">Yes</string>
 </resources>
