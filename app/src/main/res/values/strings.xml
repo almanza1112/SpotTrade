@@ -13,8 +13,10 @@
     <string name="Allow_bids">Allow bids</string>
     <string name="Are_you_sure_you_want_to_log_out">Are you sure you want to log out?</string>
     <string name="Bid">Bid</string>
+    <string name="Bid_canceled">Bid canceled</string>
     <string name="Buy_Now">Buy Now</string>
     <string name="Cancel">Cancel</string>
+    <string name="Cancel_Bid">Cancel Bid</string>
     <string name="Confirm_Password">Confirm Password</string>
     <string name="Delete">Delete</string>
     <string name="Description">Description</string>
@@ -44,5 +46,6 @@
     <string name="Sell">Sell</string>
     <string name="Sell_a_Spot">Sell a Spot</string>
     <string name="Selling">Selling -&#160;</string>
+    <string name="Server_error">Something went wrong: server error</string>
     <string name="Yes">Yes</string>
 </resources>

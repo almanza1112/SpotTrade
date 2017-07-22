@@ -173,7 +173,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/contentPadding"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:gravity="center_horizontal">
                     <Button
                         android:id="@+id/bBuyNow"
                         android:layout_width="0dp"
@@ -185,6 +186,11 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/Place_Bid"/>
+                    <Button
+                        android:id="@+id/bCancelBid"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"/>
                     <Button
                         android:id="@+id/bDelete"
                         android:layout_width="0dp"

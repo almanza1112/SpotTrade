@@ -28,9 +28,9 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -47,7 +47,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.vision.text.Line;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -68,7 +67,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private ViewGroup hiddenPanel;
     private Animation bottomUp, bottomDown;
     private TextView tvFullName, tvUserRating, tvTotalRating, tvLocationName, tvLocationAddress, tvTransaction, tvDescription;
-    private Button bBuyNow, bPlaceBid, bDelete;
+    private Button bBuyNow, bPlaceBid, bCancelBid, bDelete;
 
     private boolean isFabMenuClicked, isMarkerClicked;
     private double latitude =0, longitude=0;
@@ -111,6 +110,8 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         bBuyNow.setOnClickListener(this);
         bPlaceBid = (Button) findViewById(R.id.bPlaceBid);
         bPlaceBid.setOnClickListener(this);
+        bCancelBid = (Button) findViewById(R.id.bCancelBid);
+        bCancelBid.setOnClickListener(this);
         bDelete = (Button) findViewById(R.id.bDelete);
         bDelete.setOnClickListener(this);
 
@@ -179,7 +180,11 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.bPlaceBid:
-                placeBid();
+                ADplaceBid();
+                break;
+
+            case R.id.bCancelBid:
+                transactionCancelBid();
                 break;
         }
     }
@@ -194,7 +199,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(new Intent(this, Payment.class));
                 break;
             case R.id.nav_log_out:
-                logOut();
+                ADlogOut();
                 break;
         }
 
@@ -372,6 +377,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onMarkerClick(Marker marker) {
         isMarkerClicked = true;
+        bCancelBid.setVisibility(View.VISIBLE);
         bPlaceBid.setVisibility(View.VISIBLE);
         bBuyNow.setVisibility(View.VISIBLE);
         bDelete.setVisibility(View.VISIBLE);
@@ -379,9 +385,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         RequestQueue queue = Volley.newRequestQueue(this);
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/" + marker.getTag(), null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/" + marker.getTag() + "?user=" + SharedPref.getID(this), null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
+                Log.e("marker", response + "");
                 try{
                     lid = response.getString("_id");
                     tvLocationName.setText(response.getString("name"));
@@ -402,12 +409,22 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
                     if (response.getString("sellerID").equals(SharedPref.getID(MapsActivity.this))){
                         bPlaceBid.setVisibility(View.GONE);
+                        bCancelBid.setVisibility(View.GONE);
                         bBuyNow.setVisibility(View.GONE);
                     }
                     else {
                         bDelete.setVisibility(View.GONE);
                         if (!response.getBoolean("bidAllowed")) {
                             bPlaceBid.setVisibility(View.GONE);
+                        }
+                        else{
+                            if (response.getBoolean("bidden")){
+                                bPlaceBid.setVisibility(View.GONE);
+                                bCancelBid.setText(getResources().getString(R.string.Cancel) + " $" + response.getString("biddenAmount") + " " + getResources().getString(R.string.Bid));
+                            }
+                            else {
+                                bCancelBid.setVisibility(View.GONE);
+                            }
                         }
                     }
 
@@ -471,22 +488,90 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         queue.add(jsonObjectRequest);
     }
 
-    private void transactionPlaceBid(){
+    private void transactionPlaceBid(final String bidAmount){
+        final JSONObject jObject = new JSONObject();
+        try {
+            jObject.put("bidderID", SharedPref.getID(this));
+            jObject.put("bidAmount", bidAmount);
+            jObject.put("bidderFirstName", SharedPref.getFirstName(this));
+            jObject.put("bidderLastName", SharedPref.getLastName(this));
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestQueue queue = Volley.newRequestQueue(this);
 
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/bid/" + lid, jObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try{
+                    if (response.getString("status").equals("success")){
+                        Toast.makeText(MapsActivity.this, "Bid placed", Toast.LENGTH_SHORT).show();
+                        bPlaceBid.setVisibility(View.GONE);
+                        bCancelBid.setText(getResources().getString(R.string.Cancel) + " $" + bidAmount + " " + getResources().getString(R.string.Bid));
+                        bCancelBid.setVisibility(View.VISIBLE);
+                    }
+                }
+                catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        }
+        );
+        queue.add(jsonObjectRequest);
     }
 
-    private void placeBid(){
+    private void transactionCancelBid(){
+        final JSONObject jObject = new JSONObject();
+
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/bid/cancel/" + lid + "?user=" + SharedPref.getID(this), jObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try{
+                    if (response.getString("status").equals("success")){
+                        hiddenPanel.startAnimation(bottomDown);
+                        hiddenPanel.setVisibility(View.INVISIBLE);
+                        Toast.makeText(MapsActivity.this, getResources().getString(R.string.Bid_canceled), Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        Toast.makeText(MapsActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                    }
+                }
+                catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        }
+        );
+        queue.add(jsonObjectRequest);
+    }
+
+    private void ADplaceBid(){
         LayoutInflater inflater = getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.maps_activity_place_bid_alertdialog, null);
 
-        EditText etBid = (EditText) alertLayout.findViewById(R.id.etBid);
+        final EditText etBid = (EditText) alertLayout.findViewById(R.id.etBid);
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setView(alertLayout);
         alertDialogBuilder.setTitle(R.string.Place_Bid);
         alertDialogBuilder.setPositiveButton(R.string.Bid, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
-
+                transactionPlaceBid(etBid.getText().toString());
             }
         });
         alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
@@ -499,7 +584,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         alertDialog.show();
     }
 
-    private void logOut(){
+    private void ADlogOut(){
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setMessage(R.string.Are_you_sure_you_want_to_log_out);
         alertDialogBuilder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
