@@ -68,6 +68,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private Animation bottomUp, bottomDown;
     private TextView tvFullName, tvUserRating, tvTotalRating, tvLocationName, tvLocationAddress, tvTransaction, tvDescription;
     private Button bBuyNow, bPlaceBid, bCancelBid, bDelete;
+    private Marker marker;
 
     private boolean isFabMenuClicked, isMarkerClicked;
     private double latitude =0, longitude=0;
@@ -175,6 +176,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                         .putExtra("longitude", longitude), SPOT_CODE);
                 break;
 
+            case R.id.bDelete:
+                ADdeleteSpot();
+                break;
+
             case R.id.bBuyNow:
                 transactionBuyNow();
                 break;
@@ -266,7 +271,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 LatLng locash = new LatLng(latitude, longitude);
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(locash));
                 mMap.animateCamera(CameraUpdateFactory.zoomTo(18));
-                Marker marker;
                 marker = mMap.addMarker(new MarkerOptions().position(locash).title(name));
                 marker.setTag(id);
             }
@@ -282,7 +286,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         }
         return result;
     }
-
 
     /**
      * Manipulates the map once available.
@@ -354,7 +357,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                             Double lat = Double.valueOf(locationObj.getString("latitude"));
                             Double lng = Double.valueOf(locationObj.getString("longitude"));
                             LatLng locash = new LatLng(lat, lng);
-                            Marker marker;
                             marker = mMap.addMarker(new MarkerOptions().position(locash).title(locationObj.getString("name")));
                             marker.setTag(locationObj.getString("_id"));
                         }
@@ -375,8 +377,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public boolean onMarkerClick(Marker marker) {
+    public boolean onMarkerClick(final Marker marker) {
+        this.marker = marker;
         isMarkerClicked = true;
+        tvDescription.setVisibility(View.VISIBLE);
         bCancelBid.setVisibility(View.VISIBLE);
         bPlaceBid.setVisibility(View.VISIBLE);
         bBuyNow.setVisibility(View.VISIBLE);
@@ -388,10 +392,11 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/" + marker.getTag() + "?user=" + SharedPref.getID(this), null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Log.e("marker", response + "");
                 try{
                     lid = response.getString("_id");
                     tvLocationName.setText(response.getString("name"));
+                    Log.e("onMarkerClick", response.getString("name") +" "+ marker.getTag() + "");
+
                     tvLocationAddress.setText(response.getString("address"));
                     JSONObject sellerInfoObj = response.getJSONObject("sellerInfo");
                     tvFullName.setText(sellerInfoObj.getString("sellerFirstName") + " " + sellerInfoObj.getString("sellerLastName"));
@@ -452,6 +457,34 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         hiddenPanel.setVisibility(View.VISIBLE);
 
         return false;
+    }
+
+    private void transactionDeleteSpot(){
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.DELETE, httpConnection.htppConnectionURL() + "/location/delete/" + lid, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try{
+                    if (response.getString("status").equals("success")){
+                        marker.remove();
+                        hiddenPanel.startAnimation(bottomDown);
+                        hiddenPanel.setVisibility(View.INVISIBLE);
+                    }
+                }
+                catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+        },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                    }
+                });
+        queue.add(jsonObjectRequest);
     }
 
     private void transactionBuyNow() {
@@ -584,8 +617,29 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         alertDialog.show();
     }
 
+    private void ADdeleteSpot(){
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(R.string.Delete);
+        alertDialogBuilder.setMessage(R.string.Are_you_sure_you_want_to_delete_this_spot);
+        alertDialogBuilder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1) {
+                transactionDeleteSpot();
+            }
+        });
+        alertDialogBuilder.setNegativeButton(R.string.No, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
     private void ADlogOut(){
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(R.string.Log_Out);
         alertDialogBuilder.setMessage(R.string.Are_you_sure_you_want_to_log_out);
         alertDialogBuilder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
             @Override
