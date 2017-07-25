@@ -395,7 +395,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 try{
                     lid = response.getString("_id");
                     tvLocationName.setText(response.getString("name"));
-                    Log.e("onMarkerClick", response.getString("name") +" "+ marker.getTag() + "");
 
                     tvLocationAddress.setText(response.getString("address"));
                     JSONObject sellerInfoObj = response.getJSONObject("sellerInfo");
@@ -420,14 +419,20 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     else {
                         bDelete.setVisibility(View.GONE);
                         if (!response.getBoolean("bidAllowed")) {
+                            Log.e("ok", "bid not allowed");
                             bPlaceBid.setVisibility(View.GONE);
+                            bCancelBid.setVisibility(View.GONE);
                         }
                         else{
+                            Log.e("ok", "bid allowed");
                             if (response.getBoolean("bidden")){
+                                Log.e("ok", "bidden");
                                 bPlaceBid.setVisibility(View.GONE);
                                 bCancelBid.setText(getResources().getString(R.string.Cancel) + " $" + response.getString("biddenAmount") + " " + getResources().getString(R.string.Bid));
                             }
                             else {
+
+                                Log.e("ok", "not bidden");
                                 bCancelBid.setVisibility(View.GONE);
                             }
                         }
