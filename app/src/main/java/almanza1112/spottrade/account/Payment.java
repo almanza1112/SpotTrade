@@ -1,4 +1,4 @@
-package almanza1112.spottrade;
+package almanza1112.spottrade.account;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -18,6 +18,8 @@ import com.paypal.android.sdk.payments.PaymentConfirmation;
 import org.json.JSONException;
 
 import java.math.BigDecimal;
+
+import almanza1112.spottrade.R;
 
 /**
  * Created by almanza1112 on 7/19/17.

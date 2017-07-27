@@ -52,6 +52,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import almanza1112.spottrade.account.History;
+import almanza1112.spottrade.account.Payment;
 import almanza1112.spottrade.login.LoginActivity;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 
@@ -200,6 +202,9 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         // Handle navigation view item clicks here.
 
         switch (item.getItemId()){
+            case R.id.nav_history:
+                startActivity(new Intent(this, History.class));
+                break;
             case R.id.nav_payment:
                 startActivity(new Intent(this, Payment.class));
                 break;
@@ -277,16 +282,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    // A method to find height of the status bar
-    public int getStatusBarHeight() {
-        int result = 0;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            result = getResources().getDimensionPixelSize(resourceId);
-        }
-        return result;
-    }
-
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -338,42 +333,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         mMap.setOnMarkerClickListener(this);
 
         getAvailableSpots();
-    }
-
-    private void getAvailableSpots(){
-        RequestQueue queue = Volley.newRequestQueue(this);
-
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/all?sellerID=all&transaction=available&type=all", null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try{
-                    if (response.getString("status").equals("success")){
-                        String locations = response.getString("location");
-                        JSONArray jsonArray = new JSONArray(locations);
-
-                        for (int i = 0; i < jsonArray.length(); i++){
-                            JSONObject locationObj = jsonArray.getJSONObject(i);
-                            Double lat = Double.valueOf(locationObj.getString("latitude"));
-                            Double lng = Double.valueOf(locationObj.getString("longitude"));
-                            LatLng locash = new LatLng(lat, lng);
-                            marker = mMap.addMarker(new MarkerOptions().position(locash).title(locationObj.getString("name")));
-                            marker.setTag(locationObj.getString("_id"));
-                        }
-                    }
-                }
-                catch (JSONException e){
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
-            }
-        }
-        );
-        queue.add(jsonObjectRequest);
     }
 
     @Override
@@ -464,6 +423,51 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         return false;
     }
 
+    private void getAvailableSpots(){
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/all?sellerID=all&transaction=available&type=all", null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try{
+                    if (response.getString("status").equals("success")){
+                        String locations = response.getString("location");
+                        JSONArray jsonArray = new JSONArray(locations);
+
+                        for (int i = 0; i < jsonArray.length(); i++){
+                            JSONObject locationObj = jsonArray.getJSONObject(i);
+                            Double lat = Double.valueOf(locationObj.getString("latitude"));
+                            Double lng = Double.valueOf(locationObj.getString("longitude"));
+                            LatLng locash = new LatLng(lat, lng);
+                            marker = mMap.addMarker(new MarkerOptions().position(locash).title(locationObj.getString("name")));
+                            marker.setTag(locationObj.getString("_id"));
+                        }
+                    }
+                }
+                catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        }
+        );
+        queue.add(jsonObjectRequest);
+    }
+
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
     private void transactionDeleteSpot(){
         RequestQueue queue = Volley.newRequestQueue(this);
 
@@ -497,6 +501,9 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         try {
             jObject.put("transaction", "complete");
             jObject.put("buyerID", SharedPref.getID(this));
+
+            jObject.put("buyerFirstName", SharedPref.getFirstName(this));
+            jObject.put("buyerLastName", SharedPref.getLastName(this));
         }
         catch (JSONException e) {
             e.printStackTrace();

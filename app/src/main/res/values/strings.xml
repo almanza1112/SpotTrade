@@ -15,6 +15,8 @@
     <string name="Are_you_sure_you_want_to_log_out">Are you sure you want to log out?</string>
     <string name="Bid">Bid</string>
     <string name="Bid_canceled">Bid canceled</string>
+    <string name="Bought_Spot">Bought Spot</string>
+    <string name="bought_your_spot">bought your spot</string>
     <string name="Buy_Now">Buy Now</string>
     <string name="Cancel">Cancel</string>
     <string name="Cancel_Bid">Cancel Bid</string>
@@ -25,6 +27,7 @@
     <string name="Feedback">Feedback</string>
     <string name="Field_cant_be_empty">Field can\'t be empty</string>
     <string name="First_Name">First Name</string>
+    <string name="got_spotted">got spotted</string>
     <string name="History">History</string>
     <string name="Home">Home</string>
     <string name="Invalid_email_format">Invalid email format</string>
@@ -43,10 +46,15 @@
     <string name="Price">Price</string>
     <string name="Request">Request</string>
     <string name="Request_a_Spot">Request a Spotter</string>
+    <string name="Requested_Spotter">Requested Spotter</string>
     <string name="Requesting">Requesting -&#160;</string>
     <string name="Sell">Sell</string>
     <string name="Sell_a_Spot">Sell a Spot</string>
     <string name="Selling">Selling -&#160;</string>
     <string name="Server_error">Something went wrong: server error</string>
+    <string name="Sold_Spot">Sold Spot</string>
+    <string name="sold_their_spot">sold their spot</string>
+    <string name="Spotted">Spotted</string>
+    <string name="spotted_you">spotted you</string>
     <string name="Yes">Yes</string>
 </resources>

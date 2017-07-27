@@ -21,6 +21,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -163,6 +164,7 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
     private void postRequest(){
         RequestQueue queue = Volley.newRequestQueue(this);
         final JSONObject jsonObject = new JSONObject();
+        final JSONObject sellerInfoObj = new JSONObject();
         try {
             jsonObject.put("type", type);
             jsonObject.put("transaction", "available");
@@ -174,6 +176,11 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
             jsonObject.put("latitude", String.valueOf(latitude));
             jsonObject.put("longitude", String.valueOf(longitude));
             jsonObject.put("description", tietDescription.getText().toString());
+
+            sellerInfoObj.put("sellerFirstName", SharedPref.getFirstName(this));
+            sellerInfoObj.put("sellerLastName", SharedPref.getLastName(this));
+
+            jsonObject.put("sellerInfo", sellerInfoObj);
         }
         catch (JSONException e) {
             e.printStackTrace();
