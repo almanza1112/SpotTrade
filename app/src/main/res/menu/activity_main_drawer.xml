@@ -26,10 +26,6 @@
                 android:icon="@mipmap/ic_currency_usd_grey600_24dp"
                 android:title="@string/Payment"/>
             <item
-                android:id="@+id/nav_notifications"
-                android:icon="@mipmap/ic_notifications_black_24dp"
-                android:title="@string/Notifications"/>
-            <item
                 android:id="@+id/nav_log_out"
                 android:icon="@mipmap/ic_power_settings_new_black_24dp"
                 android:title="@string/Log_Out" />
