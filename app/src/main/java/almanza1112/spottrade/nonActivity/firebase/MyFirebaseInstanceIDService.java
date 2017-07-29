@@ -4,6 +4,7 @@ package almanza1112.spottrade.nonActivity.firebase;
   Created by almanza1112 on 7/9/17.
  */
 
+
 import android.util.Log;
 
 import com.android.volley.Request;
@@ -32,7 +33,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
     }
 
     //Implement this method if you want to store the token on your server
-    private void sendRegistrationToServer(String token) {
+    public void sendRegistrationToServer(String token) {
         final JSONObject jObject = new JSONObject();
         try {
             jObject.put("firebaseTokenID", token);
@@ -40,6 +41,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         catch (JSONException e) {
             e.printStackTrace();
         }
+
         RequestQueue queue = Volley.newRequestQueue(this);
 
         HttpConnection httpConnection = new HttpConnection();
@@ -57,4 +59,5 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         );
         queue.add(jsonObjectRequest);
     }
+
 }

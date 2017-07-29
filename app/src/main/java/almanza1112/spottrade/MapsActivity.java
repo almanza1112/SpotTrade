@@ -1,6 +1,8 @@
 package almanza1112.spottrade;
 
 import android.app.AlertDialog;
+
+
 import android.support.annotation.NonNull;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -47,6 +49,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,6 +61,7 @@ import almanza1112.spottrade.login.LoginActivity;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 
 import almanza1112.spottrade.nonActivity.SharedPref;
+import almanza1112.spottrade.nonActivity.firebase.MyFirebaseInstanceIDService;
 import almanza1112.spottrade.search.SearchActivity;
 
 
