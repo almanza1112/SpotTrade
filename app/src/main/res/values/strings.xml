@@ -20,7 +20,10 @@
     <string name="Buy_Now">Buy Now</string>
     <string name="Cancel">Cancel</string>
     <string name="Cancel_Bid">Cancel Bid</string>
+    <string name="Change_Password">Change Password</string>
     <string name="Confirm_Password">Confirm Password</string>
+    <string name="Confirm_New_Password">Confirm New Password</string>
+    <string name="Current_Password">Current Password</string>
     <string name="Delete">Delete</string>
     <string name="Description">Description</string>
     <string name="Email">Email</string>
@@ -31,12 +34,14 @@
     <string name="got_spotted">got spotted</string>
     <string name="History">History</string>
     <string name="Home">Home</string>
+    <string name="Incorrect_Password">Incorrect Password</string>
     <string name="Invalid_email_format">Invalid email format</string>
     <string name="Last_Name">Last Name</string>
     <string name="Log_In">Log In</string>
     <string name="Log_Out">Log Out</string>
     <string name="Minimum_8_characters">Minimum 8 characters</string>
     <string name="Must_have_price">Must have a price</string>
+    <string name="New_Password">New Password</string>
     <string name="No">No</string>
     <string name="Notifications">Notifications</string>
     <string name="Password">Password</string>

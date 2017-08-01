@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
+    android:id="@+id/personal_activity"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize" />
+        android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentTop="true"/>
     <ProgressBar
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleHorizontal"
         android:indeterminateOnly="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/toolbar"
         android:visibility="gone"/>
     <LinearLayout
+        android:id="@+id/llName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/toolbar"
         android:orientation="horizontal"
         android:layout_margin="@dimen/contentPadding">
         <ImageView
@@ -98,8 +102,10 @@
     </LinearLayout>
 
     <RelativeLayout
+        android:id="@+id/rlEmail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/llName"
         android:layout_margin="@dimen/contentPadding">
         <ImageView
             android:id="@+id/ivEmailIcon"
@@ -142,6 +148,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/rlEmail"
         android:layout_margin="@dimen/contentPadding">
         <ImageView
             android:id="@+id/ivPasswordIcon"
@@ -180,4 +187,4 @@
             android:layout_centerVertical="true"
             android:src="@mipmap/ic_account_edit_grey600_24dp"/>
     </RelativeLayout>
-</LinearLayout>
+</RelativeLayout>

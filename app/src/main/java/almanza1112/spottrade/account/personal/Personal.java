@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
@@ -94,8 +95,22 @@ public class Personal extends AppCompatActivity implements View.OnClickListener{
                 break;
 
             case R.id.ivEditPassword:
-
+                ChangePassword changePassword = new ChangePassword();
+                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.personal_activity, changePassword);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
                 break;
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (getFragmentManager().getBackStackEntryCount() > 0){
+            getFragmentManager().popBackStack();
+        }
+        else {
+            super.onBackPressed();
         }
     }
 
