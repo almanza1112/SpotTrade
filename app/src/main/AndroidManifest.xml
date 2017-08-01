@@ -57,7 +57,7 @@
         <activity android:name=".MapsActivity" android:screenOrientation="portrait"/>
         <activity android:name=".search.SearchActivity" android:screenOrientation="portrait"/>
         <activity android:name=".SpotActivity" android:screenOrientation="portrait"/>
-        <activity android:name=".account.History" android:screenOrientation="portrait"/>
+        <activity android:name=".account.history.History" android:screenOrientation="portrait"/>
         <activity android:name=".account.Payment" android:screenOrientation="portrait"/>
         <activity android:name=".account.Personal" android:screenOrientation="portrait"/>
     </application>

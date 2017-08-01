@@ -1,4 +1,4 @@
-package almanza1112.spottrade.account;
+package almanza1112.spottrade.account.history;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;

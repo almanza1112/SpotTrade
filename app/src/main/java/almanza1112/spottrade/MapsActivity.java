@@ -49,20 +49,18 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import almanza1112.spottrade.account.History;
+import almanza1112.spottrade.account.history.History;
 import almanza1112.spottrade.account.Payment;
 import almanza1112.spottrade.account.Personal;
 import almanza1112.spottrade.login.LoginActivity;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 
 import almanza1112.spottrade.nonActivity.SharedPref;
-import almanza1112.spottrade.nonActivity.firebase.MyFirebaseInstanceIDService;
 import almanza1112.spottrade.search.SearchActivity;
 
 

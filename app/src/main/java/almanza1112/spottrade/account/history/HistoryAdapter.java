@@ -1,4 +1,4 @@
-package almanza1112.spottrade.account;
+package almanza1112.spottrade.account.history;
 
 import android.app.Activity;
 import android.support.v7.widget.RecyclerView;
