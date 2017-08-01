@@ -56,7 +56,7 @@ import org.json.JSONObject;
 
 import almanza1112.spottrade.account.history.History;
 import almanza1112.spottrade.account.Payment;
-import almanza1112.spottrade.account.Personal;
+import almanza1112.spottrade.account.personal.Personal;
 import almanza1112.spottrade.login.LoginActivity;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 

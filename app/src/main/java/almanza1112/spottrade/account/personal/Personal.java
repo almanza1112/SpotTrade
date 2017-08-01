@@ -1,4 +1,4 @@
-package almanza1112.spottrade.account;
+package almanza1112.spottrade.account.personal;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
