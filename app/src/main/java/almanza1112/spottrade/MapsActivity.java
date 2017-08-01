@@ -57,6 +57,7 @@ import org.json.JSONObject;
 
 import almanza1112.spottrade.account.History;
 import almanza1112.spottrade.account.Payment;
+import almanza1112.spottrade.account.Personal;
 import almanza1112.spottrade.login.LoginActivity;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 
@@ -211,6 +212,9 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.nav_payment:
                 startActivity(new Intent(this, Payment.class));
+                break;
+            case R.id.nav_personal:
+                startActivity(new Intent(this, Personal.class));
                 break;
             case R.id.nav_log_out:
                 ADlogOut();

@@ -24,6 +24,7 @@
     <string name="Delete">Delete</string>
     <string name="Description">Description</string>
     <string name="Email">Email</string>
+    <string name="Error_service_unavailable">Error: service unavailable</string>
     <string name="Feedback">Feedback</string>
     <string name="Field_cant_be_empty">Field can\'t be empty</string>
     <string name="First_Name">First Name</string>
@@ -41,6 +42,7 @@
     <string name="Password">Password</string>
     <string name="Password_doesnt_match">Password doesn\'t match</string>
     <string name="Payment">Payment</string>
+    <string name="Personal">Personal</string>
     <string name="Phone_Number">Phone Number</string>
     <string name="Place_Bid">Place Bid</string>
     <string name="Price">Price</string>
@@ -56,5 +58,7 @@
     <string name="sold_their_spot">sold their spot</string>
     <string name="Spotted">Spotted</string>
     <string name="spotted_you">spotted you</string>
+    <string name="Update">Update</string>
+    <string name="updated">updated</string>
     <string name="Yes">Yes</string>
 </resources>
