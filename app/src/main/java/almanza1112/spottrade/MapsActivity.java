@@ -17,6 +17,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -67,6 +68,7 @@ import almanza1112.spottrade.search.SearchActivity;
 public class MapsActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener{
     private FloatingActionMenu fabMenu;
     private View llWhite;
+    private CardView cvToolbar;
     private Toolbar toolbar;
     private GoogleMap mMap;
     private ViewGroup hiddenPanel;
@@ -86,11 +88,12 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_activity);
+        cvToolbar = (CardView) findViewById(R.id.cvToolbar);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            RelativeLayout.LayoutParams tb = (RelativeLayout.LayoutParams)toolbar.getLayoutParams();
-            tb.setMargins(0, getStatusBarHeight(), 0, 0);
+            RelativeLayout.LayoutParams tb = (RelativeLayout.LayoutParams)cvToolbar.getLayoutParams();
+            tb.setMargins(20, getStatusBarHeight() + 20, 20, 0);
         }
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
