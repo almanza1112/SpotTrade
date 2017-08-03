@@ -3,6 +3,8 @@ package almanza1112.spottrade;
 import android.app.AlertDialog;
 
 
+import android.graphics.Color;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -48,12 +50,18 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import almanza1112.spottrade.account.history.History;
 import almanza1112.spottrade.account.Payment;
@@ -68,9 +76,9 @@ import almanza1112.spottrade.search.SearchActivity;
 public class MapsActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener{
     private FloatingActionMenu fabMenu;
     private View llWhite;
-    private CardView cvToolbar;
     private Toolbar toolbar;
     private GoogleMap mMap;
+    LatLng currentLocation, spotLocation;
     private ViewGroup hiddenPanel;
     private Animation bottomUp, bottomDown;
     private TextView tvFullName, tvUserRating, tvTotalRating, tvLocationName, tvLocationAddress, tvTransaction, tvDescription;
@@ -88,11 +96,11 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_activity);
-        cvToolbar = (CardView) findViewById(R.id.cvToolbar);
+        CardView cvToolbar = (CardView) findViewById(R.id.cvToolbar);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            RelativeLayout.LayoutParams tb = (RelativeLayout.LayoutParams)cvToolbar.getLayoutParams();
+            RelativeLayout.LayoutParams tb = (RelativeLayout.LayoutParams) cvToolbar.getLayoutParams();
             tb.setMargins(20, getStatusBarHeight() + 20, 20, 0);
         }
 
@@ -305,6 +313,20 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        /*
+        try {
+            // Customise the styling of the base map using a JSON object defined
+            // in a raw resource file.
+            boolean success = googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.style_json));
+            if (!success) {
+                Log.e("raw", "Style parsing failed.");
+            }
+        }
+        catch (Resources.NotFoundException e) {
+            Log.e("raw", "Can't find style. Error: ", e);
+        }
+        */
+
         // Get LocationManager object from System Service LOCATION_SERVICE
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -319,6 +341,9 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
         // set map type
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        mMap.setMyLocationEnabled(true);
+        mMap.getUiSettings().setMyLocationButtonEnabled(false);
+
         double latitude = 0;
         double longitude = 0;
 
@@ -332,7 +357,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         // Create a LatLng object for the current location
-        LatLng currentLocation = new LatLng(latitude, longitude);
+        currentLocation = new LatLng(latitude, longitude);
 
         // Add a marker in Sydney and move the camera
         mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
@@ -412,6 +437,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     else {
                         tvDescription.setVisibility(View.GONE);
                     }
+
+                    double dLat = Double.valueOf(response.getString("latitude"));
+                    double dLong = Double.valueOf(response.getString("longitude"));
+                    spotLocation = new LatLng(dLat, dLong);
                 }
                 catch (JSONException e){
                     e.printStackTrace();
@@ -525,7 +554,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             public void onResponse(JSONObject response) {
                 try{
                     if (response.getString("status").equals("success")){
-
+                        setRoute();
                     }
                 }
                 catch (JSONException e){
@@ -678,5 +707,153 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         });
         final AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+    }
+
+    //When user buys spot it will give him directions to the spot
+    private void setRoute(){
+        mMap.clear();
+        mMap.addMarker(new MarkerOptions().position(spotLocation));
+
+        String url = getUrl(currentLocation, spotLocation);
+
+        getDataFromUrl(url);
+    }
+
+    private String getUrl(LatLng origin, LatLng dest) {
+
+        // Origin of route
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
+
+        // Destination of route
+        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
+
+
+        // Sensor enabled
+        String sensor = "sensor=false";
+
+        // Building the parameters to the web service
+        String parameters = str_origin + "&" + str_dest + "&" + sensor;
+
+        // Output format
+        String output = "json";
+
+        // Building the url to the web service
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters;
+
+
+        return url;
+    }
+
+    private void getDataFromUrl(String url){
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            JSONArray routesObj = new JSONArray(response.getString("routes"));
+                            JSONObject jBound = routesObj.getJSONObject(0);
+                            JSONObject boundsObj = new JSONObject(jBound.getString("bounds"));
+                            JSONObject northeastObj = boundsObj.getJSONObject("northeast");
+                            JSONObject southwestObj = boundsObj.getJSONObject("southwest");
+                            LatLng boundSouthWest = new LatLng(southwestObj.getDouble("lat"),southwestObj.getDouble("lng"));
+                            LatLng boundNorthEast = new LatLng(northeastObj.getDouble("lat"),northeastObj.getDouble("lng"));
+                            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                            builder.include(boundSouthWest);
+                            builder.include(boundNorthEast);
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 200));
+
+                            hiddenPanel.startAnimation(bottomDown);
+                            hiddenPanel.setVisibility(View.INVISIBLE);
+                        }
+                        catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        new ParserTask().execute(response.toString());
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+                        error.printStackTrace();
+                    }
+                });
+
+        // Access the RequestQueue through your singleton class.
+        queue.add(jsObjRequest);
+    }
+
+    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
+
+        // Parsing the data in non-ui thread
+        @Override
+        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+
+            JSONObject jObject;
+            List<List<HashMap<String, String>>> routes = null;
+
+            try {
+                jObject = new JSONObject(jsonData[0]);
+                Log.d("ParserTask",jsonData[0].toString());
+                DataParser parser = new DataParser();
+                Log.d("ParserTask", parser.toString());
+
+                // Starts parsing data
+                routes = parser.parse(jObject);
+                Log.d("ParserTask","Executing routes");
+                Log.d("ParserTask",routes.toString());
+
+            } catch (Exception e) {
+                Log.d("ParserTask",e.toString());
+                e.printStackTrace();
+            }
+            return routes;
+        }
+
+        // Executes in UI thread, after the parsing process
+        @Override
+        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+            ArrayList<LatLng> points;
+            PolylineOptions lineOptions = null;
+
+            // Traversing through all the routes
+            for (int i = 0; i < result.size(); i++) {
+                points = new ArrayList<>();
+                lineOptions = new PolylineOptions();
+
+                // Fetching i-th route
+                List<HashMap<String, String>> path = result.get(i);
+
+                // Fetching all the points in i-th route
+                for (int j = 0; j < path.size(); j++) {
+                    HashMap<String, String> point = path.get(j);
+
+                    double lat = Double.parseDouble(point.get("lat"));
+                    double lng = Double.parseDouble(point.get("lng"));
+                    LatLng position = new LatLng(lat, lng);
+
+                    points.add(position);
+                }
+
+                // Adding all the points in the route to LineOptions
+                lineOptions.addAll(points);
+                lineOptions.width(10);
+                lineOptions.color(Color.RED);
+
+                Log.d("onPostExecute","onPostExecute lineoptions decoded");
+
+            }
+
+            // Drawing polyline in the Google Map for the i-th route
+            if(lineOptions != null) {
+                mMap.addPolyline(lineOptions);
+            }
+            else {
+                Log.d("onPostExecute","without Polylines drawn");
+            }
+        }
     }
 }
