@@ -1,8 +1,6 @@
 package almanza1112.spottrade;
 
 import android.app.AlertDialog;
-
-
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -68,7 +66,6 @@ import almanza1112.spottrade.account.Payment;
 import almanza1112.spottrade.account.personal.Personal;
 import almanza1112.spottrade.login.LoginActivity;
 import almanza1112.spottrade.nonActivity.HttpConnection;
-
 import almanza1112.spottrade.nonActivity.SharedPref;
 import almanza1112.spottrade.search.SearchActivity;
 
@@ -738,10 +735,9 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         String output = "json";
 
         // Building the url to the web service
-        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters;
 
 
-        return url;
+        return "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters;
     }
 
     private void getDataFromUrl(String url){
@@ -797,7 +793,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
             try {
                 jObject = new JSONObject(jsonData[0]);
-                Log.d("ParserTask",jsonData[0].toString());
+                Log.d("ParserTask", jsonData[0]);
                 DataParser parser = new DataParser();
                 Log.d("ParserTask", parser.toString());
 
