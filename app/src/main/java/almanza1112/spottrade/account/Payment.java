@@ -5,119 +5,164 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 
-import com.paypal.android.sdk.payments.PayPalConfiguration;
-import com.paypal.android.sdk.payments.PayPalPayment;
-import com.paypal.android.sdk.payments.PayPalService;
-import com.paypal.android.sdk.payments.PaymentActivity;
-import com.paypal.android.sdk.payments.PaymentConfirmation;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+import com.braintreepayments.api.BraintreeFragment;
+import com.braintreepayments.api.dropin.DropInActivity;
+import com.braintreepayments.api.dropin.DropInRequest;
+import com.braintreepayments.api.dropin.DropInResult;
+import com.braintreepayments.api.exceptions.InvalidArgumentException;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.math.BigDecimal;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import almanza1112.spottrade.R;
+import almanza1112.spottrade.nonActivity.HttpConnection;
 
 /**
  * Created by almanza1112 on 7/19/17.
  */
 public class Payment extends AppCompatActivity {
 
-    EditText etPayPal;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.payment_activity);
-        etPayPal    = (EditText) findViewById(R.id.etPayPal);
+        getClientToken();
 
-        Intent intent = new Intent(this, PayPalService.class);
 
-        intent.putExtra(PayPalService.EXTRA_PAYPAL_CONFIGURATION, config);
-
-        startService(intent);
-
-        Button bPay = (Button) findViewById(R.id.bPay);
-        bPay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getPayment();
-            }
-        });
     }
 
-    @Override
-    public void onDestroy() {
-        stopService(new Intent(this, PayPalService.class));
-        super.onDestroy();
-    }
-
-
-    String paymentAmount;
-    private void getPayment() {
-        //Getting the amount from editText
-        paymentAmount = etPayPal.getText().toString();
-
-        //Creating a paypalpayment
-        PayPalPayment payment = new PayPalPayment(new BigDecimal(String.valueOf(paymentAmount)), "USD", "Simplified Coding Fee",
-                PayPalPayment.PAYMENT_INTENT_SALE);
-
-        //Creating Paypal Payment activity intent
-        Intent intent = new Intent(this, PaymentActivity.class);
-
-        //putting the paypal configuration to the intent
-        intent.putExtra(PayPalService.EXTRA_PAYPAL_CONFIGURATION, config);
-
-        //Puting paypal payment to the intent
-        intent.putExtra(PaymentActivity.EXTRA_PAYMENT, payment);
-
-        //Starting the intent activity for result
-        //the request code will be used on the method onActivityResult
-        startActivityForResult(intent, PAYPAL_REQUEST_CODE);
+    int REQUEST_CODE = 9;
+    public void onBraintreeSubmit() {
+        DropInRequest dropInRequest = new DropInRequest()
+                .clientToken(clientToken);
+        startActivityForResult(dropInRequest.getIntent(this), REQUEST_CODE);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //If the result is from paypal
-        if (requestCode == PAYPAL_REQUEST_CODE) {
-
-            //If the result is OK i.e. user has not canceled the payment
+        if (requestCode == REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                //Getting the payment confirmation
-                PaymentConfirmation confirm = data.getParcelableExtra(PaymentActivity.EXTRA_RESULT_CONFIRMATION);
+                DropInResult result = data.getParcelableExtra(DropInResult.EXTRA_DROP_IN_RESULT);
+                // use the result to update your UI and send the payment method nonce to your server
+                Log.e("result", "result: "+result +
+                                "\nresult.getPaymentMethodType: " + result.getPaymentMethodType() +
+                                "\nresult.getPaymentMethodNonce: " + result.getPaymentMethodNonce() +
+                                " getNonce: " + result.getPaymentMethodNonce().getNonce() + " getDescription: " + result.getPaymentMethodNonce().getDescription() +
+                                "\nresult.getDeviceData: " + result.getDeviceData());
+                postNonceToServer(result.getPaymentMethodNonce().getNonce());
 
-                //if confirmation is not null
-                if (confirm != null) {
-                    try {
-                        //Getting the payment details
-                        String paymentDetails = confirm.toJSONObject().toString(4);
-                        Log.e("paymentExample", paymentDetails);
-
-
-                    } catch (JSONException e) {
-                        Log.e("paymentExample", "an extremely unlikely failure occurred: ", e);
-                    }
-                }
             } else if (resultCode == Activity.RESULT_CANCELED) {
-                Log.i("paymentExample", "The user canceled.");
-            } else if (resultCode == PaymentActivity.RESULT_EXTRAS_INVALID) {
-                Log.i("paymentExample", "An invalid Payment or PayPalConfiguration was submitted. Please see the docs.");
+                Log.e("result","canceled");
+                // the user canceled
+            } else {
+                // handle errors here, an exception may be available in
+                Exception error = (Exception) data.getSerializableExtra(DropInActivity.EXTRA_ERROR);
+                Log.e("result",error.getLocalizedMessage());
+                Log.e("result",error+"");
+
+
             }
         }
     }
-    //Paypal intent request code to track onActivityResult method
-    public static final int PAYPAL_REQUEST_CODE = 123;
-
-    //Paypal Configuration Object
-    private static PayPalConfiguration config = new PayPalConfiguration()
-            // Start with mock environment.  When ready, switch to sandbox (ENVIRONMENT_SANDBOX)
-            // or live (ENVIRONMENT_PRODUCTION)
-            .environment(PayPalConfiguration.ENVIRONMENT_SANDBOX)
-            .clientId("AcZ2riIvPMC2T1VBj7MOGhAmB4vJmgPW_rtd7bEqWElnUooOqnG9zxeMRaM6rP55GqNL3yhW4zFgicaK");
 
 
 
+    private void postNonceToServer(String nonce){
+        RequestQueue queue = Volley.newRequestQueue(this);
+        final JSONObject jsonObject = new JSONObject();
+        try {
+           jsonObject.put("payment_method_nonce", nonce);
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        HttpConnection httpConnection = new HttpConnection();
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.POST, httpConnection.htppConnectionURL() +"/payment/checkout", jsonObject, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.e("nonce", response + "");
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+                        error.printStackTrace();
+                    }
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+            @Override
+            public String getBodyContentType() {
+                return "application/json";
+            }
+        };
+
+        // Access the RequestQueue through your singleton class.
+        queue.add(jsObjRequest);
+
+    }
+
+    String clientToken;
+    private void getClientToken(){
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                httpConnection.htppConnectionURL() + "/payment/clientToken",
+                null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.e("clientToken",  response + "");
+                        try{
+                            if (response.getString("status").equals("success")){
+                                clientToken = response.getString("clientToken");
+                                try {
+                                    BraintreeFragment mBraintreeFragment = BraintreeFragment.newInstance(Payment.this, clientToken);
+                                    // mBraintreeFragment is ready to use!
+                                } catch (InvalidArgumentException e) {
+                                    // There was an issue with your authorization string.
+                                }
+                                onBraintreeSubmit();
+                            }
+                            else {
+                                Log.e("client", "error retrieving clienToken");
+                            }
+                        }
+                        catch (JSONException e){
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                    }
+                }
+        );
+        queue.add(jsonObjectRequest);
+    }
 }

@@ -37,10 +37,10 @@ dependencies {
     compile "com.google.firebase:firebase-messaging:${playServices}"
     compile "com.google.android.gms:play-services-maps:${playServices}"
     compile "com.google.firebase:firebase-core:${playServices}"
-    compile 'com.paypal.sdk:paypal-android-sdk:2.14.2'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.github.clans:fab:1.6.4'
     compile 'com.android.volley:volley:1.0.0'
+    compile 'com.braintreepayments.api:drop-in:3.+'
 
 
     testCompile 'junit:junit:4.12'

@@ -6,7 +6,7 @@ package almanza1112.spottrade.nonActivity;
 
 public class HttpConnection {
     public String htppConnectionURL(){
-        String localURL = "http://192.168.1.3";
+        String localURL = "http://192.168.1.155";
         String localPort = "3000";
         return localURL + ":" + localPort;
     }
