@@ -29,6 +29,7 @@ import java.util.Map;
 
 import almanza1112.spottrade.R;
 import almanza1112.spottrade.nonActivity.HttpConnection;
+import almanza1112.spottrade.nonActivity.SharedPref;
 
 /**
  * Created by almanza1112 on 7/19/17.
@@ -39,9 +40,9 @@ public class Payment extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.payment_activity);
-        getClientToken();
-
-
+        //getClientToken();
+        //createCustomer();
+        getCustomer();
     }
 
     int REQUEST_CODE = 9;
@@ -78,13 +79,13 @@ public class Payment extends AppCompatActivity {
         }
     }
 
-
-
     private void postNonceToServer(String nonce){
         RequestQueue queue = Volley.newRequestQueue(this);
         final JSONObject jsonObject = new JSONObject();
         try {
-           jsonObject.put("payment_method_nonce", nonce);
+            jsonObject.put("payment_method_nonce", nonce);
+            jsonObject.put("amount", 20);
+
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -154,6 +155,76 @@ public class Payment extends AppCompatActivity {
                         catch (JSONException e){
                             e.printStackTrace();
                         }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                    }
+                }
+        );
+        queue.add(jsonObjectRequest);
+    }
+
+    private void createCustomer(){
+        RequestQueue queue = Volley.newRequestQueue(this);
+        final JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("id", SharedPref.getID(this));
+            jsonObject.put("firstName", SharedPref.getFirstName(this));
+            jsonObject.put("lastName", SharedPref.getLastName(this));
+            jsonObject.put("email", SharedPref.getEmail(this));
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        HttpConnection httpConnection = new HttpConnection();
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.POST, httpConnection.htppConnectionURL() +"/payment/customer/create", jsonObject, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.e("createCustomer", response + "");
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+                        error.printStackTrace();
+                    }
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+            @Override
+            public String getBodyContentType() {
+                return "application/json";
+            }
+        };
+
+        // Access the RequestQueue through your singleton class.
+        queue.add(jsObjRequest);
+
+    }
+
+    private void getCustomer(){
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getID(this),
+                null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.e("getCustomer",  response + "");
                     }
                 },
                 new Response.ErrorListener() {

@@ -2,19 +2,25 @@ package almanza1112.spottrade.account.personal;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,43 +46,63 @@ import almanza1112.spottrade.nonActivity.SharedPref;
  * Created by almanza1112 on 7/29/17.
  */
 
-public class Personal extends AppCompatActivity implements View.OnClickListener{
+public class Personal extends Fragment implements View.OnClickListener{
     private TextView tvFistName, tvLastName, tvEmail;
     private ProgressBar progressBar;
     private Pattern pattern = Pattern.compile(RegularExpression.EMAIL_PATTERN);
 
+    @Nullable
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.personal_activity);
-
-        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.personal, container, false);
+        Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.Personal);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            RelativeLayout.LayoutParams tb = (RelativeLayout.LayoutParams) toolbar.getLayoutParams();
+            tb.setMargins(0, getStatusBarHeight(), 0, 0);
+        }
 
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        tvFistName = (TextView) findViewById(R.id.tvFirstName);
-        tvFistName.setText(SharedPref.getFirstName(this));
-        final ImageView ivEditFirstName = (ImageView) findViewById(R.id.ivEditFirstName);
+        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
+        tvFistName = (TextView) view.findViewById(R.id.tvFirstName);
+        tvFistName.setText(SharedPref.getFirstName(getActivity()));
+        final ImageView ivEditFirstName = (ImageView) view.findViewById(R.id.ivEditFirstName);
         ivEditFirstName.setOnClickListener(this);
-        tvLastName = (TextView) findViewById(R.id.tvLastName);
-        tvLastName.setText(SharedPref.getLastName(this));
-        final ImageView ivEditLastName = (ImageView) findViewById(R.id.ivEditLastName);
+        tvLastName = (TextView) view.findViewById(R.id.tvLastName);
+        tvLastName.setText(SharedPref.getLastName(getActivity()));
+        final ImageView ivEditLastName = (ImageView) view.findViewById(R.id.ivEditLastName);
         ivEditLastName.setOnClickListener(this);
 
-        tvEmail = (TextView) findViewById(R.id.tvEmail);
-        tvEmail.setText(SharedPref.getEmail(this));
-        final ImageView ivEditEmail = (ImageView) findViewById(R.id.ivEditEmail);
+        tvEmail = (TextView) view.findViewById(R.id.tvEmail);
+        tvEmail.setText(SharedPref.getEmail(getActivity()));
+        final ImageView ivEditEmail = (ImageView) view.findViewById(R.id.ivEditEmail);
         ivEditEmail.setOnClickListener(this);
-
-        final TextView tvPassword = (TextView) findViewById(R.id.tvPassword);
+        final TextView tvPassword = (TextView) view.findViewById(R.id.tvPassword);
         tvPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType. TYPE_TEXT_VARIATION_PASSWORD);
-        tvPassword.setText(SharedPref.getPassword(this));
-        final ImageView ivEditPassword = (ImageView) findViewById(R.id.ivEditPassword);
+        tvPassword.setText(SharedPref.getPassword(getActivity()));
+        final ImageView ivEditPassword = (ImageView) view.findViewById(R.id.ivEditPassword);
         ivEditPassword.setOnClickListener(this);
+
+        AppCompatActivity actionBar = (AppCompatActivity) getActivity();
+        actionBar.setSupportActionBar(toolbar);
+
+        DrawerLayout drawer = (DrawerLayout) actionBar.findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                getActivity(),
+                drawer,
+                toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close){
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                drawerView.bringToFront();
+            }
+        };
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        return view;
     }
 
     @Override
@@ -96,7 +122,7 @@ public class Personal extends AppCompatActivity implements View.OnClickListener{
 
             case R.id.ivEditPassword:
                 ChangePassword changePassword = new ChangePassword();
-                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.personal_activity, changePassword);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
@@ -104,42 +130,22 @@ public class Personal extends AppCompatActivity implements View.OnClickListener{
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        if (getFragmentManager().getBackStackEntryCount() > 0){
-            getFragmentManager().popBackStack();
-        }
-        else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case android.R.id.home:
-                onBackPressed();
-                break;
-        }
-        return true;
-    }
-
     private void ADupdateField(final String field){
-        LayoutInflater inflater = getLayoutInflater();
+        LayoutInflater inflater = getActivity().getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.personal_activity_update_field_alertdialog, null);
 
         final ImageView ivIcon = (ImageView) alertLayout.findViewById(R.id.ivIcon);
         final TextInputLayout tilUpdate = (TextInputLayout) alertLayout.findViewById(R.id.tilUpdate);
         final TextInputEditText tietUpdate = (TextInputEditText) alertLayout.findViewById(R.id.tietUpdate);
 
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
         alertDialogBuilder.setView(alertLayout);
         String title = getResources().getString(R.string.Update);
         switch (field){
             case "firstName":
                 ivIcon.setImageDrawable(getResources().getDrawable(R.mipmap.ic_account_circle_black_24dp));
                 title+= " " + getResources().getString(R.string.First_Name);
-                tietUpdate.setText(SharedPref.getFirstName(this));
+                tietUpdate.setText(SharedPref.getFirstName(getActivity()));
                 tietUpdate.setInputType(InputType.TYPE_CLASS_TEXT |
                         InputType.TYPE_TEXT_FLAG_CAP_WORDS);
                 break;
@@ -147,7 +153,7 @@ public class Personal extends AppCompatActivity implements View.OnClickListener{
             case "lastName":
                 ivIcon.setImageDrawable(getResources().getDrawable(R.mipmap.ic_account_circle_black_24dp));
                 title+= " " + getResources().getString(R.string.Last_Name);
-                tietUpdate.setText(SharedPref.getLastName(this));
+                tietUpdate.setText(SharedPref.getLastName(getActivity()));
                 tietUpdate.setInputType(InputType.TYPE_CLASS_TEXT |
                         InputType.TYPE_TEXT_FLAG_CAP_WORDS);
                 break;
@@ -155,7 +161,7 @@ public class Personal extends AppCompatActivity implements View.OnClickListener{
             case "email":
                 ivIcon.setImageDrawable(getResources().getDrawable(R.mipmap.ic_email_grey600_24dp));
                 title+= " " + getResources().getString(R.string.Email);
-                tietUpdate.setText(SharedPref.getEmail(this));
+                tietUpdate.setText(SharedPref.getEmail(getActivity()));
                 tietUpdate.setInputType(InputType.TYPE_CLASS_TEXT |
                         InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
                 break;
@@ -230,10 +236,10 @@ public class Personal extends AppCompatActivity implements View.OnClickListener{
         catch (JSONException e) {
             e.printStackTrace();
         }
-        RequestQueue queue = Volley.newRequestQueue(this);
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getID(this), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getID(getActivity()), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -241,27 +247,27 @@ public class Personal extends AppCompatActivity implements View.OnClickListener{
                     if (response.getString("status").equals("success")){
                         switch (field){
                             case "firstName":
-                                SharedPref.clearFirstName(Personal.this);
-                                SharedPref.setFirstName(Personal.this, str);
-                                Toast.makeText(Personal.this, getResources().getString(R.string.First_Name) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
+                                SharedPref.clearFirstName(getActivity());
+                                SharedPref.setFirstName(getActivity(), str);
+                                Toast.makeText(getActivity(), getResources().getString(R.string.First_Name) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
                                 tvFistName.setText(str);
                                 break;
                             case "lastName":
-                                SharedPref.clearLastName(Personal.this);
-                                SharedPref.setLastName(Personal.this, str);
-                                Toast.makeText(Personal.this, getResources().getString(R.string.Last_Name) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
+                                SharedPref.clearLastName(getActivity());
+                                SharedPref.setLastName(getActivity(), str);
+                                Toast.makeText(getActivity(), getResources().getString(R.string.Last_Name) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
                                 tvLastName.setText(str);
                                 break;
                             case "email":
-                                SharedPref.clearEmail(Personal.this);
-                                SharedPref.setEmail(Personal.this, str);
-                                Toast.makeText(Personal.this, getResources().getString(R.string.Email) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
+                                SharedPref.clearEmail(getActivity());
+                                SharedPref.setEmail(getActivity(), str);
+                                Toast.makeText(getActivity(), getResources().getString(R.string.Email) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
                                 tvEmail.setText(str);
                                 break;
                         }
                     }
                     else {
-                        Toast.makeText(Personal.this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
                     }
                 }
                 catch (JSONException e){
@@ -281,5 +287,14 @@ public class Personal extends AppCompatActivity implements View.OnClickListener{
     private boolean validateEmail(String email){
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
+    }
+
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
     }
 }

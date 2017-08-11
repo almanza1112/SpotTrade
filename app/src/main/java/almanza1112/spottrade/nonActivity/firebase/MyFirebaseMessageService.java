@@ -22,35 +22,51 @@ public class MyFirebaseMessageService extends FirebaseMessagingService {
     private static final String TAG = "MessageService";
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        //Log data to Log Cat
         Log.e(TAG, "From: " + remoteMessage.getFrom());
-        Log.e(TAG, "Data Message Body: " + remoteMessage.getData().get("message"));
+        Log.e(TAG, "Notification Title : "+ remoteMessage.getNotification().getTitle());
         Log.e(TAG, "Notification Message Body: " + remoteMessage.getNotification().getBody());
-        //create notification
-        createNotification(remoteMessage.getNotification().getBody());
+        Log.e(TAG, "Data Message Body: " + remoteMessage.getData().get("message"));
+        String notificationTitle = remoteMessage.getNotification().getTitle();
+        String notificationText = remoteMessage.getNotification().getBody();
+        createNotification(notificationTitle, notificationText);
     }
 
 
-    public void createNotification( String messageBody) {
-        Log.e("firebase", "i am calling this ish");
-        //Get an instance of NotificationManager//
+    public void createNotification( String notificationTitle, String notificationText) {
+        Intent resultIntent = new Intent(this, MapsActivity.class);
+        // Because clicking the notification opens a new ("special") activity, there's
+        // no need to create an artificial back stack.
+        PendingIntent resultPendingIntent =
+                PendingIntent.getActivity(
+                        this,
+                        0,
+                        resultIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
 
+        //Get an instance of NotificationManager//
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.mipmap.ic_account_circle_black_24dp)
-                        .setContentTitle("My notification")
-                        .setContentText("Hello World!");
+                        .setContentTitle(notificationTitle)
+                        .setContentText(notificationText)
+                        .setAutoCancel(true)
+                        .setContentIntent(resultPendingIntent);
 
+        //Gets an instance of the NotificationManager service
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-// Gets an instance of the NotificationManager service//
-
-        NotificationManager mNotificationManager =
-
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-//When you issue multiple notifications about the same type of event, it’s best practice for your app to try to update an existing notification with this new information, rather than immediately creating a new notification. If you want to update this notification at a later date, you need to assign it an ID. You can then use this ID whenever you issue a subsequent notification. If the previous notification is still visible, the system will update this existing notification, rather than create a new one. In this example, the notification’s ID is 001//
-
-                mNotificationManager.notify(001, mBuilder.build());
+        /*
+        When you issue multiple notifications about the same type of event,
+        it’s best practice for your app to try to update an existing notification with
+        this new information, rather than immediately creating a new notification.
+        If you want to update this notification at a later date, you need to assign it an ID.
+        You can then use this ID whenever you issue a subsequent notification.
+        if the previous notification is still visible,
+        the system will update this existing notification, rather than create a new one.
+        In this example, the notification’s ID is 001
+        */
+        mNotificationManager.notify(001, mBuilder.build());
     }
 
 }

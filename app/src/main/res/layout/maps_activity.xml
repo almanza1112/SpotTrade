@@ -29,25 +29,14 @@
                 android:layout_height="?attr/actionBarSize"/>
         </android.support.v7.widget.CardView>
 
-
-        <View
-            android:id="@+id/llWhite"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/cvToolbar"
-            android:clickable="true"
-            android:visibility="gone"
-            android:background="#99ffffff"/>
-
         <com.github.clans.fab.FloatingActionMenu
             android:id="@+id/fabMenu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
             android:layout_marginRight="11dp"
             android:layout_marginBottom="9dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
             android:background="@android:color/transparent"
             fab:menu_backgroundColor="@android:color/transparent">
 

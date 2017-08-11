@@ -13,6 +13,8 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -62,19 +64,17 @@ import java.util.HashMap;
 import java.util.List;
 
 import almanza1112.spottrade.account.history.History;
-import almanza1112.spottrade.account.Payment;
 import almanza1112.spottrade.account.personal.Personal;
 import almanza1112.spottrade.login.LoginActivity;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 import almanza1112.spottrade.search.SearchActivity;
 
-
 public class MapsActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener{
     private FloatingActionMenu fabMenu;
-    private View llWhite;
     private Toolbar toolbar;
     private GoogleMap mMap;
+    DrawerLayout drawer;
     LatLng currentLocation, spotLocation;
     private ViewGroup hiddenPanel;
     private Animation bottomUp, bottomDown;
@@ -106,9 +106,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         mapFragment.getMapAsync(this);
 
         setSupportActionBar(toolbar);
-        getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        //getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         bottomUp = AnimationUtils.loadAnimation(this, R.anim.bottom_up);
         bottomDown = AnimationUtils.loadAnimation(this, R.anim.bottom_down);
@@ -129,19 +126,11 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         bDelete = (Button) findViewById(R.id.bDelete);
         bDelete.setOnClickListener(this);
 
-        llWhite = findViewById(R.id.llWhite);
         fabMenu = (FloatingActionMenu) findViewById(R.id.fabMenu);
         fabMenu.setOnMenuToggleListener(new FloatingActionMenu.OnMenuToggleListener() {
             @Override
             public void onMenuToggle(boolean opened) {
-                if (opened) {
-                    isFabMenuClicked = true;
-                    llWhite.setVisibility(View.VISIBLE);
-                }
-                else {
-                    isFabMenuClicked = false;
-                    llWhite.setVisibility(View.GONE);
-                }
+                isFabMenuClicked = opened;
             }
         });
 
@@ -151,8 +140,14 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         FloatingActionButton fabSell = (FloatingActionButton) findViewById(R.id.fabSell);
         fabSell.setOnClickListener(this);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close){
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                drawerView.bringToFront();
+            }
+        };
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
@@ -210,24 +205,34 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        // Handle navigation view item clicks here.
+        Fragment fragment = null;
 
         switch (item.getItemId()){
-            case R.id.nav_history:
-                startActivity(new Intent(this, History.class));
+            case R.id.nav_home:
+
                 break;
-            case R.id.nav_payment:
-                startActivity(new Intent(this, Payment.class));
+            case R.id.nav_your_spots:
+                fragment = new YourSpots();
+                break;
+            case R.id.nav_history:
+                fragment = new History();
                 break;
             case R.id.nav_personal:
-                startActivity(new Intent(this, Personal.class));
+                fragment = new Personal();
                 break;
             case R.id.nav_log_out:
                 ADlogOut();
                 break;
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (fragment != null){
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.drawer_layout, fragment);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+        }
+
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -253,17 +258,24 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }
-        else if (isFabMenuClicked){
-            fabMenu.close(true);
-            isFabMenuClicked = false;
-        }
-        else if (isMarkerClicked){
-            isMarkerClicked = false;
-            hiddenPanel.startAnimation(bottomDown);
-            hiddenPanel.setVisibility(View.INVISIBLE);
-        }
         else {
-            super.onBackPressed();
+            if (getSupportFragmentManager().getBackStackEntryCount() > 0){
+                getSupportFragmentManager().popBackStack();
+            }
+            else {
+                if (isFabMenuClicked){
+                    fabMenu.close(true);
+                    isFabMenuClicked = false;
+                }
+                else if (isMarkerClicked){
+                    isMarkerClicked = false;
+                    hiddenPanel.startAnimation(bottomDown);
+                    hiddenPanel.setVisibility(View.INVISIBLE);
+                }
+                else {
+                    super.onBackPressed();
+                }
+            }
         }
     }
 

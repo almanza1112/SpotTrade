@@ -1,12 +1,21 @@
 package almanza1112.spottrade.account.history;
 
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.LinearLayout;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -33,42 +42,53 @@ import almanza1112.spottrade.nonActivity.SharedPref;
  * Created by almanza1112 on 7/25/17.
  */
 
-public class History extends AppCompatActivity {
+public class History extends Fragment {
 
     RecyclerView rvHistory;
     RecyclerView.Adapter adapter;
     RecyclerView.LayoutManager layoutManager;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.history_activity);
-        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.history, container, false);
+        final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.History);
-
-        rvHistory = (RecyclerView) findViewById(R.id.rvHistory);
-        getHistory();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case android.R.id.home:
-                onBackPressed();
-                break;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            LinearLayout.LayoutParams tb = (LinearLayout.LayoutParams) toolbar.getLayoutParams();
+            tb.setMargins(0, getStatusBarHeight(), 0, 0);
         }
-        return true;
+
+        AppCompatActivity actionBar = (AppCompatActivity) getActivity();
+        actionBar.setSupportActionBar(toolbar);
+
+        DrawerLayout drawer = (DrawerLayout) actionBar.findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                getActivity(),
+                drawer,
+                toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close){
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                drawerView.bringToFront();
+            }
+        };
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        rvHistory = (RecyclerView) view.findViewById(R.id.rvHistory);
+        getHistory();
+        return view;
     }
 
     private void getHistory(){
-        RequestQueue queue = Volley.newRequestQueue(this);
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/all?sellerID="+ SharedPref.getID(this) + "&transaction=complete&type=all", null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/all?sellerID="+ SharedPref.getID(getActivity()) + "&transaction=complete&type=all", null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 Log.e("response", response+ "");
@@ -122,8 +142,8 @@ public class History extends AppCompatActivity {
                             sellerName.add(sellerInfoObj.getString("sellerFirstName") + " " + sellerInfoObj.getString("sellerLastName"));
                         }
 
-                        adapter = new HistoryAdapter(History.this, type, description, price, dateCompleted, locationName, locationAddress, latitude, longitude, buyerID, buyerName, sellerID, sellerName);
-                        layoutManager = new LinearLayoutManager(History.this);
+                        adapter = new HistoryAdapter(getActivity(), type, description, price, dateCompleted, locationName, locationAddress, latitude, longitude, buyerID, buyerName, sellerID, sellerName);
+                        layoutManager = new LinearLayoutManager(getActivity());
                         rvHistory.setLayoutManager(layoutManager);
                         rvHistory.setAdapter(adapter);
                     }
@@ -146,5 +166,14 @@ public class History extends AppCompatActivity {
         Date updatedate = new Date(epochSeconds * 1000);
         SimpleDateFormat format = new SimpleDateFormat("EEE, d MMM yyyy 'at' H:mm a", Locale.getDefault());
         return format.format(updatedate);
+    }
+
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
     }
 }
