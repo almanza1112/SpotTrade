@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:clickable="true"
     android:background="@android:color/white"
@@ -13,8 +14,10 @@
         android:orientation="vertical">
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
-        android:layout_width="wrap_content"
-        android:layout_height="?attr/actionBarSize"/>
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:background="@color/colorPrimary"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,13 +26,13 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/contentPadding"
+            android:layout_marginRight="@dimen/contentPadding"
             android:src="@mipmap/ic_image_grey600_24dp"/>
         <TextView
             android:id="@+id/tvAddProfilePhoto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/contentPadding"
+            android:layout_marginLeft="@dimen/contentPadding"
             android:text="@string/Add_profile_photo"/>
     </LinearLayout>
     <LinearLayout
@@ -40,7 +43,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_marginEnd="@dimen/contentPadding"
+            android:layout_marginRight="@dimen/contentPadding"
             android:src="@mipmap/ic_person_black_24dp"
             android:tint="@color/grey600"/>
         <android.support.design.widget.TextInputLayout
@@ -48,12 +51,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight=".4"
-            android:layout_marginStart="@dimen/contentPadding">
+            android:layout_marginLeft="@dimen/contentPadding">
             <android.support.design.widget.TextInputEditText
                 android:id="@+id/tietFirstName"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginStart="-4dp"
+                android:layout_marginLeft="-4dp"
                 android:hint="@string/First_Name"
                 android:inputType="textCapSentences"
                 android:maxLines="1"/>
@@ -67,7 +70,7 @@
                 android:id="@+id/tietLastName"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginStart="-4dp"
+                android:layout_marginLeft="-4dp"
                 android:hint="@string/Last_Name"
                 android:inputType="textCapSentences"
                 android:maxLines="1"/>
@@ -82,18 +85,18 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_marginEnd="@dimen/contentPadding"
+            android:layout_marginRight="@dimen/contentPadding"
             android:src="@mipmap/ic_email_outline_grey600_24dp"/>
         <android.support.design.widget.TextInputLayout
             android:id="@+id/tilEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/contentPadding">
+            android:layout_marginLeft="@dimen/contentPadding">
             <android.support.design.widget.TextInputEditText
                 android:id="@+id/tietEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="-4dp"
+                android:layout_marginLeft="-4dp"
                 android:hint="@string/Email"
                 android:inputType="textEmailAddress"
                 android:maxLines="1"/>
@@ -108,15 +111,15 @@
             android:id="@+id/ivPasswordIcon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/contentPadding"
-            android:layout_alignParentStart="true"
+            android:layout_marginRight="@dimen/contentPadding"
+            android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:src="@mipmap/ic_key_grey600_24dp"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/contentPadding"
-            android:layout_toEndOf="@+id/ivPasswordIcon"
+            android:layout_marginLeft="@dimen/contentPadding"
+            android:layout_toRightOf="@+id/ivPasswordIcon"
             android:orientation="vertical">
             <android.support.design.widget.TextInputLayout
                 android:id="@+id/tilPassword"
@@ -127,7 +130,7 @@
                     android:id="@+id/tietPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="-4dp"
+                    android:layout_marginLeft="-4dp"
                     android:hint="@string/Password"
                     android:inputType="textPassword"
                     android:maxLines="1"/>
@@ -141,7 +144,7 @@
                     android:id="@+id/tietConfirmPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="-4dp"
+                    android:layout_marginLeft="-4dp"
                     android:hint="@string/Confirm_Password"
                     android:inputType="textPassword"
                     android:maxLines="1"/>
@@ -157,18 +160,18 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_marginEnd="@dimen/contentPadding"
+            android:layout_marginRight="@dimen/contentPadding"
             android:src="@mipmap/ic_phone_grey600_24dp"/>
         <android.support.design.widget.TextInputLayout
             android:id="@+id/tilPhoneNumber"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/contentPadding">
+            android:layout_marginLeft="@dimen/contentPadding">
             <android.support.design.widget.TextInputEditText
                 android:id="@+id/tietPhoneNumber"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="-4dp"
+                android:layout_marginLeft="-4dp"
                 android:hint="@string/Phone_Number"
                 android:maxLines="1"
                 android:inputType="phone"/>
@@ -181,6 +184,6 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/contentPadding"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         android:src="@mipmap/ic_done_white_24dp" />
 </RelativeLayout>

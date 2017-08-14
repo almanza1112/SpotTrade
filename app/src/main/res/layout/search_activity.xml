@@ -10,7 +10,8 @@
         android:layout_height="wrap_content"
         android:elevation="6dp"
         android:minHeight="?attr/actionBarSize"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:background="@color/colorPrimary">
         <EditText
             android:id="@+id/etSearch"
             android:layout_width="match_parent"
@@ -25,5 +26,4 @@
         android:id="@+id/rvLocations"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
-
 </LinearLayout>

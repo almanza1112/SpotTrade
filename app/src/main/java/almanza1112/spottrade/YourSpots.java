@@ -1,18 +1,19 @@
 package almanza1112.spottrade;
 
-import android.os.Build;
+
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.LinearLayout;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -32,17 +33,16 @@ import almanza1112.spottrade.nonActivity.SharedPref;
 
 public class YourSpots extends Fragment {
 
+    RecyclerView rvYourSpots;
+    RecyclerView.Adapter adapter;
+    RecyclerView.LayoutManager layoutManager;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.your_spots, container, false);
 
         final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.Your_Spots);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            LinearLayout.LayoutParams tb = (LinearLayout.LayoutParams) toolbar.getLayoutParams();
-            tb.setMargins(0, getStatusBarHeight(), 0, 0);
-        }
 
         AppCompatActivity actionBar = (AppCompatActivity) getActivity();
         actionBar.setSupportActionBar(toolbar);
@@ -63,17 +63,21 @@ public class YourSpots extends Fragment {
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        //getHistory();
+        rvYourSpots = (RecyclerView) view.findViewById(R.id.rvYourSpots);
+        getHistory();
         return view;
     }
 
-    public int getStatusBarHeight() {
-        int result = 0;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            result = getResources().getDimensionPixelSize(resourceId);
-        }
-        return result;
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        MenuItem item=menu.findItem(R.id.search);
+        item.setVisible(false);
     }
 
     private void getHistory(){
@@ -84,6 +88,12 @@ public class YourSpots extends Fragment {
             @Override
             public void onResponse(JSONObject response) {
                 Log.e("response", response+ "");
+                /*
+                adapter = new YourSpotsAdapter(getActivity());
+                layoutManager = new LinearLayoutManager(getActivity());
+                rvYourSpots.setLayoutManager(layoutManager);
+                rvYourSpots.setAdapter(adapter);
+                */
 
             }
         }, new Response.ErrorListener() {
@@ -95,5 +105,4 @@ public class YourSpots extends Fragment {
         );
         queue.add(jsonObjectRequest);
     }
-
 }

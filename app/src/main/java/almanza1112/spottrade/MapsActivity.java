@@ -95,11 +95,9 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.maps_activity);
         CardView cvToolbar = (CardView) findViewById(R.id.cvToolbar);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            RelativeLayout.LayoutParams tb = (RelativeLayout.LayoutParams) cvToolbar.getLayoutParams();
-            tb.setMargins(20, getStatusBarHeight() + 20, 20, 0);
-        }
+
+        RelativeLayout.LayoutParams tb = (RelativeLayout.LayoutParams) cvToolbar.getLayoutParams();
+        tb.setMargins(20, 20, 20, 0);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);

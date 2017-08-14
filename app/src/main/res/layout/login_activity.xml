@@ -7,7 +7,8 @@
     android:id="@+id/login_activity"
     android:orientation="vertical"
     android:gravity="center"
-    tools:context=".login.LoginActivity">
+    tools:context=".login.LoginActivity"
+    android:background="@color/colorPrimary">
     <android.support.design.widget.TextInputLayout
         android:id="@+id/tilEmail"
         android:layout_width="250dp"
@@ -39,7 +40,9 @@
         android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/tilPassword"
-        android:text="@string/Log_In"/>
+        android:text="@string/Log_In"
+        android:textColor="@color/colorAccent"
+        android:background="@color/colorPrimaryDark"/>
     <TextView
         android:id="@+id/tvSignUp"
         android:layout_width="wrap_content"

@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <!-- colors are picked from material design palettes-->
+
+    <!-- primaryLight color is 300 -->
+    <color name="colorPrimaryLight">#4DB6AC</color>
+    <!-- primary color is 500 -->
+    <color name="colorPrimary">#009688</color>
+    <!-- primaryDark color is 800 -->
+    <color name="colorPrimaryDark">#00695C</color>
+    <!-- colorAccent is 500 -->
+    <color name="colorAccent">#FFC107</color>
+    <!-- colorAceentDark is 800 -->
+    <color name="colorAccentDark">#FF8F00</color>
+
+
+    <color name="LightGrayAndroid">#e9e8e8</color>
+    <color name="grey600">#757575</color>
 </resources>
