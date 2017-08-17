@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_home"
@@ -12,7 +13,10 @@
             android:title="@string/Your_Spots" />
     </group>
 
-    <group android:checkableBehavior="single" >
+
+    <item android:title="@string/Account">
+        <menu>
+            <group android:checkableBehavior="single">
                 <item
                     android:id="@+id/nav_history"
                     android:icon="@drawable/ic_menu_share"
@@ -30,9 +34,18 @@
                     android:icon="@mipmap/ic_person_black_24dp"
                     android:title="@string/Personal"/>
                 <item
-                    android:id="@+id/nav_log_out"
-                    android:icon="@mipmap/ic_power_settings_new_black_24dp"
-                    android:title="@string/Log_Out" />
+                    android:id="@+id/nav_about"
+                    android:icon="@mipmap/ic_info_outline_black_24dp"
+                    android:title="@string/About" />
+            </group>
+        </menu>
+    </item>
+
+    <group android:id="@+id/bottom">
+        <item
+            android:id="@+id/nav_log_out"
+            android:icon="@mipmap/ic_power_settings_new_black_24dp"
+            android:title="@string/Log_Out" />
     </group>
 
 </menu>

@@ -5,6 +5,7 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+    <string name="About">About</string>
     <string name="Accept">Accept</string>
     <string name="Account">Account</string>
     <string name="Active_Spots">Active Spots</string>
@@ -15,6 +16,7 @@
     <string name="Are_you_sure_you_want_to_log_out">Are you sure you want to log out?</string>
     <string name="Bid">Bid</string>
     <string name="Bid_canceled">Bid canceled</string>
+    <string name="bids">bids</string>
     <string name="Bought_Spot">Bought Spot</string>
     <string name="bought_your_spot">bought your spot</string>
     <string name="Buy_Now">Buy Now</string>
@@ -26,6 +28,8 @@
     <string name="Current_Password">Current Password</string>
     <string name="Delete">Delete</string>
     <string name="Description">Description</string>
+    <string name="Edit_Spot">Edit Spot</string>
+    <string name="Edit_Type">Edit Type</string>
     <string name="Email">Email</string>
     <string name="Error_service_unavailable">Error: service unavailable</string>
     <string name="Feedback">Feedback</string>
@@ -54,10 +58,10 @@
     <string name="Request">Request</string>
     <string name="Request_a_Spot">Request a Spotter</string>
     <string name="Requested_Spotter">Requested Spotter</string>
-    <string name="Requesting">Requesting -&#160;</string>
+    <string name="Requesting">Requesting</string>
     <string name="Sell">Sell</string>
     <string name="Sell_a_Spot">Sell a Spot</string>
-    <string name="Selling">Selling -&#160;</string>
+    <string name="Selling">Selling</string>
     <string name="Server_error">Something went wrong: server error</string>
     <string name="Sold_Spot">Sold Spot</string>
     <string name="sold_their_spot">sold their spot</string>

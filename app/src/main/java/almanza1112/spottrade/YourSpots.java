@@ -2,10 +2,11 @@ package almanza1112.spottrade;
 
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -22,7 +23,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
@@ -87,14 +93,45 @@ public class YourSpots extends Fragment {
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/all?sellerID="+ SharedPref.getID(getActivity()) + "&transaction=available&type=all", null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Log.e("response", response+ "");
-                /*
-                adapter = new YourSpotsAdapter(getActivity());
-                layoutManager = new LinearLayoutManager(getActivity());
-                rvYourSpots.setLayoutManager(layoutManager);
-                rvYourSpots.setAdapter(adapter);
-                */
+                try{
+                    if (response.getString("status").equals("success")){
+                        List<String> lid = new ArrayList<>();
+                        List<String> locationName = new ArrayList<>();
+                        List<String> locationAddress = new ArrayList<>();
+                        List<String> type = new ArrayList<>();
+                        List<String> price = new ArrayList<>();
+                        List<Boolean> bidAllowed = new ArrayList<>();
+                        List<String> bidAmount = new ArrayList<>();
+                        List<String> description = new ArrayList<>();
 
+                        JSONArray locationArray = new JSONArray(response.getString("location"));
+                        Log.e("array.length", locationArray.length() + "");
+                        for (int i = 0; i < locationArray.length(); i++){
+                            JSONObject locationObj = locationArray.getJSONObject(i);
+                            lid.add(locationObj.getString("_id"));
+                            locationName.add(locationObj.getString("name"));
+                            locationAddress.add(locationObj.getString("address"));
+                            type.add(locationObj.getString("type"));
+                            price.add(locationObj.getString("price"));
+                            bidAllowed.add(locationObj.getBoolean("bidAllowed"));
+                            if (locationObj.getBoolean("bidAllowed")){
+                                bidAmount.add(locationObj.getString("biddenAmount") + " " + getResources().getString(R.string.bids));
+                            }
+                            else{
+                                bidAmount.add("0");
+                            }
+                            description.add(locationObj.getString("description"));
+                            Log.e("desc", locationObj.getString("description"));
+                        }
+                        adapter = new YourSpotsAdapter(getActivity(), lid, locationName, locationAddress, type, price, bidAllowed, bidAmount, description);
+                        layoutManager = new LinearLayoutManager(getActivity());
+                        rvYourSpots.setLayoutManager(layoutManager);
+                        rvYourSpots.setAdapter(adapter);
+                    }
+                }
+                catch (JSONException e){
+                    e.printStackTrace();
+                }
             }
         }, new Response.ErrorListener() {
             @Override

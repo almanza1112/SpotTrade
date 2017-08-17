@@ -18,6 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/Email"
+            android:textColor="@android:color/white"
             android:inputType="textEmailAddress"
             android:maxLines="1"/>
     </android.support.design.widget.TextInputLayout>
@@ -33,6 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/Password"
+            android:textColor="@android:color/white"
             android:inputType="textPassword"/>
     </android.support.design.widget.TextInputLayout>
     <Button
@@ -41,15 +43,15 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/tilPassword"
         android:text="@string/Log_In"
-        android:textColor="@color/colorAccent"
+        android:textColor="@android:color/white"
         android:background="@color/colorPrimaryDark"/>
     <TextView
         android:id="@+id/tvSignUp"
-        android:layout_width="wrap_content"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:text="Sign up"
-        android:layout_marginTop="18dp"
-        android:layout_below="@+id/bLogin"
-        android:layout_centerHorizontal="true" />
-
+        android:textColor="@color/colorAccent"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="21dp"
+        android:layout_below="@+id/bLogin"/>
 </RelativeLayout>

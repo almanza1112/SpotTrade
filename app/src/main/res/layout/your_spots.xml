@@ -13,6 +13,28 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@color/colorPrimary"/>
 
+    <!--
+    TODO
+    *
+    Change En Route and add to strings.xml when you come up with better name/title
+    *
+    -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="@dimen/halfContentPadding"
+        android:text="En Route"/>
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvSoldAndPending"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="@dimen/halfContentPadding"
+        android:text="@string/Active_Spots"/>
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rvYourSpots"
         android:layout_width="match_parent"

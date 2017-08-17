@@ -10,11 +10,10 @@ import android.content.Intent;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -28,7 +27,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
@@ -74,6 +72,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private FloatingActionMenu fabMenu;
     private Toolbar toolbar;
     private GoogleMap mMap;
+    NavigationView navigationView;
     DrawerLayout drawer;
     LatLng currentLocation, spotLocation;
     private ViewGroup hiddenPanel;
@@ -149,7 +148,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         View navHeaderView = navigationView.getHeaderView(0);
@@ -165,7 +164,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.fabSell:
                 fabMenu.close(true);
                 startActivityForResult(new Intent(MapsActivity.this, SpotActivity.class)
-                        .putExtra("type", "selling")
+                        .putExtra("type", "Selling")
                         .putExtra("locationName", locationName)
                         .putExtra("locationAddress", locationAddress)
                         .putExtra("latitude", latitude)
@@ -175,7 +174,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.fabRequest:
                 fabMenu.close(true);
                 startActivityForResult(new Intent(MapsActivity.this, SpotActivity.class)
-                        .putExtra("type", "requesting")
+                        .putExtra("type", "Requesting")
                         .putExtra("locationName", locationName)
                         .putExtra("locationAddress", locationAddress)
                         .putExtra("latitude", latitude)
@@ -207,7 +206,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
         switch (item.getItemId()){
             case R.id.nav_home:
-
+                if (getFragmentManager().getBackStackEntryCount() > 0){
+                    getFragmentManager().popBackStack();
+                }
+                refreshMap();
                 break;
             case R.id.nav_your_spots:
                 fragment = new YourSpots();
@@ -224,7 +226,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         if (fragment != null){
-            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.drawer_layout, fragment);
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
@@ -233,6 +235,12 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshMap();
     }
 
     @Override
@@ -247,18 +255,22 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         if (item.getItemId() == R.id.search){
             startActivityForResult(new Intent(this, SearchActivity.class), SEARCH_CODE);
         }
+        else if(item.getItemId() == android.R.id.home){
+            onBackPressed();
+        }
         return true;
     }
 
     @Override
     public void onBackPressed() {
+        int count = getFragmentManager().getBackStackEntryCount();
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }
         else {
-            if (getSupportFragmentManager().getBackStackEntryCount() > 0){
-                getSupportFragmentManager().popBackStack();
+            if (count > 0){
+                getFragmentManager().popBackStack();
             }
             else {
                 if (isFabMenuClicked){
@@ -402,11 +414,11 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     tvUserRating.setText(" - "+sellerInfoObj.getString("sellerOverallRating"));
                     tvTotalRating.setText("("+sellerInfoObj.getString("sellerTotalRatings")+")");
 
-                    if (response.getString("type").equals("selling")) {
+                    if (response.getString("type").equals("Selling")) {
                         tvTransaction.setText(getResources().getString(R.string.Selling) + "$" + response.getString("price"));
                         bBuyNow.setText(getResources().getString(R.string.Buy_Now));
                     }
-                    else if (response.getString("type").equals("requesting")) {
+                    else if (response.getString("type").equals("Requesting")) {
                         tvTransaction.setText(getResources().getString(R.string.Requesting) + "$" + response.getString("price"));
                         bBuyNow.setText(getResources().getString(R.string.Accept));
                     }
@@ -419,20 +431,15 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     else {
                         bDelete.setVisibility(View.GONE);
                         if (!response.getBoolean("bidAllowed")) {
-                            Log.e("ok", "bid not allowed");
                             bPlaceBid.setVisibility(View.GONE);
                             bCancelBid.setVisibility(View.GONE);
                         }
                         else{
-                            Log.e("ok", "bid allowed");
                             if (response.getBoolean("bidden")){
-                                Log.e("ok", "bidden");
                                 bPlaceBid.setVisibility(View.GONE);
                                 bCancelBid.setText(getResources().getString(R.string.Cancel) + " $" + response.getString("biddenAmount") + " " + getResources().getString(R.string.Bid));
                             }
                             else {
-
-                                Log.e("ok", "not bidden");
                                 bCancelBid.setVisibility(View.GONE);
                             }
                         }
@@ -502,15 +509,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         }
         );
         queue.add(jsonObjectRequest);
-    }
-
-    public int getStatusBarHeight() {
-        int result = 0;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            result = getResources().getDimensionPixelSize(resourceId);
-        }
-        return result;
     }
 
     private void transactionDeleteSpot(){
@@ -790,6 +788,13 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
         // Access the RequestQueue through your singleton class.
         queue.add(jsObjRequest);
+    }
+
+    private void refreshMap(){
+        if (mMap != null){
+            mMap.clear();
+            getAvailableSpots();
+        }
     }
 
     private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
