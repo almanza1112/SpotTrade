@@ -28,6 +28,8 @@
     <string name="Current_Password">Current Password</string>
     <string name="Delete">Delete</string>
     <string name="Description">Description</string>
+    <string name="Edit_Description">Edit Description</string>
+    <string name="Edit_Price">Edit Price</string>
     <string name="Edit_Spot">Edit Spot</string>
     <string name="Edit_Type">Edit Type</string>
     <string name="Email">Email</string>
@@ -41,6 +43,7 @@
     <string name="Incorrect_Password">Incorrect Password</string>
     <string name="Invalid_email_format">Invalid email format</string>
     <string name="Last_Name">Last Name</string>
+    <string name="Location">Location</string>
     <string name="Log_In">Log In</string>
     <string name="Log_Out">Log Out</string>
     <string name="Minimum_8_characters">Minimum 8 characters</string>
@@ -65,8 +68,11 @@
     <string name="Server_error">Something went wrong: server error</string>
     <string name="Sold_Spot">Sold Spot</string>
     <string name="sold_their_spot">sold their spot</string>
+    <string name="Spot">Spot</string>
+    <string name="Spot_successfully_deleted">Spot successfully deleted</string>
     <string name="Spotted">Spotted</string>
     <string name="spotted_you">spotted you</string>
+    <string name="Type">Type</string>
     <string name="Update">Update</string>
     <string name="updated">updated</string>
     <string name="Yes">Yes</string>

@@ -9,7 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -105,7 +104,6 @@ public class YourSpots extends Fragment {
                         List<String> description = new ArrayList<>();
 
                         JSONArray locationArray = new JSONArray(response.getString("location"));
-                        Log.e("array.length", locationArray.length() + "");
                         for (int i = 0; i < locationArray.length(); i++){
                             JSONObject locationObj = locationArray.getJSONObject(i);
                             lid.add(locationObj.getString("_id"));
@@ -121,7 +119,6 @@ public class YourSpots extends Fragment {
                                 bidAmount.add("0");
                             }
                             description.add(locationObj.getString("description"));
-                            Log.e("desc", locationObj.getString("description"));
                         }
                         adapter = new YourSpotsAdapter(getActivity(), lid, locationName, locationAddress, type, price, bidAllowed, bidAmount, description);
                         layoutManager = new LinearLayoutManager(getActivity());
