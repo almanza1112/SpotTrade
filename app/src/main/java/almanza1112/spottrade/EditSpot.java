@@ -77,7 +77,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         cbBids.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                progressBar.setVisibility(View.GONE);
+                progressBar.setVisibility(View.VISIBLE);
                 updateField("bidAllowed", String.valueOf(isChecked));
             }
         });
