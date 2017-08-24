@@ -1,4 +1,4 @@
-package almanza1112.spottrade;
+package almanza1112.spottrade.yourSpots;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -31,6 +31,7 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import almanza1112.spottrade.R;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.search.SearchActivity;
 

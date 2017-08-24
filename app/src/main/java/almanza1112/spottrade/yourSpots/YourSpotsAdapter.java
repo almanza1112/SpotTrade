@@ -1,4 +1,4 @@
-package almanza1112.spottrade;
+package almanza1112.spottrade.yourSpots;
 
 import android.app.Activity;
 import android.app.FragmentTransaction;
@@ -12,6 +12,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.List;
+
+import almanza1112.spottrade.R;
 
 /**
  * Created by almanza1112 on 8/11/17.
