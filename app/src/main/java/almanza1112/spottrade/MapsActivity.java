@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import almanza1112.spottrade.account.Payment;
 import almanza1112.spottrade.account.history.History;
 import almanza1112.spottrade.account.personal.Personal;
 import almanza1112.spottrade.login.LoginActivity;
@@ -219,6 +220,9 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.nav_personal:
                 fragment = new Personal();
+                break;
+            case R.id.nav_payment:
+                fragment = new Payment();
                 break;
             case R.id.nav_log_out:
                 ADlogOut();

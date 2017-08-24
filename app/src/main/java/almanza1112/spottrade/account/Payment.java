@@ -1,10 +1,14 @@
 package almanza1112.spottrade.account;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 
 import com.android.volley.AuthFailureError;
@@ -34,26 +38,25 @@ import almanza1112.spottrade.nonActivity.SharedPref;
 /**
  * Created by almanza1112 on 7/19/17.
  */
-public class Payment extends AppCompatActivity {
+public class Payment extends Fragment {
 
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.payment_activity);
-        //getClientToken();
-        //createCustomer();
-        getCustomer();
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.payment, container, false);
+
+        return view;
     }
 
     int REQUEST_CODE = 9;
     public void onBraintreeSubmit() {
         DropInRequest dropInRequest = new DropInRequest()
                 .clientToken(clientToken);
-        startActivityForResult(dropInRequest.getIntent(this), REQUEST_CODE);
+        startActivityForResult(dropInRequest.getIntent(getActivity()), REQUEST_CODE);
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 DropInResult result = data.getParcelableExtra(DropInResult.EXTRA_DROP_IN_RESULT);
@@ -80,7 +83,7 @@ public class Payment extends AppCompatActivity {
     }
 
     private void postNonceToServer(String nonce){
-        RequestQueue queue = Volley.newRequestQueue(this);
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
         final JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("payment_method_nonce", nonce);
@@ -126,7 +129,7 @@ public class Payment extends AppCompatActivity {
 
     String clientToken;
     private void getClientToken(){
-        RequestQueue queue = Volley.newRequestQueue(this);
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
@@ -141,7 +144,7 @@ public class Payment extends AppCompatActivity {
                             if (response.getString("status").equals("success")){
                                 clientToken = response.getString("clientToken");
                                 try {
-                                    BraintreeFragment mBraintreeFragment = BraintreeFragment.newInstance(Payment.this, clientToken);
+                                    BraintreeFragment mBraintreeFragment = BraintreeFragment.newInstance(getActivity(), clientToken);
                                     // mBraintreeFragment is ready to use!
                                 } catch (InvalidArgumentException e) {
                                     // There was an issue with your authorization string.
@@ -168,13 +171,13 @@ public class Payment extends AppCompatActivity {
     }
 
     private void createCustomer(){
-        RequestQueue queue = Volley.newRequestQueue(this);
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
         final JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("id", SharedPref.getID(this));
-            jsonObject.put("firstName", SharedPref.getFirstName(this));
-            jsonObject.put("lastName", SharedPref.getLastName(this));
-            jsonObject.put("email", SharedPref.getEmail(this));
+            jsonObject.put("id", SharedPref.getID(getActivity()));
+            jsonObject.put("firstName", SharedPref.getFirstName(getActivity()));
+            jsonObject.put("lastName", SharedPref.getLastName(getActivity()));
+            jsonObject.put("email", SharedPref.getEmail(getActivity()));
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -214,12 +217,12 @@ public class Payment extends AppCompatActivity {
     }
 
     private void getCustomer(){
-        RequestQueue queue = Volley.newRequestQueue(this);
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
-                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getID(this),
+                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getID(getActivity()),
                 null,
                 new Response.Listener<JSONObject>() {
                     @Override
