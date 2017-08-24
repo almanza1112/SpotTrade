@@ -415,11 +415,11 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     tvTotalRating.setText("("+sellerInfoObj.getString("sellerTotalRatings")+")");
 
                     if (response.getString("type").equals("Sell")) {
-                        tvTransaction.setText(getResources().getString(R.string.Selling) + "$" + response.getString("price"));
+                        tvTransaction.setText(getResources().getString(R.string.Selling) + " - $" + response.getString("price"));
                         bBuyNow.setText(getResources().getString(R.string.Buy_Now));
                     }
                     else if (response.getString("type").equals("Request")) {
-                        tvTransaction.setText(getResources().getString(R.string.Requesting) + "$" + response.getString("price"));
+                        tvTransaction.setText(getResources().getString(R.string.Requesting) + " - $" + response.getString("price"));
                         bBuyNow.setText(getResources().getString(R.string.Accept));
                     }
 
