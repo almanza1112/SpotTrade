@@ -11,7 +11,9 @@
     <string name="Active_Spots">Active Spots</string>
     <string name="Add_Location">Add Location</string>
     <string name="Add_profile_photo">Add Profile Photo</string>
+    <string name="All">All</string>
     <string name="Allow_bids">Allow bids</string>
+    <string name="Apply">Apply</string>
     <string name="Are_you_sure_you_want_to_delete_this_spot">Are you sure you want to delete this spot?</string>
     <string name="Are_you_sure_you_want_to_log_out">Are you sure you want to log out?</string>
     <string name="Bid">Bid</string>
@@ -36,6 +38,7 @@
     <string name="Error_service_unavailable">Error: service unavailable</string>
     <string name="Feedback">Feedback</string>
     <string name="Field_cant_be_empty">Field can\'t be empty</string>
+    <string name="Filter">Filter</string>
     <string name="First_Name">First Name</string>
     <string name="got_spotted">got spotted</string>
     <string name="History">History</string>
@@ -62,6 +65,7 @@
     <string name="Request_a_Spot">Request a Spotter</string>
     <string name="Requested_Spotter">Requested Spotter</string>
     <string name="Requesting">Requesting</string>
+    <string name="Search">Search</string>
     <string name="Sell">Sell</string>
     <string name="Sell_a_Spot">Sell a Spot</string>
     <string name="Selling">Selling</string>

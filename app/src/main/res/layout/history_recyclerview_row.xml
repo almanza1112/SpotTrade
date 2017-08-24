@@ -9,17 +9,49 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-        <TextView
-            android:id="@+id/tvTypeAndPrice"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/contentPadding"
-            android:textAppearance="@android:style/TextAppearance.Medium"
-            android:textColor="@android:color/black"/>
+            android:layout_marginTop="@dimen/contentPadding"
+            android:layout_marginBottom="@dimen/contentPadding"
+            android:layout_marginRight="@dimen/halfContentPadding"
+            android:layout_marginLeft="@dimen/halfContentPadding"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/tvLocationName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                android:textColor="@android:color/black"/>
+            <TextView
+                android:id="@+id/tvLocationAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.Small"
+                android:textColor="@android:color/darker_gray"/>
+        </LinearLayout>
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="@color/LightGrayAndroid"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/halfContentPadding"
+            android:orientation="horizontal">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/contentPadding"
+                android:src="@mipmap/ic_star_grey600_24dp" />
+            <TextView
+                android:id="@+id/tvType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/contentPadding"
+                android:layout_gravity="center_vertical"
+                android:textAppearance="@android:style/TextAppearance.Small"/>
+        </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -50,39 +82,26 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/halfContentPadding"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:textColor="@android:color/black"/>
+                android:textAppearance="@android:style/TextAppearance.Small"/>
         </LinearLayout>
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/halfContentPadding">
+            android:layout_margin="@dimen/halfContentPadding"
+            android:orientation="horizontal">
             <ImageView
-                android:id="@+id/ivMarkerIcon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="@dimen/contentPadding"
-                android:layout_centerVertical="true"
-                android:layout_alignParentLeft="true"
-                android:src="@mipmap/ic_map_marker_grey600_24dp" />
+                android:src="@mipmap/ic_currency_usd_grey600_24dp" />
             <TextView
-                android:id="@+id/tvLocationName"
+                android:id="@+id/tvPrice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/contentPadding"
-                android:layout_toRightOf="@+id/ivMarkerIcon"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:textColor="@android:color/black"/>
-            <TextView
-                android:id="@+id/tvLocationAddress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/contentPadding"
-                android:layout_toRightOf="@+id/ivMarkerIcon"
-                android:layout_below="@+id/tvLocationName"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:textColor="@android:color/darker_gray"/>
-        </RelativeLayout>
+                android:layout_gravity="center_vertical"
+                android:textAppearance="@android:style/TextAppearance.Small" />
+        </LinearLayout>
         <TextView
             android:id="@+id/tvDateCompleted"
             android:layout_width="match_parent"
@@ -90,8 +109,7 @@
             android:layout_margin="@dimen/halfContentPadding"
             android:drawableLeft="@mipmap/ic_calendar_clock_grey600_24dp"
             android:drawablePadding="32dp"
-            android:textAppearance="@android:style/TextAppearance.Small"
-            android:textColor="@android:color/black"/>
+            android:textAppearance="@android:style/TextAppearance.Small"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -108,8 +126,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/contentPadding"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:textColor="@android:color/black"/>
+                android:textAppearance="@android:style/TextAppearance.Small"/>
         </LinearLayout>
         <ImageView
             android:id="@+id/ivStaticMap"

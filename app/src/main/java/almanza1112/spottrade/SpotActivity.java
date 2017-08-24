@@ -61,10 +61,10 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-        if (type.equals("Requesting")){
+        if (type.equals("Request")){
             toolbar.setTitle(R.string.Request_a_Spot);
         }
-        else if (type.equals("Selling")){
+        else if (type.equals("Sell")){
             toolbar.setTitle(R.string.Sell_a_Spot);
         }
 

@@ -164,7 +164,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.fabSell:
                 fabMenu.close(true);
                 startActivityForResult(new Intent(MapsActivity.this, SpotActivity.class)
-                        .putExtra("type", "Selling")
+                        .putExtra("type", "Sell")
                         .putExtra("locationName", locationName)
                         .putExtra("locationAddress", locationAddress)
                         .putExtra("latitude", latitude)
@@ -174,7 +174,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.fabRequest:
                 fabMenu.close(true);
                 startActivityForResult(new Intent(MapsActivity.this, SpotActivity.class)
-                        .putExtra("type", "Requesting")
+                        .putExtra("type", "Request")
                         .putExtra("locationName", locationName)
                         .putExtra("locationAddress", locationAddress)
                         .putExtra("latitude", latitude)
@@ -247,7 +247,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.maps_activity_menu, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -258,7 +258,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         else if(item.getItemId() == android.R.id.home){
             onBackPressed();
         }
-        return true;
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -414,11 +414,11 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     tvUserRating.setText(" - "+sellerInfoObj.getString("sellerOverallRating"));
                     tvTotalRating.setText("("+sellerInfoObj.getString("sellerTotalRatings")+")");
 
-                    if (response.getString("type").equals("Selling")) {
+                    if (response.getString("type").equals("Sell")) {
                         tvTransaction.setText(getResources().getString(R.string.Selling) + "$" + response.getString("price"));
                         bBuyNow.setText(getResources().getString(R.string.Buy_Now));
                     }
-                    else if (response.getString("type").equals("Requesting")) {
+                    else if (response.getString("type").equals("Request")) {
                         tvTransaction.setText(getResources().getString(R.string.Requesting) + "$" + response.getString("price"));
                         bBuyNow.setText(getResources().getString(R.string.Accept));
                     }
@@ -544,9 +544,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         try {
             jObject.put("transaction", "complete");
             jObject.put("buyerID", SharedPref.getID(this));
-
-            jObject.put("buyerFirstName", SharedPref.getFirstName(this));
-            jObject.put("buyerLastName", SharedPref.getLastName(this));
         }
         catch (JSONException e) {
             e.printStackTrace();

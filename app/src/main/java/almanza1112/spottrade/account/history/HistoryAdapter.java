@@ -64,42 +64,21 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
 
     @Override
     public void onBindViewHolder(RecyclerViewHolder holder, int position) {
-        String title, otherUser;
-        if (type.get(position).equals("selling")){
-            if (buyerID.get(position).equals(SharedPref.getID(activity))) {
-                //YOU are the one who bought a spot - "Bought Spot"
-                title = activity.getResources().getString(R.string.Bought_Spot) + " - " + "$" + price.get(position);
-                //OTHER USER is the one who sold you their spot - "sold their spot"
-                otherUser = sellerName.get(position) + " " + activity.getResources().getString(R.string.sold_their_spot);
-            }
-            else {//ELSE would be you are the sellerID
-                //YOU are the one who sold the spot - "Sold Spot"
-                title = activity.getResources().getString(R.string.Sold_Spot) + " - " + "$" + price.get(position);
-                //OTHER USER is the one who bought your spot - "bought your spot"
-                otherUser = buyerName.get(position) + " " + activity.getResources().getString(R.string.bought_your_spot);
-            }
+        String otherUser;
+        if (buyerID.get(position).equals(SharedPref.getID(activity))){
+            otherUser = sellerName.get(position);
         }
-        else {//ELSE would be requesting
-            if (buyerID.get(position).equals(SharedPref.getID(activity))) {
-                //YOU are the one who accepted someone's request - "Spotted"
-                title = activity.getResources().getString(R.string.Spotted) + " - " + "$" + price.get(position);
-                //OTHER USER is the one who request - "got spotted"
-                otherUser = sellerName.get(position) + " " + activity.getResources().getString(R.string.got_spotted);
-            }
-            else {//ELSE would be you are the sellerID
-                //YOU are the one who requested the spot - "Requested Spotter"
-                title = activity.getResources().getString(R.string.Requested_Spotter) + " - " + "$" + price.get(position);
-                //OTHER USer is the one who accepted the request - "spotted you"
-                otherUser = buyerName.get(position) + " " + activity.getResources().getString(R.string.spotted_you);
-            }
+        else {
+            otherUser = buyerName.get(position);
         }
         String url = "http://maps.google.com/maps/api/staticmap?center=" + latitude.get(position) + "," + longitude.get(position) + "&zoom=15&size=1000x150&scale=2&sensor=false";
         Picasso.with(activity).load(url).fit().into(holder.ivStaticMap);
-        holder.tvTypeAndPrice.setText(title);
         holder.tvLocationName.setText(locationName.get(position));
         holder.tvLocationAddress.setText(locationAddress.get(position));
+        holder.tvType.setText(type.get(position));
         holder.tvDescription.setText(description.get(position));
         holder.tvOtherUser.setText(otherUser);
+        holder.tvPrice.setText(price.get(position));
         holder.tvDateCompleted.setText(dateCompleted.get(position));
     }
 
@@ -110,12 +89,13 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
 
     class RecyclerViewHolder extends RecyclerView.ViewHolder{
         ImageView ivStaticMap;
-        TextView    tvTypeAndPrice, tvLocationName, tvLocationAddress,
+        TextView    tvPrice, tvLocationName, tvLocationAddress, tvType,
                     tvDescription, tvOtherUser, tvDateCompleted;
         RecyclerViewHolder(View view){
             super(view);
             ivStaticMap = (ImageView) view.findViewById(R.id.ivStaticMap);
-            tvTypeAndPrice = (TextView) view.findViewById(R.id.tvTypeAndPrice);
+            tvType = (TextView) view.findViewById(R.id.tvType);
+            tvPrice = (TextView) view.findViewById(R.id.tvPrice);
             tvLocationName = (TextView) view.findViewById(R.id.tvLocationName);
             tvLocationAddress = (TextView) view.findViewById(R.id.tvLocationAddress);
             tvDescription = (TextView) view.findViewById(R.id.tvDescription);

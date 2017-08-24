@@ -1,5 +1,7 @@
 package almanza1112.spottrade.account.history;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.app.Fragment;
@@ -12,9 +14,12 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -45,6 +50,8 @@ public class History extends Fragment {
     RecyclerView rvHistory;
     RecyclerView.Adapter adapter;
     RecyclerView.LayoutManager layoutManager;
+    private ProgressBar progressBar;
+    final int[] pos = {2};
 
     @Nullable
     @Override
@@ -72,8 +79,9 @@ public class History extends Fragment {
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
+        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         rvHistory = (RecyclerView) view.findViewById(R.id.rvHistory);
-        getHistory();
+        getHistory("all");
         return view;
     }
 
@@ -89,22 +97,61 @@ public class History extends Fragment {
         item.setVisible(false);
     }
 
-    private void getHistory(){
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.history_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.filter){
+            final CharSequence[] items = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request), getResources().getString(R.string.All)};
+            final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+            alertDialogBuilder.setTitle(getResources().getString(R.string.Filter) + " " + getResources().getString(R.string.History));
+            alertDialogBuilder.setSingleChoiceItems(items, pos[0], new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    pos[0] = which;
+                }
+            });
+            alertDialogBuilder.setPositiveButton(R.string.Apply, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    String type;
+                    if (pos[0] == 0){
+                        type = "Sell";
+                    }
+                    else if (pos[0] == 1){
+                        type = "Request";
+                    }
+                    else {
+                        type = "all";
+                    }
+                    getHistory(type);
+                }
+            });
+            alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            final AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+        }
+        return true;
+    }
+
+    private void getHistory(String type){
+        progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/all?sellerID="+ SharedPref.getID(getActivity()) + "&transaction=complete&type=all", null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/all?sellerID="+ SharedPref.getID(getActivity()) + "&transaction=complete&type=" + type, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 Log.e("response", response+ "");
                 try{
-                    /*
-                    1.) Bought a spot being sold
-                    2.) Bought a spotter/when you request
-                    3.) Sold a spot
-                    4.) accept a request
-                    Spotter
-                     */
                     if (response.getString("status").equals("success")){
                         List<String> type = new ArrayList<>();
                         List<String> description = new ArrayList<>();
@@ -137,9 +184,14 @@ public class History extends Fragment {
                             buyerID.add(locationObj.getString("buyerID"));
                             sellerID.add(locationObj.getString("sellerID"));
 
-                            String buyerInfoString = locationObj.getString("buyerInfo");
-                            JSONObject buyerInfoObj = new JSONObject(buyerInfoString);
-                            buyerName.add(buyerInfoObj.getString("buyerFirstName") + " " + buyerInfoObj.getString("buyerLastName"));
+                            if (locationObj.has("buyerInfo")){
+                                String buyerInfoString = locationObj.getString("buyerInfo");
+                                JSONObject buyerInfoObj = new JSONObject(buyerInfoString);
+                                buyerName.add(buyerInfoObj.getString("buyerFirstName") + " " + buyerInfoObj.getString("buyerLastName"));
+                            }
+                            else {
+                                buyerName.add("something");
+                            }
 
                             String sellerInfoString = locationObj.getString("sellerInfo");
                             JSONObject sellerInfoObj = new JSONObject(sellerInfoString);
@@ -150,6 +202,7 @@ public class History extends Fragment {
                         layoutManager = new LinearLayoutManager(getActivity());
                         rvHistory.setLayoutManager(layoutManager);
                         rvHistory.setAdapter(adapter);
+                        progressBar.setVisibility(View.GONE);
                     }
                 }
                 catch (JSONException e){

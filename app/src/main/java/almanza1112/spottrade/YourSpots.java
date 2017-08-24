@@ -1,6 +1,8 @@
 package almanza1112.spottrade;
 
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
@@ -11,9 +13,11 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -41,6 +45,8 @@ public class YourSpots extends Fragment {
     RecyclerView rvYourSpots;
     RecyclerView.Adapter adapter;
     RecyclerView.LayoutManager layoutManager;
+    private ProgressBar progressBar;
+    final int[] pos = {2};
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -68,8 +74,9 @@ public class YourSpots extends Fragment {
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
+        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         rvYourSpots = (RecyclerView) view.findViewById(R.id.rvYourSpots);
-        getHistory();
+        getYourSpots("all");
         return view;
     }
 
@@ -85,11 +92,58 @@ public class YourSpots extends Fragment {
         item.setVisible(false);
     }
 
-    private void getHistory(){
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.history_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.filter){
+            final CharSequence[] items = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request), getResources().getString(R.string.All)};
+            final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+            alertDialogBuilder.setTitle(getResources().getString(R.string.Filter) + " " + getResources().getString(R.string.Your_Spots));
+            alertDialogBuilder.setSingleChoiceItems(items, pos[0], new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    pos[0] = which;
+                }
+            });
+            alertDialogBuilder.setPositiveButton(R.string.Apply, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    String type;
+                    if (pos[0] == 0){
+                        type = "Sell";
+                    }
+                    else if (pos[0] == 1){
+                        type = "Request";
+                    }
+                    else {
+                        type = "all";
+                    }
+                    getYourSpots(type);
+                }
+            });
+            alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            final AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+        }
+        return true;
+    }
+
+
+    private void getYourSpots(String type){
+        progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/all?sellerID="+ SharedPref.getID(getActivity()) + "&transaction=available&type=all", null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/all?sellerID="+ SharedPref.getID(getActivity()) + "&transaction=available&type=" + type, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -124,6 +178,7 @@ public class YourSpots extends Fragment {
                         layoutManager = new LinearLayoutManager(getActivity());
                         rvYourSpots.setLayoutManager(layoutManager);
                         rvYourSpots.setAdapter(adapter);
+                        progressBar.setVisibility(View.GONE);
                     }
                 }
                 catch (JSONException e){
