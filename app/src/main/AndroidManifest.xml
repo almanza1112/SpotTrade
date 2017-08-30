@@ -43,6 +43,9 @@
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="@string/google_maps_key" />
+        <meta-data
+            android:name="com.google.android.gms.wallet.api.enabled"
+            android:value="true"/>
 
         <activity android:name=".login.LoginActivity"
             android:label="@string/app_name"
@@ -67,7 +70,6 @@
         <activity android:name=".MapsActivity" android:screenOrientation="portrait"/>
         <activity android:name=".search.SearchActivity" android:screenOrientation="portrait"/>
         <activity android:name=".SpotActivity" android:screenOrientation="portrait"/>
-        <activity android:name=".account.Payment" android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

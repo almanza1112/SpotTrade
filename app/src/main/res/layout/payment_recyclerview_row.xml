@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/halfContentPadding">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginLeft="@dimen/halfContentPadding"
+        android:layout_marginRight="@dimen/halfContentPadding"
+        android:layout_marginTop="@dimen/contentPadding"
+        android:layout_marginBottom="@dimen/contentPadding">
+        <ImageView
+            android:id="@+id/ivImage"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginRight="@dimen/contentPadding"/>
+        <TextView
+            android:id="@+id/tvCredentials"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/contentPadding"/>
+    </LinearLayout>
+</android.support.v7.widget.CardView>

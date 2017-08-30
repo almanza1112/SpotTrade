@@ -61,7 +61,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import almanza1112.spottrade.account.Payment;
+import almanza1112.spottrade.account.payment.Payment;
 import almanza1112.spottrade.account.history.History;
 import almanza1112.spottrade.account.personal.Personal;
 import almanza1112.spottrade.login.LoginActivity;

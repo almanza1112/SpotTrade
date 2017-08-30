@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:background="@android:color/white">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"/>
+    <LinearLayout
+        android:id="@+id/llCreditDebitCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/contentPadding"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+        <ImageView
+            android:layout_width="42dp"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/ic_credit_card_grey600_36dp"
+            android:layout_marginRight="@dimen/contentPadding"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Credit or Debit Card"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvPayPal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/contentPadding"
+        android:gravity="center_vertical"
+        android:drawableLeft="@drawable/bt_ic_paypal"
+        android:drawablePadding="@dimen/contentPadding"
+        android:text="PayPal"/>
+
+    <TextView
+        android:id="@+id/tvVenmo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/contentPadding"
+        android:gravity="center_vertical"
+        android:drawableLeft="@drawable/bt_ic_venmo"
+        android:drawablePadding="@dimen/contentPadding"
+        android:text="Venmo"/>
+    <TextView
+        android:id="@+id/tvAndroidPay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/contentPadding"
+        android:gravity="center_vertical"
+        android:drawableLeft="@drawable/bt_ic_android_pay"
+        android:drawablePadding="@dimen/contentPadding"
+        android:text="Android Pay"/>
+
+</LinearLayout>

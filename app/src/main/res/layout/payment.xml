@@ -1,16 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     android:id="@+id/payment_activity"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:clickable="true"
     android:background="@android:color/white">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"/>
+        android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentTop="true"
+        android:background="@color/colorPrimary"/>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_below="@+id/toolbar"
+        android:layout_height="4dp">
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_gravity="center_vertical">
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:indeterminate="true"
+                android:visibility="gone" />
+        </FrameLayout>
+    </FrameLayout>
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/tvPaymentMethods"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/Payment_Methods"
+        android:layout_below="@id/toolbar"
+        android:layout_marginLeft="@dimen/contentPadding"
+        android:layout_marginRight="@dimen/contentPadding"
+        android:layout_marginTop="@dimen/contentPadding"
+        android:layout_marginBottom="@dimen/halfContentPadding"/>
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvPaymentMethods"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvPaymentMethods"/>
+
+    <Button
+        android:id="@+id/bAddPaymentMethod"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/rvPaymentMethods"
+        android:layout_marginRight="@dimen/contentPadding"
+        android:layout_alignParentRight="true"
+        android:text="@string/Add_Payment_Method"
+        android:textColor="@color/colorAccent"/>
+</RelativeLayout>
