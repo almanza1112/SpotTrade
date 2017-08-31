@@ -13,6 +13,9 @@
     <string name="Add_Location">Add Location</string>
     <string name="Add_Payment_Method">Add Payment Method</string>
     <string name="Add_profile_photo">Add Profile Photo</string>
+    <string name="Adding_Card">Adding Card</string>
+    <string name="Adding_and_verifying_card">Adding and verifying card</string>
+    <string name="Adding_payment_method">Adding payment method</string>
     <string name="All">All</string>
     <string name="Allow_bids">Allow bids</string>
     <string name="Apply">Apply</string>
@@ -33,7 +36,10 @@
     <string name="Card_Number">Card Number</string>
     <string name="Current_Password">Current Password</string>
     <string name="CVV">CVV</string>
+    <string name="Default">Default</string>
     <string name="Delete">Delete</string>
+    <string name="Deleting">Deleting</string>
+    <string name="Deleting_payment_method">Deleting payment method</string>
     <string name="Description">Description</string>
     <string name="Edit_Description">Edit Description</string>
     <string name="Edit_Price">Edit Price</string>
@@ -54,12 +60,14 @@
     <string name="Location">Location</string>
     <string name="Log_In">Log In</string>
     <string name="Log_Out">Log Out</string>
+    <string name="Make_default_payment_method">Make default payment method</string>
     <string name="Minimum_8_characters">Minimum 8 characters</string>
     <string name="MM_YY">MM/YY</string>
     <string name="Must_have_price">Must have a price</string>
     <string name="New_Password">New Password</string>
     <string name="No">No</string>
     <string name="Notifications">Notifications</string>
+    <string name="Obtaining_credentials">Obtaining credentials</string>
     <string name="Password">Password</string>
     <string name="Password_doesnt_match">Password doesn\'t match</string>
     <string name="Payment">Payment</string>
@@ -69,6 +77,7 @@
     <string name="Personal">Personal</string>
     <string name="Phone_Number">Phone Number</string>
     <string name="Place_Bid">Place Bid</string>
+    <string name="Please_set_up_Android_Pay">Please set up Android Pay</string>
     <string name="Price">Price</string>
     <string name="Request">Request</string>
     <string name="Request_a_Spot">Request a Spotter</string>
@@ -88,6 +97,8 @@
     <string name="Type">Type</string>
     <string name="Update">Update</string>
     <string name="updated">updated</string>
+    <string name="Updating">Updating</string>
+    <string name="Updating_default_payment_method">Updating default payment method</string>
     <string name="Yes">Yes</string>
     <string name="Your_Spots">Your Spots</string>
     <string name="Zip_Code">Zip Code</string>

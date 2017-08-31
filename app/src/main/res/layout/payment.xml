@@ -14,6 +14,7 @@
         android:layout_height="?attr/actionBarSize"
         android:layout_alignParentTop="true"
         android:background="@color/colorPrimary"/>
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_below="@+id/toolbar"
@@ -42,6 +43,7 @@
         android:layout_marginRight="@dimen/contentPadding"
         android:layout_marginTop="@dimen/contentPadding"
         android:layout_marginBottom="@dimen/halfContentPadding"/>
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rvPaymentMethods"
         android:layout_width="match_parent"

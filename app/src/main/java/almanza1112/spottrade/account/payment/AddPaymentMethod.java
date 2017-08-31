@@ -2,6 +2,7 @@ package almanza1112.spottrade.account.payment;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -27,6 +29,7 @@ import com.braintreepayments.api.Venmo;
 import com.braintreepayments.api.exceptions.InvalidArgumentException;
 import com.braintreepayments.api.interfaces.BraintreeCancelListener;
 import com.braintreepayments.api.interfaces.BraintreeErrorListener;
+import com.braintreepayments.api.interfaces.BraintreeResponseListener;
 import com.braintreepayments.api.interfaces.ConfigurationListener;
 import com.braintreepayments.api.interfaces.PaymentMethodNonceCreatedListener;
 import com.braintreepayments.api.models.Configuration;
@@ -48,15 +51,12 @@ import almanza1112.spottrade.nonActivity.SharedPref;
 
 public class AddPaymentMethod extends Fragment implements View.OnClickListener{
 
+    private ProgressDialog pd = null;
+
     final PaymentMethodNonceCreatedListener paymentMethodNonceCreatedListener = new PaymentMethodNonceCreatedListener() {
         @Override
         public void onPaymentMethodNonceCreated(PaymentMethodNonce paymentMethodNonce) {
-            Log.e("paymentListener", "getNonce: "+paymentMethodNonce.getNonce()+
-                    "\ngetTypeLabel: "+paymentMethodNonce.getTypeLabel()+
-                    "\ngetDescription: " +paymentMethodNonce.getDescription());
             addPaymentMethod(paymentMethodNonce.getNonce());
-
-            Log.e("paymentListener", paymentMethodNonce.getNonce());
         }
     };
     final BraintreeErrorListener errorListener = new BraintreeErrorListener() {
@@ -76,7 +76,6 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
     final BraintreeCancelListener braintreeCancelListener = new BraintreeCancelListener() {
         @Override
         public void onCancel(int requestCode) {
-            Log.e("cancelListener", requestCode + "");
         }
     };
 
@@ -92,6 +91,8 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.add_payment_method, container, false);
+
+        pd = new ProgressDialog(getActivity());
 
         final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
@@ -139,6 +140,10 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
     }
 
     private void getClientToken(final String type){
+        pd.setTitle(type);
+        pd.setMessage(getResources().getString(R.string.Obtaining_credentials));
+        pd.setCancelable(false);
+        pd.show();
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
@@ -168,7 +173,15 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
                                             break;
 
                                         case ANDROID_PAY:
-                                            //AndroidPay.requestAndroidPay(mBraintreeFragment);
+                                            AndroidPay.isReadyToPay(mBraintreeFragment, new BraintreeResponseListener<Boolean>() {
+                                                @Override
+                                                public void onResponse(Boolean aBoolean) {
+                                                    if (!aBoolean){
+                                                        pd.dismiss();
+                                                        Toast.makeText(getActivity(), getResources().getString(R.string.Please_set_up_Android_Pay), Toast.LENGTH_SHORT).show();
+                                                    }
+                                                }
+                                            });
                                             break;
                                     }
                                 } catch (InvalidArgumentException e) {
@@ -196,6 +209,7 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
     }
 
     private void addPaymentMethod(String paymentMethodNonce){
+        pd.setMessage(getResources().getString(R.string.Adding_payment_method));
         RequestQueue queue = Volley.newRequestQueue(getActivity());
         final JSONObject jsonObject = new JSONObject();
         try {
@@ -215,7 +229,15 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.e("addPaymentMethod", response + "");
+                        try{
+                            pd.dismiss();
+                            if (response.getString("status").equals("success")){
+                                Toast.makeText(getActivity(), getResources().getString(R.string.Payment_method_successfully_added), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        catch (JSONException e){
+                            e.printStackTrace();
+                        }
                     }
                 }, new Response.ErrorListener() {
 

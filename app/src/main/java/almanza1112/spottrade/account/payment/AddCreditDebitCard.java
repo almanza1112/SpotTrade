@@ -1,6 +1,7 @@
 package almanza1112.spottrade.account.payment;
 
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
@@ -52,6 +53,7 @@ import almanza1112.spottrade.nonActivity.SharedPref;
 
 public class AddCreditDebitCard extends Fragment {
 
+    private ProgressDialog pd = null;
     private TextInputEditText tietCardNumber, tietExpirationDate, tietCVV, tietZipCode;
     private TextInputLayout tilCardNumber, tilExpirationDate, tilCVV, tilZipCode;
 
@@ -65,7 +67,8 @@ public class AddCreditDebitCard extends Fragment {
     final BraintreeErrorListener errorListener = new BraintreeErrorListener() {
         @Override
         public void onError(Exception error) {
-            Log.e("errorListener", "error");
+            pd.dismiss();
+            Toast.makeText(getActivity(), error.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
             error.printStackTrace();
         }
     };
@@ -93,6 +96,8 @@ public class AddCreditDebitCard extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.add_credit_debit_card, container, false);
+
+        pd = new ProgressDialog(getActivity());
 
         final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
@@ -260,6 +265,10 @@ public class AddCreditDebitCard extends Fragment {
     }
 
     private void getClientToken(){
+        pd.setTitle(R.string.Adding_Card);
+        pd.setMessage(getResources().getString(R.string.Adding_and_verifying_card));
+        pd.setCancelable(false);
+        pd.show();
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
@@ -287,14 +296,14 @@ public class AddCreditDebitCard extends Fragment {
                                             .postalCode(tietZipCode.getText().toString())
                                             .validate(true);
                                     Card.tokenize(mBraintreeFragment, cardBuilder);
-
                                 }
                                 catch (InvalidArgumentException e) {
                                     e.printStackTrace();
                                 }
                             }
                             else {
-                                Toast.makeText(getActivity(), "Server Error", Toast.LENGTH_SHORT).show();
+                                pd.dismiss();
+                                Toast.makeText(getActivity(), "Error: could not add card", Toast.LENGTH_SHORT).show();
                             }
                         }
                         catch (JSONException e){
@@ -333,6 +342,7 @@ public class AddCreditDebitCard extends Fragment {
                     @Override
                     public void onResponse(JSONObject response) {
                         try{
+                            pd.dismiss();
                             if (response.getString("status").equals("success")){
                                 Toast.makeText(getActivity(), getResources().getString(R.string.Payment_method_successfully_added), Toast.LENGTH_SHORT).show();
                                 getFragmentManager().popBackStack();

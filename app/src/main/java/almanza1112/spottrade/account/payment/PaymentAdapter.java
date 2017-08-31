@@ -2,9 +2,9 @@ package almanza1112.spottrade.account.payment;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,10 +41,16 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
     private List<String> credentials;
     private List<String> expirationDate;
     private List<String> paymentToken;
+    private List<Boolean> isDefault;
+
+    private int defaultPos;
+
+    private ProgressDialog pd = null;
 
     PaymentAdapter(Activity activity, List<String> paymentType, List<String> paymentTypeName,
                    List<String> imageURL, List<String> credentials, List<String> expirationDate,
-                   List<String> token){
+                   List<String> token, List<Boolean> isDefault){
+        pd = new ProgressDialog(activity);
         this.activity = activity;
         this.paymentType = paymentType;
         this.paymentTypeName = paymentTypeName;
@@ -52,6 +58,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
         this.credentials = credentials;
         this.expirationDate = expirationDate;
         this.paymentToken = token;
+        this.isDefault = isDefault;
     }
 
     @Override
@@ -65,6 +72,13 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
         Picasso.with(activity).load(imageURL.get(position)).into(holder.ivImage);
         holder.tvPaymentTypeName.setText(paymentTypeName.get(position));
         holder.tvCredentials.setText(credentials.get(position));
+        if (isDefault.get(position)){
+            defaultPos = position;
+            holder.tvDefault.setVisibility(View.VISIBLE);
+        }
+        else{
+            holder.tvDefault.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -74,25 +88,35 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
 
     class RecyclerViewHolder extends RecyclerView.ViewHolder{
         ImageView ivImage, ivEdit;
-        TextView tvPaymentTypeName, tvCredentials;
+        TextView tvPaymentTypeName, tvCredentials, tvDefault;
         RecyclerViewHolder(View view){
             super(view);
             ivImage = (ImageView) view.findViewById(R.id.ivImage);
             tvPaymentTypeName = (TextView) view.findViewById(R.id.tvPaymentTypeName);
             tvCredentials = (TextView) view.findViewById(R.id.tvCredentials);
+            tvDefault = (TextView) view.findViewById(R.id.tvDefault);
             ivEdit = (ImageView) view.findViewById(R.id.ivEdit);
             ivEdit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activity);
                     alertDialogBuilder.setTitle(R.string.Payment_Method_Options);
-                    final CharSequence[] items = {activity.getResources().getString(R.string.Delete)};
+                    CharSequence[] items;
+                    if (isDefault.get(getAdapterPosition())){
+                        items = new CharSequence[]{activity.getResources().getString(R.string.Delete)};
+                    }
+                    else{
+                        items = new CharSequence[]{activity.getResources().getString(R.string.Delete), activity.getResources().getString(R.string.Make_default_payment_method)};
+                    }
                     alertDialogBuilder.setItems(items, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             switch (which){
                                 case 0:
                                     validateDeletion(paymentToken.get(getAdapterPosition()), getAdapterPosition());
+                                    break;
+                                case 1:
+                                    updateDefaultPaymentMethod(paymentToken.get(getAdapterPosition()), getAdapterPosition());
                                     break;
                             }
                         }
@@ -103,6 +127,53 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
             });
 
         }
+    }
+
+    private void updateDefaultPaymentMethod(final String token, final int position){
+        pd.setTitle(R.string.Updating);
+        pd.setMessage(activity.getResources().getString(R.string.Updating_default_payment_method));
+        pd.setCancelable(false);
+        pd.show();
+        final JSONObject jObject = new JSONObject();
+        try {
+            jObject.put("token", token);
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestQueue queue = Volley.newRequestQueue(activity);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.PUT,
+                httpConnection.htppConnectionURL() + "/payment/customer/updatepaymentmethod",
+                jObject,
+                new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try{
+                    if (response.getString("status").equals("success")){
+                        isDefault.set(position, true);
+                        isDefault.set(defaultPos, false);
+                        notifyDataSetChanged();
+                    }
+                    else {
+                        Toast.makeText(activity, "Error: could not update default payment method", Toast.LENGTH_SHORT).show();
+                    }
+                    pd.dismiss();
+                }
+                catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        }
+        );
+        queue.add(jsonObjectRequest);
     }
 
     private void validateDeletion(final String token, final int position){
@@ -138,7 +209,10 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
     }
 
     private void deletePaymentMethod(final String token, final int position){
-        Log.e("delete", token);
+        pd.setTitle(R.string.Deleting);
+        pd.setMessage(activity.getResources().getString(R.string.Deleting_payment_method));
+        pd.setCancelable(false);
+        pd.show();
         RequestQueue queue = Volley.newRequestQueue(activity);
 
         HttpConnection httpConnection = new HttpConnection();
@@ -151,6 +225,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                     @Override
                     public void onResponse(JSONObject response) {
                         try{
+                            pd.dismiss();
                             if (response.getString("status").equals("success")){
                                 Toast.makeText(activity, "Payment method deleted", Toast.LENGTH_SHORT).show();
                                 paymentType.remove(position);

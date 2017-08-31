@@ -35,6 +35,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
+        <TextView
+            android:id="@+id/tvDefault"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginRight="@dimen/contentPadding"
+            android:layout_marginLeft="@dimen/contentPadding"
+            android:gravity="center_vertical"
+            android:text="@string/Default"
+            android:visibility="gone"/>
         <ImageView
             android:id="@+id/ivEdit"
             android:layout_width="wrap_content"

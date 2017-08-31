@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 
 import com.android.volley.Request;
@@ -41,6 +41,7 @@ import almanza1112.spottrade.nonActivity.SharedPref;
 /**
  * Created by almanza1112 on 7/19/17.
  */
+
 public class Payment extends Fragment {
 
     private ProgressBar progressBar;
@@ -91,12 +92,6 @@ public class Payment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        Log.e("onResume", "is being called");
-        super.onResume();
-    }
-
-    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
@@ -129,6 +124,7 @@ public class Payment extends Fragment {
                                 List<String> credentials = new ArrayList<>();
                                 List<String> expirationDate = new ArrayList<>();
                                 List<String> token = new ArrayList<>();
+                                List<Boolean> isDefault = new ArrayList<>();
                                 JSONObject customerObj = new JSONObject(response.getString("customer"));
                                 if (customerObj.has("creditCards")){
                                     isEmpty = false;
@@ -145,6 +141,7 @@ public class Payment extends Fragment {
                                         token.add(creditCardsArray.getJSONObject(i).getString("token"));
                                         credentials.add(astr + creditCardsArray.getJSONObject(i).getString("last4"));
                                         expirationDate.add(creditCardsArray.getJSONObject(i).getString("expirationDate"));
+                                        isDefault.add(creditCardsArray.getJSONObject(i).getBoolean("default"));
                                     }
                                 }
                                 if (customerObj.has("paypalAccounts")){
@@ -157,19 +154,19 @@ public class Payment extends Fragment {
                                         token.add(paypalAccountsArray.getJSONObject(i).getString("token"));
                                         credentials.add(paypalAccountsArray.getJSONObject(i).getString("email"));
                                         expirationDate.add("empty");
+                                        isDefault.add(paypalAccountsArray.getJSONObject(i).getBoolean("default"));
                                     }
                                 }
                                 if (!isEmpty){
-                                    RecyclerView.Adapter  adapter = new PaymentAdapter(getActivity(), paymentType, paymentTypeName, imageURL, credentials, expirationDate, token);
+                                    RecyclerView.Adapter  adapter = new PaymentAdapter(getActivity(), paymentType, paymentTypeName, imageURL, credentials, expirationDate, token, isDefault);
                                     RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
                                     rvPaymentMethods.setLayoutManager(layoutManager);
                                     rvPaymentMethods.setAdapter(adapter);
                                 }
 
                             }
-                            else if (response.getString("status").equals("fail")) {
-                                if (response.getString("reason").equals("user not found")){
-                                }
+                            else if (!response.getString("status").equals("fail")) {
+                                Toast.makeText(getActivity(), "Error: could not retrieve payment methods", Toast.LENGTH_SHORT).show();
                             }
                             progressBar.setVisibility(View.GONE);
                         }
