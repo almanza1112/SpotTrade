@@ -77,7 +77,7 @@
                     android:layout_height="wrap_content"
                     android:padding="@dimen/contentPadding"
                     android:orientation="vertical"
-                    android:background="@android:color/holo_blue_dark">
+                    android:background="@color/colorPrimary">
                     <TextView
                         android:id="@+id/tvTransaction"
                         android:layout_width="wrap_content"
@@ -184,23 +184,36 @@
                     android:gravity="center_horizontal">
                     <Button
                         android:id="@+id/bBuyNow"
+                        android:background="@color/colorAccent"
+                        android:layout_marginLeft="@dimen/halfContentPadding"
+                        android:layout_marginRight="@dimen/halfContentPadding"
+                        android:textColor="@android:color/white"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"/>
                     <Button
                         android:id="@+id/bPlaceBid"
-                        android:layout_width="0dp"
+                        android:background="@color/colorAccent"
+                        android:textColor="@android:color/white"
+                        android:layout_marginLeft="@dimen/halfContentPadding"
+                        android:layout_marginRight="@dimen/halfContentPadding"                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/Place_Bid"/>
                     <Button
                         android:id="@+id/bCancelBid"
-                        android:layout_width="0dp"
+                        android:background="@color/colorAccent"
+                        android:textColor="@android:color/white"
+                        android:layout_marginLeft="@dimen/halfContentPadding"
+                        android:layout_marginRight="@dimen/halfContentPadding"                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"/>
                     <Button
                         android:id="@+id/bDelete"
-                        android:layout_width="0dp"
+                        android:background="@color/colorAccent"
+                        android:textColor="@android:color/white"
+                        android:layout_marginLeft="@dimen/halfContentPadding"
+                        android:layout_marginRight="@dimen/halfContentPadding"                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/Delete"/>
