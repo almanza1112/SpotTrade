@@ -158,12 +158,10 @@ public class SharedPref {
         return getSharedPreferences(ctx).getString(PREF_USER_OVERALL_RATING, "");
     }
 
-    public static void clearOverallRating(Context ctx){
+    public static void clearOverallRating(Context ctx) {
         SharedPreferences.Editor editor = getSharedPreferences(ctx).edit();
         editor.remove(PREF_USER_OVERALL_RATING);
         editor.apply();
     }
-
-
 
 }

@@ -13,6 +13,8 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -89,6 +91,7 @@ public class AddCreditDebitCard extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
     }
 
@@ -100,10 +103,10 @@ public class AddCreditDebitCard extends Fragment {
         pd = new ProgressDialog(getActivity());
 
         final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
-        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setTitle(R.string.Add_Credit_or_Debit_Card);
 
         tilCardNumber = (TextInputLayout) view.findViewById(R.id.tilCardNumber);
@@ -214,12 +217,18 @@ public class AddCreditDebitCard extends Fragment {
         bAddCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                 if (validateFields()){
-                     getClientToken();
-                 }
+                if (validateFields()) {
+                    getClientToken();
+                }
             }
         });
         return view;
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        MenuItem item=menu.findItem(R.id.search);
+        item.setVisible(false);
     }
 
     private boolean validateFields(){
@@ -345,6 +354,7 @@ public class AddCreditDebitCard extends Fragment {
                             pd.dismiss();
                             if (response.getString("status").equals("success")){
                                 Toast.makeText(getActivity(), getResources().getString(R.string.Payment_method_successfully_added), Toast.LENGTH_SHORT).show();
+                                getFragmentManager().popBackStack();
                                 getFragmentManager().popBackStack();
                             }
                             else {

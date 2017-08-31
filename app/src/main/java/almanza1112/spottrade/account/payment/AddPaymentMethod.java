@@ -9,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -113,6 +115,17 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
 
         return view;
     }
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        MenuItem item=menu.findItem(R.id.search);
+        item.setVisible(false);
+    }
 
     @Override
     public void onClick(View v) {
@@ -120,7 +133,7 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
             case R.id.llCreditDebitCard:
                 AddCreditDebitCard addCreditDebitCard = new AddCreditDebitCard();
                 FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.payment_activity, addCreditDebitCard);
+                fragmentTransaction.replace(R.id.drawer_layout, addCreditDebitCard);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
                 break;
@@ -233,6 +246,7 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
                             pd.dismiss();
                             if (response.getString("status").equals("success")){
                                 Toast.makeText(getActivity(), getResources().getString(R.string.Payment_method_successfully_added), Toast.LENGTH_SHORT).show();
+                                getFragmentManager().popBackStack();
                             }
                         }
                         catch (JSONException e){
