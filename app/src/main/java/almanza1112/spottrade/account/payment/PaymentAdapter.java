@@ -1,18 +1,32 @@
 package almanza1112.spottrade.account.payment;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 
 import almanza1112.spottrade.R;
+import almanza1112.spottrade.nonActivity.HttpConnection;
 
 /**
  * Created by almanza1112 on 8/28/17.
@@ -22,15 +36,22 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
 
     private Activity activity;
     private List<String> paymentType;
+    private List<String> paymentTypeName;
     private List<String> imageURL;
     private List<String> credentials;
     private List<String> expirationDate;
-    PaymentAdapter(Activity activity, List<String> paymentType, List<String> imageURL, List<String> credentials, List<String> expirationDate){
+    private List<String> paymentToken;
+
+    PaymentAdapter(Activity activity, List<String> paymentType, List<String> paymentTypeName,
+                   List<String> imageURL, List<String> credentials, List<String> expirationDate,
+                   List<String> token){
         this.activity = activity;
         this.paymentType = paymentType;
+        this.paymentTypeName = paymentTypeName;
         this.imageURL = imageURL;
         this.credentials = credentials;
         this.expirationDate = expirationDate;
+        this.paymentToken = token;
     }
 
     @Override
@@ -42,6 +63,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
     @Override
     public void onBindViewHolder(PaymentAdapter.RecyclerViewHolder holder, int position) {
         Picasso.with(activity).load(imageURL.get(position)).into(holder.ivImage);
+        holder.tvPaymentTypeName.setText(paymentTypeName.get(position));
         holder.tvCredentials.setText(credentials.get(position));
     }
 
@@ -51,12 +73,111 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
     }
 
     class RecyclerViewHolder extends RecyclerView.ViewHolder{
-        ImageView ivImage;
-        TextView tvCredentials;
+        ImageView ivImage, ivEdit;
+        TextView tvPaymentTypeName, tvCredentials;
         RecyclerViewHolder(View view){
             super(view);
             ivImage = (ImageView) view.findViewById(R.id.ivImage);
+            tvPaymentTypeName = (TextView) view.findViewById(R.id.tvPaymentTypeName);
             tvCredentials = (TextView) view.findViewById(R.id.tvCredentials);
+            ivEdit = (ImageView) view.findViewById(R.id.ivEdit);
+            ivEdit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activity);
+                    alertDialogBuilder.setTitle(R.string.Payment_Method_Options);
+                    final CharSequence[] items = {activity.getResources().getString(R.string.Delete)};
+                    alertDialogBuilder.setItems(items, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which){
+                                case 0:
+                                    validateDeletion(paymentToken.get(getAdapterPosition()), getAdapterPosition());
+                                    break;
+                            }
+                        }
+                    });
+                    final AlertDialog alertDialog = alertDialogBuilder.create();
+                    alertDialog.show();
+                }
+            });
+
         }
+    }
+
+    private void validateDeletion(final String token, final int position){
+        LayoutInflater inflater = activity.getLayoutInflater();
+        View alertLayout = inflater.inflate(R.layout.payment_delete_alertdialog, null);
+
+        ImageView ivPaymentImage = (ImageView) alertLayout.findViewById(R.id.ivPaymentImage);
+        TextView tvPaymentName = (TextView) alertLayout.findViewById(R.id.tvPaymentName);
+        TextView tvPaymentCredentials = (TextView) alertLayout.findViewById(R.id.tvPaymentCredentials);
+
+        Picasso.with(activity).load(imageURL.get(position)).into(ivPaymentImage);
+        tvPaymentName.setText(paymentTypeName.get(position));
+        tvPaymentCredentials.setText(credentials.get(position));
+
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activity);
+        alertDialogBuilder.setView(alertLayout);
+        alertDialogBuilder.setTitle(R.string.Delete);
+        alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDialogBuilder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                deletePaymentMethod(token, position);
+            }
+        });
+
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    private void deletePaymentMethod(final String token, final int position){
+        Log.e("delete", token);
+        RequestQueue queue = Volley.newRequestQueue(activity);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.DELETE,
+                httpConnection.htppConnectionURL() + "/payment/customer/deletepaymentmethod?token=" + token,
+                null,
+                new Response.Listener<JSONObject>()
+                {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try{
+                            if (response.getString("status").equals("success")){
+                                Toast.makeText(activity, "Payment method deleted", Toast.LENGTH_SHORT).show();
+                                paymentType.remove(position);
+                                paymentTypeName.remove(position);
+                                imageURL.remove(position);
+                                credentials.remove(position);
+                                expirationDate.remove(position);
+                                paymentToken.remove(position);
+                                notifyItemRemoved(position);
+                            }
+                            else{
+                                Toast.makeText(activity, "Error: could not delete payment method", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        catch (JSONException e){
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                    }
+                }
+        );
+        queue.add(jsonObjectRequest);
     }
 }

@@ -5,23 +5,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:clickable="true"
-    android:background="@android:color/white">
+    android:background="@android:color/white"
+    android:weightSum="1">
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/colorPrimary"/>
-
-    <!--
-        card number
-        mm/yy
-        cvv
-        country
-        zip code
-
-    -->
-
     <android.support.design.widget.TextInputLayout
         android:id="@+id/tilCardNumber"
         android:layout_width="match_parent"
@@ -76,6 +67,7 @@
         android:layout_margin="@dimen/contentPadding"
         android:orientation="horizontal">
         <android.support.design.widget.TextInputLayout
+            android:id="@+id/tilZipCode"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight=".5">
@@ -97,13 +89,18 @@
         </android.support.design.widget.TextInputLayout>
     </LinearLayout>
 
-    <Button
-        android:id="@+id/bAddCard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/contentPadding"
-        android:background="@color/colorAccent"
-        android:textColor="@android:color/white"
-        android:text="Add Card"/>
 
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent">
+        <Button
+            android:id="@+id/bAddCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="@dimen/contentPadding"
+            android:background="@color/colorAccent"
+            android:text="Add Card"
+            android:textColor="@android:color/white" />
+    </RelativeLayout>
 </LinearLayout>

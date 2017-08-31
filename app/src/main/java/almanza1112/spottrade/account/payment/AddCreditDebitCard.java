@@ -14,7 +14,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -51,14 +53,11 @@ import almanza1112.spottrade.nonActivity.SharedPref;
 public class AddCreditDebitCard extends Fragment {
 
     private TextInputEditText tietCardNumber, tietExpirationDate, tietCVV, tietZipCode;
-    private TextInputLayout tilCardNumber, tilExpirationDate, tilCVV;
+    private TextInputLayout tilCardNumber, tilExpirationDate, tilCVV, tilZipCode;
 
     final PaymentMethodNonceCreatedListener paymentMethodNonceCreatedListener = new PaymentMethodNonceCreatedListener() {
         @Override
         public void onPaymentMethodNonceCreated(PaymentMethodNonce paymentMethodNonce) {
-            Log.e("paymentListener", "getNonce: "+paymentMethodNonce.getNonce()+
-                                    "\ngetTypeLabel: "+paymentMethodNonce.getTypeLabel()+
-                                    "\ngetDescription: " +paymentMethodNonce.getDescription());
             addPaymentMethod(paymentMethodNonce.getNonce());
 
         }
@@ -84,6 +83,11 @@ public class AddCreditDebitCard extends Fragment {
         }
     };
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+    }
 
     @Nullable
     @Override
@@ -103,6 +107,7 @@ public class AddCreditDebitCard extends Fragment {
         tietExpirationDate = (TextInputEditText) view.findViewById(R.id.tietExpirationDate);
         tilCVV = (TextInputLayout) view.findViewById(R.id.tilCVV);
         tietCVV = (TextInputEditText) view.findViewById(R.id.tietCVV);
+        tilZipCode = (TextInputLayout) view.findViewById(R.id.tilZipCode);
         tietZipCode = (TextInputEditText) view.findViewById(R.id.tietZipCode);
 
         tietCardNumber.addTextChangedListener(new TextWatcher() {
@@ -204,10 +209,54 @@ public class AddCreditDebitCard extends Fragment {
         bAddCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                 getClientToken();
+                 if (validateFields()){
+                     getClientToken();
+                 }
             }
         });
         return view;
+    }
+
+    private boolean validateFields(){
+        boolean sitch, cardNum, exprDate, cvv, zipcode;
+        if (tietCardNumber.getText().toString().isEmpty()){
+            cardNum = false;
+            tilCardNumber.setError(getResources().getString(R.string.Field_cant_be_empty));
+        }
+        else{
+            cardNum = true;
+            tilCardNumber.setErrorEnabled(false);
+        }
+
+        if (tietCVV.getText().toString().isEmpty()){
+            cvv = false;
+            tilCVV.setError(getResources().getString(R.string.Field_cant_be_empty));
+        }
+        else {
+            cvv = true;
+            tilCVV.setErrorEnabled(false);
+        }
+
+        if (tietExpirationDate.getText().toString().isEmpty()){
+            exprDate = false;
+            tilExpirationDate.setError(getResources().getString(R.string.Field_cant_be_empty));
+        }
+        else {
+            exprDate = true;
+            tilExpirationDate.setErrorEnabled(false);
+        }
+
+        if (tietZipCode.getText().toString().isEmpty()){
+            zipcode = false;
+            tilZipCode.setError(getResources().getString(R.string.Field_cant_be_empty));
+        }
+        else {
+            zipcode = true;
+            tilZipCode.setErrorEnabled(false);
+        }
+
+        sitch = cardNum && cvv && exprDate && zipcode;
+        return sitch;
     }
 
     private void getClientToken(){
@@ -245,7 +294,7 @@ public class AddCreditDebitCard extends Fragment {
                                 }
                             }
                             else {
-                                Log.e("client", "error retrieving clienToken");
+                                Toast.makeText(getActivity(), "Server Error", Toast.LENGTH_SHORT).show();
                             }
                         }
                         catch (JSONException e){
@@ -262,6 +311,7 @@ public class AddCreditDebitCard extends Fragment {
         );
         queue.add(jsonObjectRequest);
     }
+
     private void addPaymentMethod(String paymentMethodNonce){
         RequestQueue queue = Volley.newRequestQueue(getActivity());
         final JSONObject jsonObject = new JSONObject();
@@ -282,14 +332,24 @@ public class AddCreditDebitCard extends Fragment {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.e("addPaymentMethod", response + "");
+                        try{
+                            if (response.getString("status").equals("success")){
+                                Toast.makeText(getActivity(), getResources().getString(R.string.Payment_method_successfully_added), Toast.LENGTH_SHORT).show();
+                                getFragmentManager().popBackStack();
+                            }
+                            else {
+                                Toast.makeText(getActivity(), "Error: could not add credit card", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        catch (JSONException e){
+                            e.printStackTrace();
+                        }
                     }
                 }, new Response.ErrorListener() {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         // TODO Auto-generated method stub
-                        Log.e("addPaymentMethod", "error");
                         error.printStackTrace();
                     }
                 }){
@@ -309,5 +369,4 @@ public class AddCreditDebitCard extends Fragment {
         queue.add(jsObjRequest);
 
     }
-
 }

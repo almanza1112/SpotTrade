@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -89,6 +90,11 @@ public class Payment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        Log.e("onResume", "is being called");
+        super.onResume();
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -118,17 +124,26 @@ public class Payment extends Fragment {
                             if (response.getString("status").equals("success")) {
                                 boolean isEmpty = true;
                                 List<String> paymentType = new ArrayList<>();
+                                List<String> paymentTypeName = new ArrayList<>();
                                 List<String> imageURL = new ArrayList<>();
                                 List<String> credentials = new ArrayList<>();
                                 List<String> expirationDate = new ArrayList<>();
+                                List<String> token = new ArrayList<>();
                                 JSONObject customerObj = new JSONObject(response.getString("customer"));
                                 if (customerObj.has("creditCards")){
                                     isEmpty = false;
                                     JSONArray creditCardsArray = new JSONArray(customerObj.getString("creditCards"));
                                     for (int i = 0; i < creditCardsArray.length(); i++){
                                         paymentType.add("creditCard");
+                                        paymentTypeName.add(creditCardsArray.getJSONObject(i).getString("cardType"));
                                         imageURL.add(creditCardsArray.getJSONObject(i).getString("imageUrl"));
-                                        credentials.add(creditCardsArray.getJSONObject(i).getString("maskedNumber"));
+                                        int len = creditCardsArray.getJSONObject(i).getString("maskedNumber").length() - 4;
+                                        String astr = "";
+                                        for (int j = 0; j < len; j++){
+                                            astr += "*";
+                                        }
+                                        token.add(creditCardsArray.getJSONObject(i).getString("token"));
+                                        credentials.add(astr + creditCardsArray.getJSONObject(i).getString("last4"));
                                         expirationDate.add(creditCardsArray.getJSONObject(i).getString("expirationDate"));
                                     }
                                 }
@@ -137,13 +152,15 @@ public class Payment extends Fragment {
                                     JSONArray paypalAccountsArray = new JSONArray(customerObj.getString("paypalAccounts"));
                                     for (int i = 0; i < paypalAccountsArray.length(); i++){
                                         paymentType.add("paypal");
+                                        paymentTypeName.add("PayPal");
                                         imageURL.add(paypalAccountsArray.getJSONObject(i).getString("imageUrl"));
+                                        token.add(paypalAccountsArray.getJSONObject(i).getString("token"));
                                         credentials.add(paypalAccountsArray.getJSONObject(i).getString("email"));
                                         expirationDate.add("empty");
                                     }
                                 }
                                 if (!isEmpty){
-                                    RecyclerView.Adapter  adapter = new PaymentAdapter(getActivity(), paymentType, imageURL, credentials, expirationDate);
+                                    RecyclerView.Adapter  adapter = new PaymentAdapter(getActivity(), paymentType, paymentTypeName, imageURL, credentials, expirationDate, token);
                                     RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
                                     rvPaymentMethods.setLayoutManager(layoutManager);
                                     rvPaymentMethods.setAdapter(adapter);
