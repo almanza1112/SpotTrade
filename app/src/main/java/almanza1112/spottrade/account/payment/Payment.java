@@ -81,7 +81,7 @@ public class Payment extends Fragment {
             public void onClick(View v) {
                 AddPaymentMethod addPaymentMethod = new AddPaymentMethod();
                 FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.payment_activity, addPaymentMethod);
+                fragmentTransaction.replace(R.id.drawer_layout, addPaymentMethod);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
             }
