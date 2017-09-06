@@ -1,12 +1,17 @@
 package almanza1112.spottrade;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
+import android.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
@@ -20,12 +25,14 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import almanza1112.spottrade.account.payment.AddPaymentMethod;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 import almanza1112.spottrade.search.SearchActivity;
@@ -43,6 +50,8 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
     private double latitude, longitude;
     private String locationName, locationAddress, type;
 
+    private ProgressDialog pd = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,6 +64,8 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         longitude = intent.getDoubleExtra("longitude", 0);
 
         setContentView(R.layout.spot_actiivty);
+
+        pd = new ProgressDialog(this);
 
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -111,7 +122,15 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.fabDone:
                 if (validatePrice()) {
-                    postRequest();
+                    pd.setTitle(R.string.Adding_Spot);
+                    pd.setCancelable(false);
+                    pd.show();
+                    if (type.equals("Request")){
+                        validatePaymentMethod();
+                    }
+                    else {
+                        postRequest();
+                    }
                 }
                 break;
         }
@@ -159,7 +178,79 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         return sitch;
     }
 
+    private void validatePaymentMethod(){
+        pd.setMessage(getResources().getString(R.string.Checking_for_payment_methods));
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getID(this),
+                null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            if (response.getString("status").equals("success")) {
+                                if (new JSONArray(response.getJSONObject("customer").getString("paymentMethods")).length() != 0){
+                                    postRequest();
+                                }
+                                else {
+                                    pd.dismiss();
+                                    ADnoPaymentMethod();
+                                }
+                            }
+                            else if (response.getString("status").equals("fail")) {
+                                pd.dismiss();
+                                ADnoPaymentMethod();
+                            }
+                        }
+                        catch (JSONException e){
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                    }
+                }
+        );
+        queue.add(jsonObjectRequest);
+    }
+
+    private void ADnoPaymentMethod(){
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(R.string.No_Payment_Method);
+        alertDialogBuilder.setMessage(R.string.You_have_no_payment_method);
+        alertDialogBuilder.setNegativeButton(R.string.Not_Now, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDialogBuilder.setPositiveButton(R.string.Add_Payment_Method, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Bundle bundle = new Bundle();
+                AddPaymentMethod addPaymentMethod = new AddPaymentMethod();
+                bundle.putString("from", "SpotActivity");
+                addPaymentMethod.setArguments(bundle);
+                FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.spot_activity, addPaymentMethod);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
+
+            }
+        });
+
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
     private void postRequest(){
+        pd.setMessage(getResources().getString(R.string.Adding_spot_to_SpotTrade_database));
         RequestQueue queue = Volley.newRequestQueue(this);
         final JSONObject jsonObject = new JSONObject();
         final JSONObject sellerInfoObj = new JSONObject();
@@ -191,8 +282,10 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
+                            Log.e("postRequest", response + "");
                             String status = response.getString("status");
                             if (status.equals("success")){
+                                pd.dismiss();
                                 Intent intent = getIntent();
                                 intent.putExtra("latitude", response.getString("latitude"));
                                 intent.putExtra("longitude", response.getString("longitude"));

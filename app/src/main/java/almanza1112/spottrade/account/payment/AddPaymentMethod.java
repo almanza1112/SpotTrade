@@ -65,6 +65,7 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
         @Override
         public void onError(Exception error) {
             Log.e("errorListener", "error");
+            pd.dismiss();
             error.printStackTrace();
         }
     };
@@ -78,6 +79,7 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
     final BraintreeCancelListener braintreeCancelListener = new BraintreeCancelListener() {
         @Override
         public void onCancel(int requestCode) {
+            pd.dismiss();
         }
     };
 
@@ -88,6 +90,7 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
     private final String VENMO = "Venmo";
     private final String ANDROID_PAY = "Android Pay";
 
+    private String from;
 
     @Nullable
     @Override
@@ -115,16 +118,22 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
 
         return view;
     }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+        from = getArguments().getString("from");
+        if (from.equals("Payment")){
+            setHasOptionsMenu(true);
+        }
     }
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem item=menu.findItem(R.id.search);
-        item.setVisible(false);
+        if (from.equals("Payment")) {
+            MenuItem item = menu.findItem(R.id.search);
+            item.setVisible(false);
+        }
     }
 
     @Override
@@ -133,7 +142,7 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
             case R.id.llCreditDebitCard:
                 AddCreditDebitCard addCreditDebitCard = new AddCreditDebitCard();
                 FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.drawer_layout, addCreditDebitCard);
+                fragmentTransaction.replace(R.id.add_payment_method, addCreditDebitCard);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
                 break;
