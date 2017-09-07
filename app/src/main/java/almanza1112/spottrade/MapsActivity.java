@@ -1,6 +1,7 @@
 package almanza1112.spottrade;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -31,6 +32,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -52,6 +54,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -61,6 +64,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import almanza1112.spottrade.account.payment.AddPaymentMethod;
 import almanza1112.spottrade.account.payment.Payment;
 import almanza1112.spottrade.account.history.History;
 import almanza1112.spottrade.account.personal.Personal;
@@ -73,6 +77,7 @@ import almanza1112.spottrade.yourSpots.YourSpots;
 public class MapsActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener{
     private FloatingActionMenu fabMenu;
     private GoogleMap mMap;
+    private ProgressDialog pd = null;
     NavigationView navigationView;
     DrawerLayout drawer;
     LatLng currentLocation, spotLocation;
@@ -99,6 +104,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         RelativeLayout.LayoutParams tb = (RelativeLayout.LayoutParams) cvToolbar.getLayoutParams();
         tb.setMargins(20, 20, 20, 0);
 
+        pd = new ProgressDialog(this);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -187,7 +193,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.bBuyNow:
-                transactionBuyNow();
+                validatePaymentMethod();
                 break;
 
             case R.id.bPlaceBid:
@@ -711,6 +717,140 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 dialog.cancel();
             }
         });
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    private void validatePaymentMethod(){
+        pd.setTitle(R.string.Verifying);
+        pd.setMessage(getResources().getString(R.string.Checking_for_payment_methods));
+        pd.setCancelable(false);
+        pd.show();
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getID(this),
+                null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            if (response.getString("status").equals("success")) {
+                                JSONArray jsonArray = new JSONArray(response.getJSONObject("customer").getString("paymentMethods"));
+                                if (jsonArray.length() > 0){
+                                    for (int i = 0; i < jsonArray.length(); i++){
+                                        if (jsonArray.getJSONObject(i).getBoolean("default")){
+                                            if (jsonArray.getJSONObject(i).has("cardType")){
+                                                //means the default payment is a credit card
+                                                int len = jsonArray.getJSONObject(i).getString("maskedNumber").length() - 4;
+                                                String astr = "";
+                                                for (int j = 0; j < len; j++){
+                                                    astr += "*";
+                                                }
+                                                String last4 = astr + jsonArray.getJSONObject(i).getString("last4");
+                                                ADareYouSurePaymentMethod(
+                                                        jsonArray.getJSONObject(i).getString("cardType"),
+                                                        last4,
+                                                        jsonArray.getJSONObject(i).getString("imageUrl"),
+                                                        jsonArray.getJSONObject(i).getString("token"));
+                                            }
+                                            else{
+                                                //means the default payment is PayPal
+                                                ADareYouSurePaymentMethod(
+                                                        "PayPal",
+                                                        jsonArray.getJSONObject(i).getString("email"),
+                                                        jsonArray.getJSONObject(i).getString("imageUrl"),
+                                                        jsonArray.getJSONObject(i).getString("token"));
+                                            }
+                                            pd.dismiss();
+                                            break;
+                                        }
+                                    }
+                                }
+                                else {
+                                    pd.dismiss();
+                                    ADnoPaymentMethod();
+                                }
+                            }
+                            else if (response.getString("status").equals("fail")) {
+                                pd.dismiss();
+                                ADnoPaymentMethod();
+                            }
+                        }
+                        catch (JSONException e){
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                    }
+                }
+        );
+        queue.add(jsonObjectRequest);
+    }
+
+    private void ADareYouSurePaymentMethod(String paymentType, String paymentCredentials, String paymentImageUrl, String paymentToken){
+        LayoutInflater inflater = getLayoutInflater();
+        View alertLayout = inflater.inflate(R.layout.maps_activity_transaction_are_you_sure__alertdialog, null);
+
+        ImageView ivPaymentImage = (ImageView) alertLayout.findViewById(R.id.ivPaymentImage);
+        TextView tvPaymentName = (TextView) alertLayout.findViewById(R.id.tvPaymentName);
+        TextView tvPaymentCredentials = (TextView) alertLayout.findViewById(R.id.tvPaymentCredentials);
+
+        Picasso.with(this).load(paymentImageUrl).into(ivPaymentImage);
+        tvPaymentName.setText(paymentType);
+        tvPaymentCredentials.setText(paymentCredentials);
+
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setView(alertLayout);
+        alertDialogBuilder.setTitle(R.string.Complete_Transaction);
+        alertDialogBuilder.setNegativeButton(R.string.Use_Other_Payment_Method, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDialogBuilder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    private void ADnoPaymentMethod(){
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(R.string.No_Payment_Method);
+        alertDialogBuilder.setMessage(R.string.You_have_no_payment_method);
+        alertDialogBuilder.setNegativeButton(R.string.Not_Now, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDialogBuilder.setPositiveButton(R.string.Add_Payment_Method, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Bundle bundle = new Bundle();
+                AddPaymentMethod addPaymentMethod = new AddPaymentMethod();
+                bundle.putString("from", "MapsActivity");
+                addPaymentMethod.setArguments(bundle);
+                FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.drawer_layout, addPaymentMethod);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
+
+            }
+        });
+
         final AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
     }

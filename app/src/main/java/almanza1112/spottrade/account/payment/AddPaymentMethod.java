@@ -123,14 +123,14 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         from = getArguments().getString("from");
-        if (from.equals("Payment")){
+        if (from.equals("Payment") || from.equals("MapsActivity")){
             setHasOptionsMenu(true);
         }
     }
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        if (from.equals("Payment")) {
+        if (from.equals("Payment") || from.equals("MapsActivity")) {
             MenuItem item = menu.findItem(R.id.search);
             item.setVisible(false);
         }

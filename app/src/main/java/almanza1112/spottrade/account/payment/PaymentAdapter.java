@@ -27,6 +27,7 @@ import java.util.List;
 
 import almanza1112.spottrade.R;
 import almanza1112.spottrade.nonActivity.HttpConnection;
+import almanza1112.spottrade.nonActivity.SharedPref;
 
 /**
  * Created by almanza1112 on 8/28/17.
@@ -113,7 +114,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                         public void onClick(DialogInterface dialog, int which) {
                             switch (which){
                                 case 0:
-                                    validateDeletion(paymentToken.get(getAdapterPosition()), getAdapterPosition());
+                                    ADvalidateDeletion(paymentToken.get(getAdapterPosition()), getAdapterPosition());
                                     break;
                                 case 1:
                                     updateDefaultPaymentMethod(paymentToken.get(getAdapterPosition()), getAdapterPosition());
@@ -176,7 +177,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
         queue.add(jsonObjectRequest);
     }
 
-    private void validateDeletion(final String token, final int position){
+    private void ADvalidateDeletion(final String token, final int position){
         LayoutInflater inflater = activity.getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.payment_delete_alertdialog, null);
 
@@ -218,7 +219,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
         HttpConnection httpConnection = new HttpConnection();
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.DELETE,
-                httpConnection.htppConnectionURL() + "/payment/customer/deletepaymentmethod?token=" + token,
+                httpConnection.htppConnectionURL() + "/payment/customer/deletepaymentmethod?token=" + token + "&id=" + SharedPref.getID(activity),
                 null,
                 new Response.Listener<JSONObject>()
                 {
@@ -228,13 +229,19 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                             pd.dismiss();
                             if (response.getString("status").equals("success")){
                                 Toast.makeText(activity, "Payment method deleted", Toast.LENGTH_SHORT).show();
+
+                                if (response.has("defaultPaymentMethodToken")) {
+                                    isDefault.set(paymentToken.indexOf(response.getString("defaultPaymentMethodToken")), true);
+                                }
+
                                 paymentType.remove(position);
                                 paymentTypeName.remove(position);
                                 imageURL.remove(position);
                                 credentials.remove(position);
                                 expirationDate.remove(position);
                                 paymentToken.remove(position);
-                                notifyItemRemoved(position);
+                                isDefault.remove(position);
+                                notifyDataSetChanged();
                             }
                             else{
                                 Toast.makeText(activity, "Error: could not delete payment method", Toast.LENGTH_SHORT).show();
