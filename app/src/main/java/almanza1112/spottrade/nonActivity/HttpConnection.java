@@ -6,8 +6,7 @@ package almanza1112.spottrade.nonActivity;
 
 public class HttpConnection {
     public String htppConnectionURL(){
-        String localURL = "http://192.168.1.2";
-        String localPort = "3000";
-        return localURL + ":" + localPort;
+        //String url = "http://192.168.1.2:5000"; //for local
+        return "https://spottrade.herokuapp.com";
     }
 }
