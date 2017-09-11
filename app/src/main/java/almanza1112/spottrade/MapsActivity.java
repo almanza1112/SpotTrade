@@ -19,6 +19,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AlertDialogLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -37,6 +38,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -63,6 +65,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import almanza1112.spottrade.account.payment.AddPaymentMethod;
 import almanza1112.spottrade.account.payment.Payment;
@@ -92,7 +95,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private String locationName="empty", locationAddress="empty";
     private int SEARCH_CODE = 0;
     private int SPOT_CODE = 1;
-    private String lid;
+    private String lid, price;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -417,6 +420,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 try{
                     lid = response.getString("_id");
                     tvLocationName.setText(response.getString("name"));
+                    price = response.getString("price");
 
                     tvLocationAddress.setText(response.getString("address"));
                     JSONObject sellerInfoObj = response.getJSONObject("sellerInfo");
@@ -794,7 +798,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         queue.add(jsonObjectRequest);
     }
 
-    private void ADareYouSurePaymentMethod(String paymentType, String paymentCredentials, String paymentImageUrl, String paymentToken){
+    private void ADareYouSurePaymentMethod(String paymentType, String paymentCredentials, String paymentImageUrl, final String paymentToken){
         LayoutInflater inflater = getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.maps_activity_transaction_are_you_sure__alertdialog, null);
 
@@ -818,7 +822,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         alertDialogBuilder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                checkout(paymentToken);
             }
         });
 
@@ -853,6 +857,52 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
         final AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+    }
+
+
+    private void checkout(String token){
+        RequestQueue queue = Volley.newRequestQueue(this);
+        final JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("paymentMethodToken", token);
+            jsonObject.put("amount", price);
+
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        HttpConnection httpConnection = new HttpConnection();
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.POST, httpConnection.htppConnectionURL() +"/payment/checkout", jsonObject, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.e("checkout", response+ "");
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+                        error.printStackTrace();
+                    }
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+            @Override
+            public String getBodyContentType() {
+                return "application/json";
+            }
+        };
+
+        // Access the RequestQueue through your singleton class.
+        queue.add(jsObjRequest);
+
     }
 
     //When user buys spot it will give him directions to the spot

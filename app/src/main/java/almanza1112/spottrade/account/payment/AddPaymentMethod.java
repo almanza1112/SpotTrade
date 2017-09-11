@@ -287,49 +287,4 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
         queue.add(jsObjRequest);
 
     }
-
-    private void postNonceToServer(String nonce){
-        RequestQueue queue = Volley.newRequestQueue(getActivity());
-        final JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("payment_method_nonce", nonce);
-            jsonObject.put("amount", 20);
-
-        }
-        catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        HttpConnection httpConnection = new HttpConnection();
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.POST, httpConnection.htppConnectionURL() +"/payment/checkout", jsonObject, new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.e("nonce", response + "");
-                    }
-                }, new Response.ErrorListener() {
-
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-                        error.printStackTrace();
-                    }
-                }){
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("Content-Type", "application/json");
-                return headers;
-            }
-            @Override
-            public String getBodyContentType() {
-                return "application/json";
-            }
-        };
-
-        // Access the RequestQueue through your singleton class.
-        queue.add(jsObjRequest);
-
-    }
 }
