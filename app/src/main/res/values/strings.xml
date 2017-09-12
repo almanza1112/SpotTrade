@@ -76,6 +76,7 @@
     <string name="Not_Now">Not Now</string>
     <string name="Notifications">Notifications</string>
     <string name="Obtaining_credentials">Obtaining credentials</string>
+    <string name="Other_Method">Other Method</string>
     <string name="Password">Password</string>
     <string name="Password_doesnt_match">Password doesn\'t match</string>
     <string name="Payment">Payment</string>
@@ -107,7 +108,6 @@
     <string name="updated">updated</string>
     <string name="Updating">Updating</string>
     <string name="Updating_default_payment_method">Updating default payment method</string>
-    <string name="Use_Other_Payment_Method">Use other payment method</string>
     <string name="Verifying">Verifying</string>
     <string name="Yes">Yes</string>
     <string name="You_have_no_payment_method">You have no payment method in order to pay for this request. Please add one to proceed.</string>

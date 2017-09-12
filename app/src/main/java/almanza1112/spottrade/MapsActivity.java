@@ -19,7 +19,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AlertDialogLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -813,7 +812,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setView(alertLayout);
         alertDialogBuilder.setTitle(R.string.Complete_Transaction);
-        alertDialogBuilder.setNegativeButton(R.string.Use_Other_Payment_Method, new DialogInterface.OnClickListener() {
+        alertDialogBuilder.setNegativeButton(R.string.Other_Method, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
