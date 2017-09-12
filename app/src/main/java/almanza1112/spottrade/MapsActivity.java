@@ -94,7 +94,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private String locationName="empty", locationAddress="empty";
     private int SEARCH_CODE = 0;
     private int SPOT_CODE = 1;
-    private String lid, price;
+    private String lid, price, type;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -195,7 +195,23 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.bBuyNow:
-                validatePaymentMethod();
+                /*
+
+                TODO: MAJOR ISSUE REGARDING REQUEST
+                For when a user that purchases a spot that is selling, code is easy to reject buyer
+                if card gets rejected etc. Need to verify the requester's payment as well as not
+                allowing them to delete their default payment if they have a spot up for Request
+                and if upon purchase of the person accepting the request, throw any errors Gateway,
+                card validation etc.
+
+                 */
+
+                if (type.equals("Sell")){
+                    validatePaymentMethod();
+                }
+                else if (type.equals("Request")){
+                    transactionBuyNow();
+                }
                 break;
 
             case R.id.bPlaceBid:
@@ -427,11 +443,12 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     tvUserRating.setText(" - "+sellerInfoObj.getString("sellerOverallRating"));
                     tvTotalRating.setText("("+sellerInfoObj.getString("sellerTotalRatings")+")");
 
-                    if (response.getString("type").equals("Sell")) {
+                    type = response.getString("type");
+                    if (type.equals("Sell")) {
                         tvTransaction.setText(getResources().getString(R.string.Selling) + " - $" + response.getString("price"));
                         bBuyNow.setText(getResources().getString(R.string.Buy_Now));
                     }
-                    else if (response.getString("type").equals("Request")) {
+                    else if (type.equals("Request")) {
                         tvTransaction.setText(getResources().getString(R.string.Requesting) + " - $" + response.getString("price"));
                         bBuyNow.setText(getResources().getString(R.string.Accept));
                     }
@@ -553,10 +570,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void transactionBuyNow() {
-        pd.setTitle(R.string.Completing);
-        pd.setMessage(getResources().getString(R.string.Completing_transaction));
-        pd.setCancelable(false);
-        pd.show();
         final JSONObject jObject = new JSONObject();
         try {
             jObject.put("transaction", "complete");
@@ -821,6 +834,8 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
+                ADotherPaymentMethod();
+
             }
         });
         alertDialogBuilder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
@@ -832,6 +847,101 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
         final AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+    }
+
+    private void ADotherPaymentMethod(){
+        pd.setTitle(R.string.Loading);
+        pd.setMessage(getResources().getString(R.string.Loading_payment_methods));
+        pd.setCancelable(false);
+        pd.show();
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getID(this),
+                null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            if (response.getString("status").equals("success")) {
+                                List<String> paymentType = new ArrayList<>();
+                                List<String> paymentTypeName = new ArrayList<>();
+                                List<String> credentials = new ArrayList<>();
+                                final List<String> token = new ArrayList<>();
+                                JSONObject customerObj = new JSONObject(response.getString("customer"));
+                                if (customerObj.has("creditCards")){
+                                    JSONArray creditCardsArray = new JSONArray(customerObj.getString("creditCards"));
+                                    for (int i = 0; i < creditCardsArray.length(); i++){
+                                        paymentType.add("creditCard");
+                                        paymentTypeName.add(creditCardsArray.getJSONObject(i).getString("cardType"));
+                                        int len = creditCardsArray.getJSONObject(i).getString("maskedNumber").length() - 4;
+                                        String astr = "";
+                                        for (int j = 0; j < len; j++){
+                                            astr += "*";
+                                        }
+                                        token.add(creditCardsArray.getJSONObject(i).getString("token"));
+                                        credentials.add(astr + creditCardsArray.getJSONObject(i).getString("last4"));
+                                    }
+                                }
+                                if (customerObj.has("paypalAccounts")){
+                                    JSONArray paypalAccountsArray = new JSONArray(customerObj.getString("paypalAccounts"));
+                                    for (int i = 0; i < paypalAccountsArray.length(); i++){
+                                        paymentType.add("paypal");
+                                        paymentTypeName.add("PayPal");
+                                        token.add(paypalAccountsArray.getJSONObject(i).getString("token"));
+                                        credentials.add(paypalAccountsArray.getJSONObject(i).getString("email"));
+                                    }
+                                }
+                                CharSequence[] csArr = new CharSequence[paymentType.size()];
+                                for (int i = 0; i < paymentType.size(); i++){
+                                    csArr[i] = paymentTypeName.get(i) + "\n" + credentials.get(i);
+                                }
+                                final String[] tokenString = new String[1];
+                                pd.dismiss();
+                                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
+                                alertDialogBuilder.setMultiChoiceItems(csArr, null, new DialogInterface.OnMultiChoiceClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                                        tokenString[0] = token.get(which);
+                                    }
+                                });
+                                alertDialogBuilder.setTitle(R.string.Choose_Payment_Method);
+                                alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                                alertDialogBuilder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        checkout(tokenString[0]);
+                                    }
+                                });
+
+                                final AlertDialog alertDialog = alertDialogBuilder.create();
+                                alertDialog.show();
+
+                            }
+                            else if (!response.getString("status").equals("fail")) {
+                                Toast.makeText(MapsActivity.this, "Error: could not retrieve payment methods", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        catch (JSONException e){
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                    }
+                }
+        );
+        queue.add(jsonObjectRequest);
     }
 
     private void ADnoPaymentMethod(){
@@ -864,6 +974,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void checkout(String token){
+        pd.setTitle(R.string.Completing);
+        pd.setMessage(getResources().getString(R.string.Completing_transaction));
+        pd.setCancelable(false);
+        pd.show();
         RequestQueue queue = Volley.newRequestQueue(this);
         final JSONObject jsonObject = new JSONObject();
         try {

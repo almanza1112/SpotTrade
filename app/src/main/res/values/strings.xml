@@ -34,6 +34,7 @@
     <string name="Cancel_Bid">Cancel Bid</string>
     <string name="Change_Password">Change Password</string>
     <string name="Checking_for_payment_methods">Checking for payment methods</string>
+    <string name="Choose_Payment_Method">Choose Payment Method</string>
     <string name="Complete_Transaction">Complete Transaction</string>
     <string name="Complete_transaction_with_following_payment_method">Complete transaction with following payment method:</string>
     <string name="Completing">Completing</string>
@@ -67,6 +68,8 @@
     <string name="Invalid_email_format">Invalid email format</string>
     <string name="Last_Name">Last Name</string>
     <string name="Later">Later</string>
+    <string name="Loading">Loading</string>
+    <string name="Loading_payment_methods">Loading payment methods</string>
     <string name="Location">Location</string>
     <string name="Log_In">Log In</string>
     <string name="Log_Out">Log Out</string>
@@ -80,7 +83,7 @@
     <string name="Not_Now">Not Now</string>
     <string name="Notifications">Notifications</string>
     <string name="Obtaining_credentials">Obtaining credentials</string>
-    <string name="OK">Ok</string>
+    <string name="OK">OK</string>
     <string name="Other_Method">Other Method</string>
     <string name="Password">Password</string>
     <string name="Password_doesnt_match">Password doesn\'t match</string>
