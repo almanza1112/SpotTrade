@@ -6,7 +6,7 @@ package almanza1112.spottrade.nonActivity;
 
 public class HttpConnection {
     public String htppConnectionURL(){
-        //String url = "http://192.168.1.2:5000"; //for local
-        return "https://spottrade.herokuapp.com";
+        //return "http://192.168.1.2:5000"; //for local testing
+        return "https://spottrade.herokuapp.com"; //for heroku deployment
     }
 }
