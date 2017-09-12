@@ -51,7 +51,6 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
     PaymentAdapter(Activity activity, List<String> paymentType, List<String> paymentTypeName,
                    List<String> imageURL, List<String> credentials, List<String> expirationDate,
                    List<String> token, List<Boolean> isDefault){
-        pd = new ProgressDialog(activity);
         this.activity = activity;
         this.paymentType = paymentType;
         this.paymentTypeName = paymentTypeName;
@@ -112,6 +111,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                     alertDialogBuilder.setItems(items, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            pd = new ProgressDialog(activity);
                             switch (which){
                                 case 0:
                                     ADvalidateDeletion(paymentToken.get(getAdapterPosition()), getAdapterPosition());
