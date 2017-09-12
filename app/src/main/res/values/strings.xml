@@ -36,6 +36,8 @@
     <string name="Checking_for_payment_methods">Checking for payment methods</string>
     <string name="Complete_Transaction">Complete Transaction</string>
     <string name="Complete_transaction_with_following_payment_method">Complete transaction with following payment method:</string>
+    <string name="Completing">Completing</string>
+    <string name="Completing_transaction">Completing transaction&#8230;</string>
     <string name="Confirm_Password">Confirm Password</string>
     <string name="Confirm_New_Password">Confirm New Password</string>
     <string name="Card_Number">Card Number</string>
@@ -51,6 +53,8 @@
     <string name="Edit_Spot">Edit Spot</string>
     <string name="Edit_Type">Edit Type</string>
     <string name="Email">Email</string>
+    <string name="Error">Error</string>
+    <string name="Error_processing_payment">Error processing payment, please user other payment method.</string>
     <string name="Error_service_unavailable">Error: service unavailable</string>
     <string name="Feedback">Feedback</string>
     <string name="Field_cant_be_empty">Field can\'t be empty</string>
@@ -76,6 +80,7 @@
     <string name="Not_Now">Not Now</string>
     <string name="Notifications">Notifications</string>
     <string name="Obtaining_credentials">Obtaining credentials</string>
+    <string name="OK">Ok</string>
     <string name="Other_Method">Other Method</string>
     <string name="Password">Password</string>
     <string name="Password_doesnt_match">Password doesn\'t match</string>

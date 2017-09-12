@@ -553,6 +553,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void transactionBuyNow() {
+        pd.setTitle(R.string.Completing);
+        pd.setMessage(getResources().getString(R.string.Completing_transaction));
+        pd.setCancelable(false);
+        pd.show();
         final JSONObject jObject = new JSONObject();
         try {
             jObject.put("transaction", "complete");
@@ -567,6 +571,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/buy/" + lid, jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
+                pd.dismiss();
                 try{
                     if (response.getString("status").equals("success")){
                         setRoute();
@@ -858,7 +863,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         alertDialog.show();
     }
 
-
     private void checkout(String token){
         RequestQueue queue = Volley.newRequestQueue(this);
         final JSONObject jsonObject = new JSONObject();
@@ -877,7 +881,17 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.e("checkout", response+ "");
+                        try{
+                            if (response.getString("status").equals("success")){
+                                transactionBuyNow();
+                            }
+                            else {
+                                ADerrorProcessingPayment();
+                            }
+                        }
+                        catch (JSONException e){
+                            e.printStackTrace();
+                        }
                     }
                 }, new Response.ErrorListener() {
 
@@ -901,7 +915,20 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
         // Access the RequestQueue through your singleton class.
         queue.add(jsObjRequest);
+    }
 
+    private void ADerrorProcessingPayment(){
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(R.string.Error);
+        alertDialogBuilder.setMessage(R.string.Error_processing_payment);
+        alertDialogBuilder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1) {
+                arg0.dismiss();
+            }
+        });
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 
     //When user buys spot it will give him directions to the spot
