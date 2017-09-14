@@ -1,17 +1,27 @@
 package almanza1112.spottrade.login;
 
+import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -20,7 +30,12 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,6 +51,8 @@ import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.RegularExpression;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
+import static android.app.Activity.RESULT_OK;
+
 /**
  * Created by almanza1112 on 6/21/17.
  */
@@ -43,10 +60,21 @@ import almanza1112.spottrade.nonActivity.SharedPref;
 public class LoginSignUp extends Fragment implements View.OnClickListener{
     private Pattern pattern = Pattern.compile(RegularExpression.EMAIL_PATTERN);
 
-    private TextView tvAddProfilePhoto;
-    private TextInputLayout tilFirstName, tilLastName, tilEmail, tilPassword, tilConfirmPassword, tilPhoneNumber;
+    private TextView tvAddProfilePhoto, tvDeleteProfilePhoto;
+    TextInputLayout  tilEmail;
+    private TextInputLayout tilFirstName, tilLastName, tilPassword, tilConfirmPassword, tilPhoneNumber;
     private TextInputEditText tietFirstName, tietLastName, tietEmail, tietPassword, tietConfirmPassword, tietPhoneNumber;
+    private ImageView ivProfilePhoto;
     private String firstName, lastName, email, password, confirmPassword, phoneNumber;
+    private final int GALLERY_CODE = 1;
+    private final int READ_EXTERNAL_STORAGE_PERMISSION = 2;
+
+    ProgressDialog progressDialog = null;
+    private Uri uri = null;
+
+    StorageReference storageReference;
+
+    private final String TAG = "LoginSignUp";
     @Override
     public View onCreateView(LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.login_sign_up, container, false);
@@ -56,10 +84,17 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.setTitle("Sign Up");
+        toolbar.setTitle(getResources().getString(R.string.Sign_Up));
+
+        progressDialog = new ProgressDialog(getActivity());
+        storageReference = FirebaseStorage.getInstance().getReference();
 
         tvAddProfilePhoto = (TextView) view.findViewById(R.id.tvAddProfilePhoto);
         tvAddProfilePhoto.setOnClickListener(this);
+        tvDeleteProfilePhoto = (TextView) view.findViewById(R.id.tvDeleteProfilePhoto);
+        tvDeleteProfilePhoto.setOnClickListener(this);
+
+        ivProfilePhoto = (ImageView) view.findViewById(R.id.ivProfilePhoto);
 
         tilFirstName = (TextInputLayout) view.findViewById(R.id.tilFirstName);
         tietFirstName = (TextInputEditText) view.findViewById(R.id.tietFirstName);
@@ -87,7 +122,47 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.tvAddProfilePhoto:
+                /*
+                    Checks if permission was NOT granted == ask for permission
+                    Else == permission was already granted, proceed to opening gallery
+                 */
+                if (ContextCompat.checkSelfPermission(
+                        getActivity(),
+                        Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
 
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            READ_EXTERNAL_STORAGE_PERMISSION);
+                    /*
+                    // Should we show an explanation?
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                            Manifest.permission.READ_CONTACTS)) {
+                        // Show an explanation to the user *asynchronously* -- don't block
+                        // this thread waiting for the user's response! After the user
+                        // sees the explanation, try again to request the permission.
+                    } else {
+                        // No explanation needed, we can request the permission.
+
+                        // READ_EXTERNAL_STORAGE_PERMISSION is an
+                        // app-defined int constant. The callback method gets the
+                        // result of the request.
+                    }
+                    */
+                }
+                else {
+                    Intent intent = new Intent();
+                    intent.setType("image/*");
+                    intent.setAction(Intent.ACTION_GET_CONTENT);
+                    startActivityForResult(Intent.createChooser(intent, "Select Picture"), GALLERY_CODE);
+                }
+                break;
+
+            case R.id.tvDeleteProfilePhoto:
+                uri = null;
+                ivProfilePhoto.setImageBitmap(null);
+                tvDeleteProfilePhoto.setVisibility(View.GONE);
+                tvAddProfilePhoto.setVisibility(View.VISIBLE);
                 break;
 
             case R.id.fabDone:
@@ -101,6 +176,32 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                     addNewUser();
                 }
                 break;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case READ_EXTERNAL_STORAGE_PERMISSION:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    Intent intent = new Intent();
+                    intent.setType("image/*");
+                    intent.setAction(Intent.ACTION_GET_CONTENT);
+                    startActivityForResult(Intent.createChooser(intent, "Select Picture"), GALLERY_CODE);
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == GALLERY_CODE && resultCode == RESULT_OK){
+            tvAddProfilePhoto.setVisibility(View.GONE);
+            uri = data.getData();
+            ivProfilePhoto.setImageURI(uri);
+            tvDeleteProfilePhoto.setVisibility(View.VISIBLE);
         }
     }
 
@@ -158,9 +259,12 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
         return sitch;
     }
 
-    //private boolean checkIfEmailExists(){}
-
     private void addNewUser(){
+        tilEmail.setErrorEnabled(false);
+        progressDialog.setTitle(getResources().getString(R.string.Registering));
+        progressDialog.setMessage(getResources().getString(R.string.Creating_user));
+        progressDialog.setCancelable(false);
+        progressDialog.show();
         RequestQueue queue = Volley.newRequestQueue(getActivity());
         final JSONObject jObject = new JSONObject();
         try {
@@ -184,9 +288,9 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        if(response.has("firstName")){
-                            try {
-                                SharedPref.setID(getActivity() ,response.getString("_id"));
+                        try {
+                            if (response.getString("status").equals("success")) {
+                                SharedPref.setID(getActivity(), response.getString("_id"));
                                 SharedPref.setFirstName(getActivity(), response.getString("firstName"));
                                 SharedPref.setLastName(getActivity(), response.getString("lastName"));
                                 SharedPref.setEmail(getActivity(), response.getString("email"));
@@ -194,11 +298,43 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                                 SharedPref.setPhoneNumber(getActivity(), response.getString("phoneNumber"));
                                 SharedPref.setTotalRatings(getActivity(), response.getString("totalRatings"));
                                 SharedPref.setOverallRating(getActivity(), response.getString("overallRating"));
-                            } catch (JSONException e) {
-                                e.printStackTrace();
+
+                                if (uri != null) {
+                                    progressDialog.setMessage(getResources().getString(R.string.Uploading_profile_image));
+                                    StorageReference filePath = storageReference.child("Photos").child(response.getString("_id")).child(uri.getLastPathSegment());
+                                    filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                        @Override
+                                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                            Log.e(TAG, "photo uploaded successfully");
+                                            progressDialog.dismiss();
+                                            startActivity(new Intent(getActivity(), MapsActivity.class));
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Log.e(TAG, "photo upload failed");
+                                            progressDialog.dismiss();
+                                            Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
+                                            e.printStackTrace();
+                                        }
+                                    });
+                                }
+                                else{
+                                    progressDialog.dismiss();
+                                    startActivity(new Intent(getActivity(), MapsActivity.class));
+                                }
                             }
+                            else if (response.getString("status").equals("fail")){
+                                progressDialog.dismiss();
+                                String reason = response.getString("reason");
+                                if (reason.equals("Email already in use")){
+                                    tilEmail.setError(reason);
+                                }
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                        startActivity(new Intent(getActivity(), MapsActivity.class));
+
                     }
                 }, new Response.ErrorListener() {
 
@@ -206,6 +342,8 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                     public void onErrorResponse(VolleyError error) {
                         // TODO Auto-generated method stub
                         error.printStackTrace();
+                        progressDialog.dismiss();
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
                     }
                 }){
             @Override

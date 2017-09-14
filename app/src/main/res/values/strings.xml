@@ -32,6 +32,7 @@
     <string name="Buy_Now">Buy Now</string>
     <string name="Cancel">Cancel</string>
     <string name="Cancel_Bid">Cancel Bid</string>
+    <string name="Card_Number">Card Number</string>
     <string name="Change_Password">Change Password</string>
     <string name="Checking_for_payment_methods">Checking for payment methods</string>
     <string name="Choose_Payment_Method">Choose Payment Method</string>
@@ -41,7 +42,7 @@
     <string name="Completing_transaction">Completing transaction&#8230;</string>
     <string name="Confirm_Password">Confirm Password</string>
     <string name="Confirm_New_Password">Confirm New Password</string>
-    <string name="Card_Number">Card Number</string>
+    <string name="Creating_user">Creating user</string>
     <string name="Current_Password">Current Password</string>
     <string name="CVV">CVV</string>
     <string name="Default">Default</string>
@@ -55,6 +56,7 @@
     <string name="Edit_Type">Edit Type</string>
     <string name="Email">Email</string>
     <string name="Error">Error</string>
+    <string name="Error_unable_to_upload_image">Error: unable to upload image</string>
     <string name="Error_processing_payment">Error processing payment, please user other payment method.</string>
     <string name="Error_service_unavailable">Error: service unavailable</string>
     <string name="Feedback">Feedback</string>
@@ -96,6 +98,7 @@
     <string name="Place_Bid">Place Bid</string>
     <string name="Please_set_up_Android_Pay">Please set up Android Pay</string>
     <string name="Price">Price</string>
+    <string name="Registering">Registering</string>
     <string name="Request">Request</string>
     <string name="Request_a_Spot">Request a Spotter</string>
     <string name="Requested_Spotter">Requested Spotter</string>
@@ -105,6 +108,7 @@
     <string name="Sell_a_Spot">Sell a Spot</string>
     <string name="Selling">Selling</string>
     <string name="Server_error">Something went wrong: server error</string>
+    <string name="Sign_Up">Sign Up</string>
     <string name="Sold_Spot">Sold Spot</string>
     <string name="sold_their_spot">sold their spot</string>
     <string name="Spot">Spot</string>
@@ -116,6 +120,7 @@
     <string name="updated">updated</string>
     <string name="Updating">Updating</string>
     <string name="Updating_default_payment_method">Updating default payment method</string>
+    <string name="Uploading_profile_image">Uploading profile image</string>
     <string name="Verifying">Verifying</string>
     <string name="Yes">Yes</string>
     <string name="You_have_no_payment_method">You have no payment method in order to pay for this request. Please add one to proceed.</string>

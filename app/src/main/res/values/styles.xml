@@ -10,9 +10,11 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
+
     <dimen name="contentPadding">16dp</dimen>
     <dimen name="halfContentPadding">8dp</dimen>
     <dimen name="quarterContentPadding">4dp</dimen>
+    <dimen name="toolbarElevation">4dp</dimen>
 
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
