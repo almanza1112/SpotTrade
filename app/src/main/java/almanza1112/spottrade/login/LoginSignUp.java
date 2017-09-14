@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -126,14 +127,16 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                     Checks if permission was NOT granted == ask for permission
                     Else == permission was already granted, proceed to opening gallery
                  */
-                if (ContextCompat.checkSelfPermission(
-                        getActivity(),
-                        Manifest.permission.READ_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                        &&
+                        ContextCompat.checkSelfPermission(
+                                getActivity(),
+                                Manifest.permission.READ_EXTERNAL_STORAGE)
+                                != PackageManager.PERMISSION_GRANTED){
 
-                    ActivityCompat.requestPermissions(getActivity(),
-                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                            READ_EXTERNAL_STORAGE_PERMISSION);
+                        ActivityCompat.requestPermissions(getActivity(),
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                READ_EXTERNAL_STORAGE_PERMISSION);
                     /*
                     // Should we show an explanation?
                     if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
