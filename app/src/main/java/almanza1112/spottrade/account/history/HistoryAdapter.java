@@ -10,7 +10,6 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import almanza1112.spottrade.R;
@@ -23,18 +22,18 @@ import almanza1112.spottrade.nonActivity.SharedPref;
 class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHolder>{
 
     private Activity activity;
-    private List<String> type = new ArrayList<>();
-    private List<String> description = new ArrayList<>();
-    private List<String> price = new ArrayList<>();
-    private List<String> dateCompleted = new ArrayList<>();
-    private List<String> locationName = new ArrayList<>();
-    private List<String> locationAddress = new ArrayList<>();
-    private List<String> latitude = new ArrayList<>();
-    private List<String> longitude = new ArrayList<>();
-    private List<String> buyerID = new ArrayList<>();
-    private List<String> buyerName = new ArrayList<>();
-    private List<String> sellerID = new ArrayList<>();
-    private List<String> sellerName = new ArrayList<>();
+    private List<String> type;
+    private List<String> description;
+    private List<String> price;
+    private List<String> dateCompleted;
+    private List<String> locationName;
+    private List<String> locationAddress;
+    private List<String> latitude;
+    private List<String> longitude;
+    private List<String> buyerID;
+    private List<String> buyerName;
+    private List<String> sellerID;
+    private List<String> sellerName;
     private List<String> profilePhotoUrl;
 
     HistoryAdapter(Activity activity, List<String> type, List<String> description,
