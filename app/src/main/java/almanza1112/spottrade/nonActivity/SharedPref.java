@@ -18,6 +18,7 @@ public class SharedPref {
     private static final String PREF_USER_PHONE_NUMBER = "phoneNumber";
     private static final String PREF_USER_TOTAL_RATINGS = "totalRatings";
     private static final String PREF_USER_OVERALL_RATING = "overallRating";
+    private static final String PREF_USER_PROFILE_PHOTO_URL = "profilePhotoUrl";
 
 
     static SharedPreferences getSharedPreferences(Context ctx) {
@@ -164,4 +165,19 @@ public class SharedPref {
         editor.apply();
     }
 
+    public static void setProfilePhotoUrl(Context ctx, String password){
+        SharedPreferences.Editor editor = getSharedPreferences(ctx).edit();
+        editor.putString(PREF_USER_PROFILE_PHOTO_URL, password);
+        editor.apply();
+    }
+
+    public static String getProfilePhotoUrl(Context ctx){
+        return getSharedPreferences(ctx).getString(PREF_USER_PROFILE_PHOTO_URL, "");
+    }
+
+    public static void clearProfilePhotoUrl(Context ctx) {
+        SharedPreferences.Editor editor = getSharedPreferences(ctx).edit();
+        editor.remove(PREF_USER_PROFILE_PHOTO_URL);
+        editor.apply();
+    }
 }

@@ -71,11 +71,10 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
     private final int READ_EXTERNAL_STORAGE_PERMISSION = 2;
 
     ProgressDialog progressDialog = null;
-    private Uri uri = null;
 
+    private Uri uri = null;
     StorageReference storageReference;
 
-    private final String TAG = "LoginSignUp";
     @Override
     public View onCreateView(LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.login_sign_up, container, false);
@@ -302,23 +301,24 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                                 SharedPref.setTotalRatings(getActivity(), response.getString("totalRatings"));
                                 SharedPref.setOverallRating(getActivity(), response.getString("overallRating"));
 
+                                // If uri is not empty then that means that user wants to upload image
                                 if (uri != null) {
                                     progressDialog.setMessage(getResources().getString(R.string.Uploading_profile_image));
                                     StorageReference filePath = storageReference.child("Photos").child(response.getString("_id")).child(uri.getLastPathSegment());
                                     filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                         @Override
                                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                            Log.e(TAG, "photo uploaded successfully");
-                                            progressDialog.dismiss();
-                                            startActivity(new Intent(getActivity(), MapsActivity.class));
+                                            Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                                            SharedPref.setProfilePhotoUrl(getActivity(), downloadUrl.toString());
+                                            uploadDownloadUrl(downloadUrl.toString());
                                         }
                                     }).addOnFailureListener(new OnFailureListener() {
                                         @Override
                                         public void onFailure(@NonNull Exception e) {
-                                            Log.e(TAG, "photo upload failed");
                                             progressDialog.dismiss();
-                                            Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
                                             e.printStackTrace();
+                                            Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
+                                            startActivity(new Intent(getActivity(), MapsActivity.class));
                                         }
                                     });
                                 }
@@ -363,5 +363,33 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
 
         // Access the RequestQueue through your singleton class.
         queue.add(jsObjRequest);
+    }
+
+    // Uploads download url for profile photo to database
+    private void uploadDownloadUrl(String url){
+        final JSONObject jObject = new JSONObject();
+        try {
+            jObject.put("profilePhotoUrl", url);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getID(getActivity()), jObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.e("uploadDownloadUrl", response +  "");
+                progressDialog.dismiss();
+                startActivity(new Intent(getActivity(), MapsActivity.class));
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        }
+        );
+        queue.add(jsonObjectRequest);
     }
 }

@@ -150,7 +150,6 @@ public class History extends Fragment {
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/all?sellerID="+ SharedPref.getID(getActivity()) + "&transaction=complete&type=" + type, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Log.e("response", response+ "");
                 try{
                     if (response.getString("status").equals("success")){
                         List<String> type = new ArrayList<>();
@@ -165,6 +164,7 @@ public class History extends Fragment {
                         List<String> buyerName = new ArrayList<>();
                         List<String> sellerID = new ArrayList<>();
                         List<String> sellerName = new ArrayList<>();
+                        List<String> profilePhotoUrl = new ArrayList<>();
 
                         String locations = response.getString("location");
                         JSONArray jsonArray = new JSONArray(locations);
@@ -174,7 +174,6 @@ public class History extends Fragment {
                             type.add(locationObj.getString("type"));
                             description.add(locationObj.getString("description"));
                             price.add(locationObj.getString("price"));
-                            //dateCompleted.add(locationObj.getLong("dateCompleted"));
                             String convertedDate = epochToDateString(locationObj.getLong("dateCompleted"));
                             dateCompleted.add(convertedDate);
                             locationName.add(locationObj.getString("name"));
@@ -184,10 +183,17 @@ public class History extends Fragment {
                             buyerID.add(locationObj.getString("buyerID"));
                             sellerID.add(locationObj.getString("sellerID"));
 
+                            String buyerProfilePhotoUrl = "";
                             if (locationObj.has("buyerInfo")){
                                 String buyerInfoString = locationObj.getString("buyerInfo");
                                 JSONObject buyerInfoObj = new JSONObject(buyerInfoString);
                                 buyerName.add(buyerInfoObj.getString("buyerFirstName") + " " + buyerInfoObj.getString("buyerLastName"));
+                                if (buyerInfoObj.has("buyerProfilePhotoUrl")){
+                                    buyerProfilePhotoUrl = buyerInfoObj.getString("buyerProfilePhotoUrl");
+                                }
+                                else {
+                                    buyerProfilePhotoUrl = "empty";
+                                }
                             }
                             else {
                                 buyerName.add("something");
@@ -196,9 +202,26 @@ public class History extends Fragment {
                             String sellerInfoString = locationObj.getString("sellerInfo");
                             JSONObject sellerInfoObj = new JSONObject(sellerInfoString);
                             sellerName.add(sellerInfoObj.getString("sellerFirstName") + " " + sellerInfoObj.getString("sellerLastName"));
+
+
+                            if (buyerID.get(i).equals(SharedPref.getID(getActivity()))){
+                                if (sellerInfoObj.has("sellerProfilePhotoUrl")){
+                                    profilePhotoUrl.add(sellerInfoObj.getString("sellerProfilePhotoUrl"));
+                                }
+                                else {
+                                    profilePhotoUrl.add("empty");
+                                }
+                            }
+                            else {
+                                profilePhotoUrl.add(buyerProfilePhotoUrl);
+                            }
+
                         }
 
-                        adapter = new HistoryAdapter(getActivity(), type, description, price, dateCompleted, locationName, locationAddress, latitude, longitude, buyerID, buyerName, sellerID, sellerName);
+                        adapter = new HistoryAdapter(   getActivity(), type, description, price,
+                                                        dateCompleted, locationName, locationAddress,
+                                                        latitude, longitude, buyerID, buyerName,
+                                                        sellerID, sellerName, profilePhotoUrl);
                         layoutManager = new LinearLayoutManager(getActivity());
                         rvHistory.setLayoutManager(layoutManager);
                         rvHistory.setAdapter(adapter);

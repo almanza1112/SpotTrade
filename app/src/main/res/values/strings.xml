@@ -34,6 +34,7 @@
     <string name="Cancel_Bid">Cancel Bid</string>
     <string name="Card_Number">Card Number</string>
     <string name="Change_Password">Change Password</string>
+    <string name="Change_Profile_Photo">Change Profile Photo</string>
     <string name="Checking_for_payment_methods">Checking for payment methods</string>
     <string name="Choose_Payment_Method">Choose Payment Method</string>
     <string name="Complete_Transaction">Complete Transaction</string>
@@ -98,6 +99,8 @@
     <string name="Place_Bid">Place Bid</string>
     <string name="Please_set_up_Android_Pay">Please set up Android Pay</string>
     <string name="Price">Price</string>
+    <string name="Profile_Photo">Profile Photo</string>
+    <string name="Profile_photo_updated">Profile photo updated</string>
     <string name="Registering">Registering</string>
     <string name="Request">Request</string>
     <string name="Request_a_Spot">Request a Spotter</string>

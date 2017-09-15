@@ -35,12 +35,13 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
     private List<String> buyerName = new ArrayList<>();
     private List<String> sellerID = new ArrayList<>();
     private List<String> sellerName = new ArrayList<>();
+    private List<String> profilePhotoUrl;
 
     HistoryAdapter(Activity activity, List<String> type, List<String> description,
                    List<String> price, List<String> dateCompleted, List<String> locationName,
                    List<String> locationAddress, List<String> latitude,
                    List<String> longitude, List<String> buyerID, List<String> buyerName,
-                   List<String> sellerID, List<String> sellerName){
+                   List<String> sellerID, List<String> sellerName, List<String> profilePhotoUrl){
         this.activity = activity;
         this.type = type;
         this.description = description;
@@ -54,6 +55,7 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
         this.buyerName = buyerName;
         this.sellerID = sellerID;
         this.sellerName = sellerName;
+        this.profilePhotoUrl = profilePhotoUrl;
     }
 
     @Override
@@ -71,6 +73,7 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
         else {
             otherUser = buyerName.get(position);
         }
+        Picasso.with(activity).load(profilePhotoUrl.get(position)).into(holder.ivProfilePhoto);
         String url = "http://maps.google.com/maps/api/staticmap?center=" + latitude.get(position) + "," + longitude.get(position) + "&zoom=15&size=1000x150&scale=2&sensor=false";
         Picasso.with(activity).load(url).fit().into(holder.ivStaticMap);
         holder.tvLocationName.setText(locationName.get(position));
@@ -88,12 +91,13 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
     }
 
     class RecyclerViewHolder extends RecyclerView.ViewHolder{
-        ImageView ivStaticMap;
+        ImageView ivStaticMap, ivProfilePhoto;
         TextView    tvPrice, tvLocationName, tvLocationAddress, tvType,
                     tvDescription, tvOtherUser, tvDateCompleted;
         RecyclerViewHolder(View view){
             super(view);
             ivStaticMap = (ImageView) view.findViewById(R.id.ivStaticMap);
+            ivProfilePhoto = (ImageView) view.findViewById(R.id.ivProfilePhoto);
             tvType = (TextView) view.findViewById(R.id.tvType);
             tvPrice = (TextView) view.findViewById(R.id.tvPrice);
             tvLocationName = (TextView) view.findViewById(R.id.tvLocationName);

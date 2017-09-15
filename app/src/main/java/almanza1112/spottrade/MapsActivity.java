@@ -1,9 +1,12 @@
 package almanza1112.spottrade;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -15,6 +18,8 @@ import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -86,6 +91,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private ViewGroup hiddenPanel;
     private Animation bottomUp, bottomDown;
     private TextView tvFullName, tvUserRating, tvTotalRating, tvLocationName, tvLocationAddress, tvTransaction, tvDescription;
+    private ImageView ivSellerProfilePhoto;
     private Button bBuyNow, bPlaceBid, bCancelBid, bDelete;
     private Marker marker;
 
@@ -95,6 +101,8 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private int SEARCH_CODE = 0;
     private int SPOT_CODE = 1;
     private String lid, price, type;
+
+    private final int ACCESS_FINE_LOCATION_PERMISSION = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,6 +124,8 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         bottomUp = AnimationUtils.loadAnimation(this, R.anim.bottom_up);
         bottomDown = AnimationUtils.loadAnimation(this, R.anim.bottom_down);
         hiddenPanel = (ViewGroup)findViewById(R.id.hidden_panel);
+
+        ivSellerProfilePhoto = (ImageView) findViewById(R.id.ivProfilePhoto);
         tvFullName = (TextView) findViewById(R.id.tvFullName);
         tvUserRating = (TextView) findViewById(R.id.tvUserRating);
         tvTotalRating = (TextView) findViewById(R.id.tvTotalRating);
@@ -161,9 +171,13 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         navigationView.setNavigationItemSelectedListener(this);
 
         View navHeaderView = navigationView.getHeaderView(0);
-        TextView tvLoggedInFullName = (TextView) navHeaderView.findViewById(R.id.tvLoggedInFullName);
+        final ImageView ivProfilePhoto = (ImageView) navHeaderView.findViewById(R.id.ivProfilePhoto);
+        if (!SharedPref.getProfilePhotoUrl(this).isEmpty()){
+            Picasso.with(this).load(SharedPref.getProfilePhotoUrl(this)).into(ivProfilePhoto);
+        }
+        final TextView tvLoggedInFullName = (TextView) navHeaderView.findViewById(R.id.tvLoggedInFullName);
         tvLoggedInFullName.setText(SharedPref.getFirstName(this) + " " + SharedPref.getLastName(this));
-        TextView tvLoggedInEmail = (TextView) navHeaderView.findViewById(R.id.tvLoggedInEmail);
+        final TextView tvLoggedInEmail = (TextView) navHeaderView.findViewById(R.id.tvLoggedInEmail);
         tvLoggedInEmail.setText(SharedPref.getEmail(this));
     }
 
@@ -383,12 +397,26 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         // Get the name of the best provider
         String provider = locationManager.getBestProvider(criteria, true);
 
-        // Get Current Location
-        Location myLocation = locationManager.getLastKnownLocation(provider);
+        Location myLocation = null;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                &&
+                ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.ACCESS_FINE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    ACCESS_FINE_LOCATION_PERMISSION);
+        }
+        else {
+            // Get Current Location
+            myLocation = locationManager.getLastKnownLocation(provider);
+            mMap.setMyLocationEnabled(true);
+        }
 
         // set map type
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        mMap.setMyLocationEnabled(true);
         mMap.getUiSettings().setMyLocationButtonEnabled(false);
 
         double latitude = 0;
@@ -443,6 +471,9 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     tvUserRating.setText(" - "+sellerInfoObj.getString("sellerOverallRating"));
                     tvTotalRating.setText("("+sellerInfoObj.getString("sellerTotalRatings")+")");
 
+                    if (sellerInfoObj.has("sellerProfilePhotoUrl")){
+                        Picasso.with(MapsActivity.this).load(sellerInfoObj.getString("sellerProfilePhotoUrl")).into(ivSellerProfilePhoto);
+                    }
                     type = response.getString("type");
                     if (type.equals("Sell")) {
                         tvTransaction.setText(getResources().getString(R.string.Selling) + " - $" + response.getString("price"));

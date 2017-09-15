@@ -1,18 +1,27 @@
 package almanza1112.spottrade.account.personal;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,6 +38,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,14 +55,22 @@ import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.RegularExpression;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
+import static android.app.Activity.RESULT_OK;
+
 /**
  * Created by almanza1112 on 7/29/17.
  */
 
 public class Personal extends Fragment implements View.OnClickListener {
     private TextView tvFistName, tvLastName, tvEmail;
+    private ImageView ivProfilePhoto;
     private ProgressBar progressBar;
     private Pattern pattern = Pattern.compile(RegularExpression.EMAIL_PATTERN);
+
+    private final int GALLERY_CODE = 1;
+    private final int READ_EXTERNAL_STORAGE_PERMISSION = 2;
+
+    StorageReference storageReference;
 
     @Nullable
     @Override
@@ -58,6 +80,12 @@ public class Personal extends Fragment implements View.OnClickListener {
         toolbar.setTitle(R.string.Personal);
 
         progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
+        storageReference = FirebaseStorage.getInstance().getReference();
+
+        ivProfilePhoto = (ImageView) view.findViewById(R.id.ivProfilePhoto);
+        final ImageView ivEditProfilePhoto = (ImageView) view.findViewById(R.id.ivEditProfilePhoto);
+        ivEditProfilePhoto.setOnClickListener(this);
+
         tvFistName = (TextView) view.findViewById(R.id.tvFirstName);
         tvFistName.setText(SharedPref.getFirstName(getActivity()));
         final ImageView ivEditFirstName = (ImageView) view.findViewById(R.id.ivEditFirstName);
@@ -102,6 +130,10 @@ public class Personal extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.ivEditProfilePhoto:
+                ADupdateProfilePhoto();
+                break;
+
             case R.id.ivEditFirstName:
                 ADupdateField("firstName");
                 break;
@@ -134,6 +166,143 @@ public class Personal extends Fragment implements View.OnClickListener {
     public void onPrepareOptionsMenu(Menu menu) {
         MenuItem item=menu.findItem(R.id.search);
         item.setVisible(false);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case READ_EXTERNAL_STORAGE_PERMISSION:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    Intent intent = new Intent();
+                    intent.setType("image/*");
+                    intent.setAction(Intent.ACTION_GET_CONTENT);
+                    startActivityForResult(Intent.createChooser(intent, "Select Picture"), GALLERY_CODE);
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == GALLERY_CODE && resultCode == RESULT_OK){
+            progressBar.setVisibility(View.VISIBLE);
+            Uri uri = data.getData();
+            ivProfilePhoto.setImageURI(uri);
+            StorageReference filePath = storageReference.child("Photos").child(SharedPref.getID(getActivity())).child(uri.getLastPathSegment());
+            filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                    SharedPref.clearProfilePhotoUrl(getActivity());
+                    SharedPref.setProfilePhotoUrl(getActivity(), downloadUrl.toString());
+                    uploadDownloadUrl(downloadUrl.toString());
+                    Toast.makeText(getActivity(), getResources().getString(R.string.Profile_photo_updated), Toast.LENGTH_SHORT).show();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    progressBar.setVisibility(View.GONE);
+                    e.printStackTrace();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    // Uploads download url for profile photo to database
+    private void uploadDownloadUrl(String url){
+        final JSONObject jObject = new JSONObject();
+        try {
+            jObject.put("profilePhotoUrl", url);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getID(getActivity()), jObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                progressBar.setVisibility(View.GONE);
+
+                Log.e("setDownloadUrl", response +  "");
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        }
+        );
+        queue.add(jsonObjectRequest);
+    }
+
+    private void ADupdateProfilePhoto(){
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+        final CharSequence[] items;
+        if (ivProfilePhoto.getDrawable() == null){
+            items = new CharSequence[]{getResources().getString(R.string.Add_profile_photo)};
+        }
+        else {
+            items = new CharSequence[]{getResources().getString(R.string.Delete), getResources().getString(R.string.Change_Profile_Photo)};
+        }
+
+        alertDialogBuilder.setTitle(getResources().getString(R.string.Profile_Photo));
+        alertDialogBuilder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (items.length == 1){
+                    //means there is no photo
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                            &&
+                            ContextCompat.checkSelfPermission(
+                                    getActivity(),
+                                    Manifest.permission.READ_EXTERNAL_STORAGE)
+                                    != PackageManager.PERMISSION_GRANTED){
+                        ActivityCompat.requestPermissions(getActivity(),
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                READ_EXTERNAL_STORAGE_PERMISSION);
+                    }
+                    else {
+                        Intent intent = new Intent();
+                        intent.setType("image/*");
+                        intent.setAction(Intent.ACTION_GET_CONTENT);
+                        startActivityForResult(Intent.createChooser(intent, "Select Picture"), GALLERY_CODE);
+                    }
+                }
+                else if (items.length == 2){
+                    //means there is a photo
+                    if (which == 1){
+                        //delete photo
+
+                    }
+                    else if (which == 2){
+                        //change photo
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                                &&
+                                ContextCompat.checkSelfPermission(
+                                        getActivity(),
+                                        Manifest.permission.READ_EXTERNAL_STORAGE)
+                                        != PackageManager.PERMISSION_GRANTED){
+                            ActivityCompat.requestPermissions(getActivity(),
+                                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                    READ_EXTERNAL_STORAGE_PERMISSION);
+                        }
+                        else {
+                            Intent intent = new Intent();
+                            intent.setType("image/*");
+                            intent.setAction(Intent.ACTION_GET_CONTENT);
+                            startActivityForResult(Intent.createChooser(intent, "Select Picture"), GALLERY_CODE);
+                        }
+                    }
+                }
+            }
+        });
+
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 
     private void ADupdateField(final String field) {
@@ -221,7 +390,6 @@ public class Personal extends Fragment implements View.OnClickListener {
                         break;
                 }
                 if (wantToCloseDialog) {
-                    progressBar.setVisibility(View.VISIBLE);
                     alertDialog.dismiss();
                 }
                 //else dialog stays open. Make sure you have an obvious way to close the dialog especially if you set cancellable to false.
@@ -230,6 +398,7 @@ public class Personal extends Fragment implements View.OnClickListener {
     }
 
     private void updateField(final String field, final String str) {
+        progressBar.setVisibility(View.VISIBLE);
         final JSONObject jObject = new JSONObject();
         try {
             jObject.put(field, str);
@@ -243,7 +412,7 @@ public class Personal extends Fragment implements View.OnClickListener {
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    progressBar.setVisibility(View.INVISIBLE);
+                    progressBar.setVisibility(View.GONE);
                     if (response.getString("status").equals("success")) {
                         switch (field) {
                             case "firstName":

@@ -131,6 +131,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                         SharedPref.setPhoneNumber(LoginActivity.this, phoneNumber);
                                     }
 
+                                    if (response.has("profilePhotoUrl")){
+                                        SharedPref.setProfilePhotoUrl(LoginActivity.this, response.getString("profilePhotoUrl"));
+                                    }
+
                                     SharedPref.setID(LoginActivity.this, id);
                                     SharedPref.setEmail(LoginActivity.this, email);
                                     SharedPref.setFirstName(LoginActivity.this, firstName);
