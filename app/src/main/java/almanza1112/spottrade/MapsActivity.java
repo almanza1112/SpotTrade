@@ -86,6 +86,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private ProgressBar progressBar;
     private FloatingActionMenu fabMenu;
     private GoogleMap mMap;
+    Location myLocation;
     private ProgressDialog pd = null;
     NavigationView navigationView;
     DrawerLayout drawer;
@@ -103,7 +104,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private int SEARCH_CODE = 0;
     private int SPOT_CODE = 1;
     private String lid, price, type;
-    private String typeSelected;
+    private String typeSelected = "all";
     final int[] pos = {2};
 
     private final int ACCESS_FINE_LOCATION_PERMISSION = 5;
@@ -415,6 +416,8 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
      * installed Google Play services and returned to the app.
      */
 
+    String provider;
+    LocationManager locMan;
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -435,14 +438,15 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
         // Get LocationManager object from System Service LOCATION_SERVICE
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
+        locMan = locationManager;
         // Create a criteria object to retrieve provider
         Criteria criteria = new Criteria();
 
         // Get the name of the best provider
         String provider = locationManager.getBestProvider(criteria, true);
+        this.provider = provider;
 
-        Location myLocation = null;
+        myLocation = null;
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                 &&
                 ContextCompat.checkSelfPermission(
@@ -458,41 +462,66 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             // Get Current Location
             myLocation = locationManager.getLastKnownLocation(provider);
             mMap.setMyLocationEnabled(true);
+            double latitude = 0;
+            double longitude = 0;
+
+            try {
+                latitude = myLocation.getLatitude();
+                longitude = myLocation.getLongitude();
+            }
+            catch (NullPointerException e){
+                e.printStackTrace();
+            }
+
+            currentLocation = new LatLng(latitude, longitude);
+
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
         }
 
-        // set map type
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.getUiSettings().setMyLocationButtonEnabled(false);
 
-        double latitude = 0;
-        double longitude = 0;
 
-        try {
-            // Get latitude of the current location
-            latitude = myLocation.getLatitude();
-            longitude = myLocation.getLongitude();
-        }
-        catch (NullPointerException e){
-            e.printStackTrace();
-        }
-
-        // Create a LatLng object for the current location
-        currentLocation = new LatLng(latitude, longitude);
-
-        // Add a marker in Sydney and move the camera
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
         mMap.getUiSettings().setMapToolbarEnabled(false); //disables the bottom right buttons that appear when you click on a marker
         mMap.getUiSettings().setRotateGesturesEnabled(false);
         mMap.setOnMarkerClickListener(this);
 
-        getAvailableSpots("all");
+        getAvailableSpots(typeSelected);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // If request is cancelled, the result arrays are empty.
+        if (requestCode == ACCESS_FINE_LOCATION_PERMISSION) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                Criteria criteria = new Criteria();
+                String provider = locationManager.getBestProvider(criteria, true);
+                myLocation = locationManager.getLastKnownLocation(provider);
+                mMap.setMyLocationEnabled(true);
+                double latitude = 0;
+                double longitude = 0;
+                try {
+                    latitude = myLocation.getLatitude();
+                    longitude = myLocation.getLongitude();
+                }
+                catch (NullPointerException e){
+                    e.printStackTrace();
+                }
 
+                currentLocation = new LatLng(latitude, longitude);
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
+            }
+            else {
+                // permission denied, boo! Disable the
+                // functionality that depends on this permission.
+                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override
