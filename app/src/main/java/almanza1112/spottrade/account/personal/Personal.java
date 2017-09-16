@@ -43,6 +43,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -85,6 +86,9 @@ public class Personal extends Fragment implements View.OnClickListener {
         ivProfilePhoto = (ImageView) view.findViewById(R.id.ivProfilePhoto);
         final ImageView ivEditProfilePhoto = (ImageView) view.findViewById(R.id.ivEditProfilePhoto);
         ivEditProfilePhoto.setOnClickListener(this);
+        if (!SharedPref.getProfilePhotoUrl(getActivity()).isEmpty()){
+            Picasso.with(getActivity()).load(SharedPref.getProfilePhotoUrl(getActivity())).into(ivProfilePhoto);
+        }
 
         tvFistName = (TextView) view.findViewById(R.id.tvFirstName);
         tvFistName.setText(SharedPref.getFirstName(getActivity()));
@@ -164,8 +168,10 @@ public class Personal extends Fragment implements View.OnClickListener {
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem item=menu.findItem(R.id.search);
-        item.setVisible(false);
+        MenuItem searchItem = menu.findItem(R.id.search);
+        searchItem.setVisible(false);
+        MenuItem filterItem = menu.findItem(R.id.filterMaps);
+        filterItem.setVisible(false);
     }
 
     @Override
@@ -232,6 +238,8 @@ public class Personal extends Fragment implements View.OnClickListener {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
                 error.printStackTrace();
             }
         }
