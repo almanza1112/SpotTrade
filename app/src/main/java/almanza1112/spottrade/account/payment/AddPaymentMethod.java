@@ -131,8 +131,10 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         if (from.equals("Payment") || from.equals("MapsActivity")) {
-            MenuItem item = menu.findItem(R.id.search);
-            item.setVisible(false);
+            MenuItem searchItem = menu.findItem(R.id.search);
+            searchItem.setVisible(false);
+            MenuItem filterItem = menu.findItem(R.id.filterMaps);
+            filterItem.setVisible(false);
         }
     }
 

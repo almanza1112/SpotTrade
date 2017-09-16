@@ -89,18 +89,20 @@ public class YourSpots extends Fragment {
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem item=menu.findItem(R.id.search);
-        item.setVisible(false);
+        MenuItem searchItem = menu.findItem(R.id.search);
+        searchItem.setVisible(false);
+        MenuItem filterItem = menu.findItem(R.id.filterMaps);
+        filterItem.setVisible(false);
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.history_menu, menu);
+        inflater.inflate(R.menu.your_spots_menu, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.filter){
+        if (item.getItemId() == R.id.filterYourSpots){
             final CharSequence[] items = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request), getResources().getString(R.string.All)};
             final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
             alertDialogBuilder.setTitle(getResources().getString(R.string.Filter) + " " + getResources().getString(R.string.Your_Spots));
@@ -137,7 +139,6 @@ public class YourSpots extends Fragment {
         }
         return true;
     }
-
 
     private void getYourSpots(String type){
         progressBar.setVisibility(View.VISIBLE);

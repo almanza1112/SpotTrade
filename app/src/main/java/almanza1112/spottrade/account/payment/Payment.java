@@ -102,8 +102,10 @@ public class Payment extends Fragment {
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem item=menu.findItem(R.id.search);
-        item.setVisible(false);
+        MenuItem searchItem = menu.findItem(R.id.search);
+        searchItem.setVisible(false);
+        MenuItem filterItem = menu.findItem(R.id.filterMaps);
+        filterItem.setVisible(false);
     }
 
     private void getCustomer(){

@@ -92,8 +92,10 @@ public class History extends Fragment {
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem item=menu.findItem(R.id.search);
-        item.setVisible(false);
+        MenuItem searchItem = menu.findItem(R.id.search);
+        searchItem.setVisible(false);
+        MenuItem filterItem = menu.findItem(R.id.filterMaps);
+        filterItem.setVisible(false);
     }
 
     @Override
@@ -103,7 +105,7 @@ public class History extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.filter){
+        if (item.getItemId() == R.id.filterHistory){
             final CharSequence[] items = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request), getResources().getString(R.string.All)};
             final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
             alertDialogBuilder.setTitle(getResources().getString(R.string.Filter) + " " + getResources().getString(R.string.History));

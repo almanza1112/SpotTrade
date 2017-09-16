@@ -38,6 +38,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -82,6 +83,7 @@ import almanza1112.spottrade.search.SearchActivity;
 import almanza1112.spottrade.yourSpots.YourSpots;
 
 public class MapsActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener{
+    private ProgressBar progressBar;
     private FloatingActionMenu fabMenu;
     private GoogleMap mMap;
     private ProgressDialog pd = null;
@@ -101,8 +103,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private int SEARCH_CODE = 0;
     private int SPOT_CODE = 1;
     private String lid, price, type;
+    private String typeSelected;
+    final int[] pos = {2};
 
-    private final int ACCESS_FINE_LOCATION_PERMISSION = 1;
+    private final int ACCESS_FINE_LOCATION_PERMISSION = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +119,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         tb.setMargins(20, 20, 20, 0);
 
         pd = new ProgressDialog(this);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -294,11 +299,51 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.search){
-            startActivityForResult(new Intent(this, SearchActivity.class), SEARCH_CODE);
-        }
-        else if(item.getItemId() == android.R.id.home){
-            onBackPressed();
+        switch (item.getItemId()) {
+            case R.id.search:
+                startActivityForResult(new Intent(this, SearchActivity.class), SEARCH_CODE);
+                break;
+
+            case android.R.id.home:
+                onBackPressed();
+                break;
+
+            case R.id.filterMaps:
+                final CharSequence[] items = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request), getResources().getString(R.string.All)};
+                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+                alertDialogBuilder.setTitle(getResources().getString(R.string.Filter) + " " + getResources().getString(R.string.Your_Spots));
+                alertDialogBuilder.setSingleChoiceItems(items, pos[0], new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        pos[0] = which;
+                    }
+                });
+                alertDialogBuilder.setPositiveButton(R.string.Apply, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String type;
+                        if (pos[0] == 0){
+                            type = "Sell";
+                        }
+                        else if (pos[0] == 1){
+                            type = "Request";
+                        }
+                        else {
+                            type = "all";
+                        }
+                        typeSelected = type;
+                        getAvailableSpots(type);
+                    }
+                });
+                alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                final AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -441,7 +486,13 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         mMap.getUiSettings().setRotateGesturesEnabled(false);
         mMap.setOnMarkerClickListener(this);
 
-        getAvailableSpots();
+        getAvailableSpots("all");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
     }
 
     @Override
@@ -536,15 +587,16 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         return false;
     }
 
-    private void getAvailableSpots(){
+    private void getAvailableSpots(String typeSelected){
+        progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);
-
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/all?sellerID=all&transaction=available&type=all", null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/all?sellerID=all&transaction=available&type=" + typeSelected, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
                     if (response.getString("status").equals("success")){
+                        mMap.clear();
                         String locations = response.getString("location");
                         JSONArray jsonArray = new JSONArray(locations);
 
@@ -556,9 +608,12 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                             marker = mMap.addMarker(new MarkerOptions().position(locash).title(locationObj.getString("name")));
                             marker.setTag(locationObj.getString("_id"));
                         }
+                        progressBar.setVisibility(View.GONE);
                     }
                 }
                 catch (JSONException e){
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(MapsActivity.this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
                 }
             }
@@ -1155,7 +1210,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private void refreshMap(){
         if (mMap != null){
             mMap.clear();
-            getAvailableSpots();
+            getAvailableSpots(typeSelected);
         }
     }
 
