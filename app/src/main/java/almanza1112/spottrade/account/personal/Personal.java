@@ -87,7 +87,7 @@ public class Personal extends Fragment implements View.OnClickListener {
         final ImageView ivEditProfilePhoto = (ImageView) view.findViewById(R.id.ivEditProfilePhoto);
         ivEditProfilePhoto.setOnClickListener(this);
         if (!SharedPref.getProfilePhotoUrl(getActivity()).isEmpty()){
-            Picasso.with(getActivity()).load(SharedPref.getProfilePhotoUrl(getActivity())).into(ivProfilePhoto);
+            Picasso.with(getActivity()).load(SharedPref.getProfilePhotoUrl(getActivity())).fit().centerCrop().into(ivProfilePhoto);
         }
 
         tvFistName = (TextView) view.findViewById(R.id.tvFirstName);
@@ -177,7 +177,6 @@ public class Personal extends Fragment implements View.OnClickListener {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         //super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Log.e("reqPerm", "requestCode: "+requestCode);
         switch (requestCode){
             case READ_EXTERNAL_STORAGE_PERMISSION:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){

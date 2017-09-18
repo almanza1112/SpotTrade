@@ -72,7 +72,7 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
         else {
             otherUser = buyerName.get(position);
         }
-        Picasso.with(activity).load(profilePhotoUrl.get(position)).into(holder.ivProfilePhoto);
+        Picasso.with(activity).load(profilePhotoUrl.get(position)).fit().centerCrop().into(holder.ivProfilePhoto);
         String url = "http://maps.google.com/maps/api/staticmap?center=" + latitude.get(position) + "," + longitude.get(position) + "&zoom=15&size=1000x150&scale=2&sensor=false";
         Picasso.with(activity).load(url).fit().into(holder.ivStaticMap);
         holder.tvLocationName.setText(locationName.get(position));

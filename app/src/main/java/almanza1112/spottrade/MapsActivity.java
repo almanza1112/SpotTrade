@@ -179,7 +179,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         View navHeaderView = navigationView.getHeaderView(0);
         final ImageView ivProfilePhoto = (ImageView) navHeaderView.findViewById(R.id.ivProfilePhoto);
         if (!SharedPref.getProfilePhotoUrl(this).isEmpty()){
-            Picasso.with(this).load(SharedPref.getProfilePhotoUrl(this)).into(ivProfilePhoto);
+            Picasso.with(this).load(SharedPref.getProfilePhotoUrl(this)).fit().centerCrop().into(ivProfilePhoto);
         }
         final TextView tvLoggedInFullName = (TextView) navHeaderView.findViewById(R.id.tvLoggedInFullName);
         tvLoggedInFullName.setText(SharedPref.getFirstName(this) + " " + SharedPref.getLastName(this));
@@ -552,7 +552,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     tvTotalRating.setText("("+sellerInfoObj.getString("sellerTotalRatings")+")");
 
                     if (sellerInfoObj.has("sellerProfilePhotoUrl")){
-                        Picasso.with(MapsActivity.this).load(sellerInfoObj.getString("sellerProfilePhotoUrl")).into(ivSellerProfilePhoto);
+                        Picasso.with(MapsActivity.this).load(sellerInfoObj.getString("sellerProfilePhotoUrl")).fit().centerCrop().into(ivSellerProfilePhoto);
                     }
                     type = response.getString("type");
                     if (type.equals("Sell")) {
