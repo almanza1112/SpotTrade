@@ -61,6 +61,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -108,6 +109,8 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     final int[] pos = {2};
 
     private final int ACCESS_FINE_LOCATION_PERMISSION = 5;
+
+    private FirebaseAuth firebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -185,6 +188,8 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         tvLoggedInFullName.setText(SharedPref.getFirstName(this) + " " + SharedPref.getLastName(this));
         final TextView tvLoggedInEmail = (TextView) navHeaderView.findViewById(R.id.tvLoggedInEmail);
         tvLoggedInEmail.setText(SharedPref.getEmail(this));
+
+        firebaseAuth = FirebaseAuth.getInstance();
     }
 
     @Override
@@ -842,6 +847,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         alertDialogBuilder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
+                firebaseAuth.signOut();
                 SharedPref.clearAll(MapsActivity.this);
                 startActivity(new Intent(MapsActivity.this, LoginActivity.class));
                 finish();

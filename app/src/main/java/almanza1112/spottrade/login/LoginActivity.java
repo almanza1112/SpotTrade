@@ -1,11 +1,13 @@
 package almanza1112.spottrade.login;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -19,6 +21,12 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,6 +46,10 @@ import almanza1112.spottrade.nonActivity.SharedPref;
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
     TextInputLayout tilEmail, tilPassword;
     TextInputEditText tietEmail, tietPassword;
+
+    private FirebaseAuth firebaseAuth;
+    private FirebaseAuth.AuthStateListener firebaseAuthStateListener;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +71,33 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         final Button bLogin = (Button) findViewById(R.id.bLogin);
         bLogin.setOnClickListener(this);
 
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+                if (firebaseUser != null){
+                    Log.e("firebase", "onAuthStateChanged: sign_in ");
+                }
+                else {
+                    Log.e("firebase", "onAuthStateChanged: signed_out ");
+                }
+            }
+        };
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        firebaseAuth.addAuthStateListener(firebaseAuthStateListener);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (firebaseAuthStateListener != null){
+            firebaseAuth.removeAuthStateListener(firebaseAuthStateListener);
+        }
     }
 
     @Override
@@ -140,8 +179,19 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                     SharedPref.setFirstName(LoginActivity.this, firstName);
                                     SharedPref.setLastName(LoginActivity.this, lastName);
                                     SharedPref.setPassword(LoginActivity.this, password);
-                                    startActivity(new Intent(LoginActivity.this, MapsActivity.class));
-                                    finish();
+
+                                    firebaseAuth.signInWithEmailAndPassword(email, password).addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Toast.makeText(LoginActivity.this, getResources().getString(R.string.Error_some_features_may_be_unavailable), Toast.LENGTH_SHORT).show();
+                                        }
+                                    }).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<AuthResult> task) {
+                                            startActivity(new Intent(LoginActivity.this, MapsActivity.class));
+                                            finish();
+                                        }
+                                    });
                                 }
                                 else if (response.getString("status").equals("fail")){
                                     String reason = response.getString("reason");

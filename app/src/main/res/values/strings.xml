@@ -57,6 +57,8 @@
     <string name="Edit_Type">Edit Type</string>
     <string name="Email">Email</string>
     <string name="Error">Error</string>
+    <string name="Error_some_features_may_be_unavailable">Error: some features may be unavailable</string>
+    <string name="Error_signing_into_Firebase">Error signing into Firebase</string>
     <string name="Error_unable_to_upload_image">Error: unable to upload image</string>
     <string name="Error_processing_payment">Error processing payment, please user other payment method.</string>
     <string name="Error_service_unavailable">Error: service unavailable</string>

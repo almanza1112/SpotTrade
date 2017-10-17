@@ -30,8 +30,13 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -74,6 +79,9 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
     private Uri uri = null;
     StorageReference storageReference;
 
+    private FirebaseAuth firebaseAuth;
+    private FirebaseAuth.AuthStateListener firebaseAuthStateListener;
+
     @Override
     public View onCreateView(LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.login_sign_up, container, false);
@@ -86,7 +94,6 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
         toolbar.setTitle(getResources().getString(R.string.Sign_Up));
 
         progressDialog = new ProgressDialog(getActivity());
-        storageReference = FirebaseStorage.getInstance().getReference();
 
         tvAddProfilePhoto = (TextView) view.findViewById(R.id.tvAddProfilePhoto);
         tvAddProfilePhoto.setOnClickListener(this);
@@ -114,7 +121,37 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
         FloatingActionButton fabDone = (FloatingActionButton) view.findViewById(R.id.fabDone);
         fabDone.setOnClickListener(this);
 
+        storageReference = FirebaseStorage.getInstance().getReference();
+
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+                if (firebaseUser != null){
+                    Log.e("firebase", "onAuthStateChanged: signed_in " + firebaseUser.getUid());
+                }
+                else {
+                    Log.e("firebase", "onAuthStateChanged: signed_out ");
+                }
+            }
+        };
+
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        firebaseAuth.addAuthStateListener(firebaseAuthStateListener);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (firebaseAuthStateListener != null){
+            firebaseAuth.removeAuthStateListener(firebaseAuthStateListener);
+        }
     }
 
     @Override
@@ -284,10 +321,11 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
 
         HttpConnection httpConnection = new HttpConnection();
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.POST, httpConnection.htppConnectionURL() +"/user", jObject, new Response.Listener<JSONObject>() {
+                (Request.Method.POST, httpConnection.htppConnectionURL() +"/user/create", jObject, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
+                        Log.e("response", ""+response);
                         try {
                             if (response.getString("status").equals("success")) {
                                 SharedPref.setID(getActivity(), response.getString("_id"));
@@ -299,31 +337,24 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                                 SharedPref.setTotalRatings(getActivity(), response.getString("totalRatings"));
                                 SharedPref.setOverallRating(getActivity(), response.getString("overallRating"));
 
-                                // If uri is not empty then that means that user wants to upload image
-                                if (uri != null) {
-                                    progressDialog.setMessage(getResources().getString(R.string.Uploading_profile_image));
-                                    StorageReference filePath = storageReference.child("Photos").child(response.getString("_id")).child(uri.getLastPathSegment());
-                                    filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                        @Override
-                                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                            Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                                            SharedPref.setProfilePhotoUrl(getActivity(), downloadUrl.toString());
-                                            uploadDownloadUrl(downloadUrl.toString());
+                                firebaseAuth.createUserWithEmailAndPassword(response.getString("email"), response.getString("password")).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(getActivity(), getResources().getString(R.string.Error_some_features_may_be_unavailable), Toast.LENGTH_SHORT).show();
+                                    }
+                                }).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<AuthResult> task) {
+                                        // If uri is not empty then that means that user wants to upload image
+                                        if (uri != null) {
+                                            uploadImageToFirebase(SharedPref.getID(getActivity()));
                                         }
-                                    }).addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
+                                        else{
                                             progressDialog.dismiss();
-                                            e.printStackTrace();
-                                            Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
                                             startActivity(new Intent(getActivity(), MapsActivity.class));
                                         }
-                                    });
-                                }
-                                else{
-                                    progressDialog.dismiss();
-                                    startActivity(new Intent(getActivity(), MapsActivity.class));
-                                }
+                                    }
+                                });
                             }
                             else if (response.getString("status").equals("fail")){
                                 progressDialog.dismiss();
@@ -332,10 +363,10 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                                     tilEmail.setError(reason);
                                 }
                             }
-                        } catch (JSONException e) {
+                        }
+                        catch (JSONException e) {
                             e.printStackTrace();
                         }
-
                     }
                 }, new Response.ErrorListener() {
 
@@ -361,6 +392,27 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
 
         // Access the RequestQueue through your singleton class.
         queue.add(jsObjRequest);
+    }
+
+    private void uploadImageToFirebase(String id){
+        progressDialog.setMessage(getResources().getString(R.string.Uploading_profile_image));
+        StorageReference filePath = storageReference.child("Photos").child(id).child(uri.getLastPathSegment());
+        filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                SharedPref.setProfilePhotoUrl(getActivity(), downloadUrl.toString());
+                uploadDownloadUrl(downloadUrl.toString());
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                progressDialog.dismiss();
+                e.printStackTrace();
+                Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(getActivity(), MapsActivity.class));
+            }
+        });
     }
 
     // Uploads download url for profile photo to database
