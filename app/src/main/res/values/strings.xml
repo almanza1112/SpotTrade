@@ -57,6 +57,7 @@
     <string name="Edit_Type">Edit Type</string>
     <string name="Email">Email</string>
     <string name="Error">Error</string>
+    <string name="Error_unable_to_change_photo">Error: unable to change photo</string>
     <string name="Error_some_features_may_be_unavailable">Error: some features may be unavailable</string>
     <string name="Error_signing_into_Firebase">Error signing into Firebase</string>
     <string name="Error_unable_to_upload_image">Error: unable to upload image</string>
@@ -103,6 +104,7 @@
     <string name="Price">Price</string>
     <string name="Profile_Photo">Profile Photo</string>
     <string name="Profile_photo_updated">Profile photo updated</string>
+    <string name="Profile_photo_deleted">Profile photo deleted</string>
     <string name="Registering">Registering</string>
     <string name="Request">Request</string>
     <string name="Request_a_Spot">Request a Spotter</string>

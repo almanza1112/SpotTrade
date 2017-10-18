@@ -72,6 +72,7 @@ public class Personal extends Fragment implements View.OnClickListener {
     private final int READ_EXTERNAL_STORAGE_PERMISSION = 2;
 
     StorageReference storageReference;
+    FirebaseStorage firebaseStorage;
 
     @Nullable
     @Override
@@ -82,6 +83,7 @@ public class Personal extends Fragment implements View.OnClickListener {
 
         progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         storageReference = FirebaseStorage.getInstance().getReference();
+        firebaseStorage = FirebaseStorage.getInstance();
 
         ivProfilePhoto = (ImageView) view.findViewById(R.id.ivProfilePhoto);
         final ImageView ivEditProfilePhoto = (ImageView) view.findViewById(R.id.ivEditProfilePhoto);
@@ -190,31 +192,54 @@ public class Personal extends Fragment implements View.OnClickListener {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GALLERY_CODE && resultCode == RESULT_OK){
             progressBar.setVisibility(View.VISIBLE);
-            Uri uri = data.getData();
-            ivProfilePhoto.setImageURI(uri);
-            StorageReference filePath = storageReference.child("Photos").child(SharedPref.getID(getActivity())).child(uri.getLastPathSegment());
-            filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                    SharedPref.clearProfilePhotoUrl(getActivity());
-                    SharedPref.setProfilePhotoUrl(getActivity(), downloadUrl.toString());
-                    uploadDownloadUrl(downloadUrl.toString());
-                    Toast.makeText(getActivity(), getResources().getString(R.string.Profile_photo_updated), Toast.LENGTH_SHORT).show();
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    progressBar.setVisibility(View.GONE);
-                    e.printStackTrace();
-                    Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
-                }
-            });
+            // Check if there is an image already
+            if (!SharedPref.getProfilePhotoUrl(getActivity()).isEmpty()){
+                // There is an image, proceed to delete it
+                StorageReference photoRef = firebaseStorage.getReferenceFromUrl(SharedPref.getProfilePhotoUrl(getActivity()));
+                photoRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        // On success of deletion, proceed to add new image
+                        uploadImageToFirebase(data.getData());
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_photo), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+            else {
+                // There is no image, proceed to just uploading it
+                uploadImageToFirebase(data.getData());
+            }
         }
+    }
+
+    private void uploadImageToFirebase(Uri uri){
+        ivProfilePhoto.setImageURI(uri);
+        StorageReference filePath = storageReference.child("Photos").child(SharedPref.getID(getActivity())).child(uri.getLastPathSegment());
+        filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                SharedPref.clearProfilePhotoUrl(getActivity());
+                SharedPref.setProfilePhotoUrl(getActivity(), downloadUrl.toString());
+                uploadDownloadUrl(downloadUrl.toString());
+                Toast.makeText(getActivity(), getResources().getString(R.string.Profile_photo_updated), Toast.LENGTH_SHORT).show();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                progressBar.setVisibility(View.GONE);
+                e.printStackTrace();
+                Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     // Uploads download url for profile photo to database
@@ -250,7 +275,7 @@ public class Personal extends Fragment implements View.OnClickListener {
     private void ADupdateProfilePhoto(){
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
         final CharSequence[] items;
-        if (ivProfilePhoto.getDrawable() == null){
+        if (SharedPref.getProfilePhotoUrl(getActivity()).isEmpty()){
             items = new CharSequence[]{getResources().getString(R.string.Add_profile_photo)};
         }
         else {
@@ -281,11 +306,26 @@ public class Personal extends Fragment implements View.OnClickListener {
                 }
                 else if (items.length == 2){
                     //means there is a photo
-                    if (which == 1){
+                    if (which == 0){
+                        progressBar.setVisibility(View.VISIBLE);
                         //delete photo
-
+                        StorageReference photoRef = firebaseStorage.getReferenceFromUrl(SharedPref.getProfilePhotoUrl(getActivity()));
+                        photoRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                // On success of deletion, proceed to add new image
+                                ivProfilePhoto.setImageBitmap(null);
+                                SharedPref.clearProfilePhotoUrl(getActivity());
+                                deleteDownloadUrl();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_photo), Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
-                    else if (which == 2){
+                    else if (which == 1){
                         //change photo
                         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                                 &&
@@ -310,6 +350,44 @@ public class Personal extends Fragment implements View.OnClickListener {
 
         final AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+    }
+
+    private void deleteDownloadUrl(){
+        final JSONObject jObject = new JSONObject();
+        try {
+            jObject.put("profilePhotoUrl", SharedPref.getProfilePhotoUrl(getActivity()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/delete/photo/" + SharedPref.getID(getActivity()), jObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                progressBar.setVisibility(View.GONE);
+                try{
+                    if (response.getString("status").equals("success")){
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Profile_photo_deleted), Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_photo), Toast.LENGTH_SHORT).show();
+                    }
+                }
+                catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                error.printStackTrace();
+            }
+        }
+        );
+        queue.add(jsonObjectRequest);
     }
 
     private void ADupdateField(final String field) {
