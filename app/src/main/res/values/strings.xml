@@ -66,6 +66,7 @@
     <string name="Feedback">Feedback</string>
     <string name="Field_cant_be_empty">Field can\'t be empty</string>
     <string name="Filter">Filter</string>
+    <string name="Filter_Star_Rating">Filter Star Rating</string>
     <string name="First_Name">First Name</string>
     <string name="got_spotted">got spotted</string>
     <string name="History">History</string>
@@ -85,6 +86,7 @@
     <string name="Must_have_price">Must have a price</string>
     <string name="New_Password">New Password</string>
     <string name="No">No</string>
+    <string name="No_feedback">No feedback</string>
     <string name="No_Payment_Method">No Payment Method</string>
     <string name="Not_Now">Not Now</string>
     <string name="Notifications">Notifications</string>

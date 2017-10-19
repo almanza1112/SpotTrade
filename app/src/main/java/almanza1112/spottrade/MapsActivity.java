@@ -73,6 +73,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import almanza1112.spottrade.account.feedback.Feedback;
 import almanza1112.spottrade.account.payment.AddPaymentMethod;
 import almanza1112.spottrade.account.payment.Payment;
 import almanza1112.spottrade.account.history.History;
@@ -266,6 +267,9 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.nav_history:
                 fragment = new History();
+                break;
+            case R.id.nav_feedback:
+                fragment = new Feedback();
                 break;
             case R.id.nav_personal:
                 fragment = new Personal();
