@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -53,6 +54,7 @@ public class History extends Fragment {
     RecyclerView.LayoutManager layoutManager;
     private ProgressBar progressBar;
     final int[] pos = {2};
+    private TextView tvNoHistory;
 
     @Nullable
     @Override
@@ -82,6 +84,7 @@ public class History extends Fragment {
 
         progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         rvHistory = (RecyclerView) view.findViewById(R.id.rvHistory);
+        tvNoHistory = (TextView) view.findViewById(R.id.tvNoHistory);
         getHistory("all");
         return view;
     }
@@ -156,6 +159,7 @@ public class History extends Fragment {
                 try{
                     Log.e("response", response + "");
                     if (response.getString("status").equals("success")){
+                        tvNoHistory.setVisibility(View.GONE);
                         List<String> type = new ArrayList<>();
                         List<String> description = new ArrayList<>();
                         List<String> price = new ArrayList<>();
@@ -232,6 +236,9 @@ public class History extends Fragment {
                         rvHistory.setAdapter(adapter);
                         progressBar.setVisibility(View.GONE);
                     }
+                    else if (response.getString("status").equals("fail")){
+                        progressBar.setVisibility(View.GONE);
+                    }
                 }
                 catch (JSONException e){
                     e.printStackTrace();
@@ -241,7 +248,7 @@ public class History extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                 error.printStackTrace();
             }
         }
