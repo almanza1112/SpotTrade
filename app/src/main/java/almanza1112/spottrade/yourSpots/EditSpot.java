@@ -168,12 +168,14 @@ public class EditSpot extends Fragment implements View.OnClickListener{
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem item=menu.findItem(R.id.search);
-        item.setVisible(false);
+        MenuItem searchItem = menu.findItem(R.id.search);
+        searchItem.setVisible(false);
+        MenuItem filterItem = menu.findItem(R.id.filterMaps);
+        filterItem.setVisible(false);
     }
 
     private void ADeditType(){
-        final CharSequence[] items = {getResources().getString(R.string.Selling), getResources().getString(R.string.Requesting)};
+        final CharSequence[] items = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request)};
         final int i;
         final int[] newI = new int[1];
         if (tvType.getText().toString().equals("Selling")){
@@ -197,10 +199,10 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                 progressBar.setVisibility(View.VISIBLE);
                 String str;
                 if (newI[0] == 0){
-                    str = "Selling";
+                    str = "Sell";
                 }
                 else {
-                    str = "Requesting";
+                    str = "Request";
                 }
                 updateField("type", str);
             }
