@@ -27,13 +27,17 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import almanza1112.spottrade.R;
 import almanza1112.spottrade.nonActivity.HttpConnection;
-import almanza1112.spottrade.search.SearchActivity;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -45,7 +49,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
 
     private ProgressBar progressBar;
     private String lid;
-    private int LOCATION_CODE = 0;
+    private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     TextView tvLocationName, tvLocationAddress, tvType, tvPrice, tvDescription;
 
     @Override
@@ -108,7 +112,15 @@ public class EditSpot extends Fragment implements View.OnClickListener{
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.ivEditLocation:
-                startActivityForResult(new Intent(getActivity(), SearchActivity.class), LOCATION_CODE);
+                try {
+                    Intent intent =
+                            new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
+                                    .build(getActivity());
+                    startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                }
                 break;
 
             case R.id.ivEditType:
@@ -132,13 +144,18 @@ public class EditSpot extends Fragment implements View.OnClickListener{
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == LOCATION_CODE){
+        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE){
             if (resultCode == RESULT_OK){
                 progressBar.setVisibility(View.VISIBLE);
-                updateField("name", data.getStringExtra("locationName"));
-                updateField("address", data.getStringExtra("locationAddress"));
-                updateField("latitude", data.getStringExtra("latitude"));
-                updateField("longitude", data.getStringExtra("longitude"));
+                Place place = PlaceAutocomplete.getPlace(getActivity(), data);
+                updateField("name", place.getName().toString());
+                updateField("address", place.getAddress().toString());
+                updateField("latitude", String.valueOf(place.getLatLng().latitude));
+                updateField("longitude", String.valueOf(place.getLatLng().longitude));
+            }
+            else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
+                Status status = PlaceAutocomplete.getStatus(getActivity(), data);
+                Toast.makeText(getActivity(), status.getStatusMessage(), Toast.LENGTH_SHORT).show();
             }
         }
     }

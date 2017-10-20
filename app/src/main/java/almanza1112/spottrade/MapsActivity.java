@@ -52,6 +52,11 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -81,7 +86,6 @@ import almanza1112.spottrade.account.personal.Personal;
 import almanza1112.spottrade.login.LoginActivity;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
-import almanza1112.spottrade.search.SearchActivity;
 import almanza1112.spottrade.yourSpots.YourSpots;
 
 public class MapsActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener{
@@ -103,7 +107,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private boolean isFabMenuClicked, isMarkerClicked;
     private double latitude =0, longitude=0;
     private String locationName="empty", locationAddress="empty";
-    private int SEARCH_CODE = 0;
+    private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private int SPOT_CODE = 1;
     private String lid, price, type;
     private String typeSelected = "all";
@@ -311,7 +315,15 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.search:
-                startActivityForResult(new Intent(this, SearchActivity.class), SEARCH_CODE);
+                try {
+                    Intent intent =
+                            new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
+                                    .build(this);
+                    startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
+                    e.printStackTrace();
+                    Toast.makeText(this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                }
                 break;
 
             case android.R.id.home:
@@ -389,18 +401,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == SEARCH_CODE){
-            if (resultCode == RESULT_OK){
-                latitude = data.getDoubleExtra("latitude", 0);
-                longitude = data.getDoubleExtra("longitude", 0);
-                locationName = data.getStringExtra("locationName");
-                locationAddress = data.getStringExtra("locationAddress");
-                LatLng locash = new LatLng(latitude, longitude);
-                mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(locash));
-            }
-        }
-        else if (requestCode == SPOT_CODE){
+        if (requestCode == SPOT_CODE){
             if (resultCode == RESULT_OK){
                 latitude = Double.valueOf(data.getStringExtra("latitude"));
                 longitude = Double.valueOf(data.getStringExtra("longitude"));
@@ -411,6 +412,22 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 mMap.animateCamera(CameraUpdateFactory.zoomTo(18));
                 marker = mMap.addMarker(new MarkerOptions().position(locash).title(name));
                 marker.setTag(id);
+            }
+        }
+        else if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                Place place = PlaceAutocomplete.getPlace(this, data);
+                latitude = place.getLatLng().latitude;
+                longitude = place.getLatLng().longitude;
+                locationName = place.getName().toString();
+                locationAddress = place.getAddress().toString();
+                LatLng locash = new LatLng(latitude, longitude);
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(locash));
+
+            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
+                Status status = PlaceAutocomplete.getStatus(this, data);
+                Toast.makeText(this, status.getStatusMessage(), Toast.LENGTH_SHORT).show();
             }
         }
     }

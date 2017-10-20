@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -24,6 +25,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,7 +41,6 @@ import java.util.Map;
 import almanza1112.spottrade.account.payment.AddPaymentMethod;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
-import almanza1112.spottrade.search.SearchActivity;
 
 /**
  * Created by almanza1112 on 6/29/17.
@@ -46,7 +51,7 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
     private TextInputLayout tilPrice;
     private TextInputEditText tietDescription, tietPrice;
     private CheckBox cbBids;
-    private int ADD_LOCATION_CODE = 0;
+    private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private double latitude, longitude;
     private String locationName, locationAddress, type;
 
@@ -108,18 +113,6 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.tvAddLocation:
-                startActivityForResult(new Intent(this, SearchActivity.class), ADD_LOCATION_CODE);
-                break;
-
-            case R.id.tvLocationName:
-                startActivityForResult(new Intent(this, SearchActivity.class), ADD_LOCATION_CODE);
-                break;
-
-            case R.id.tvLocationAddress:
-                startActivityForResult(new Intent(this, SearchActivity.class), ADD_LOCATION_CODE);
-                break;
-
             case R.id.fabDone:
                 if (validatePrice()) {
                     pd.setTitle(R.string.Adding_Spot);
@@ -133,24 +126,40 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }
                 break;
+            default:
+                try {
+                    Intent intent =
+                            new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
+                                    .build(this);
+                    startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
+                    e.printStackTrace();
+                    Toast.makeText(this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                }
+                break;
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == ADD_LOCATION_CODE){
+        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE){
             if (resultCode == RESULT_OK){
-                latitude = data.getDoubleExtra("latitude", 0);
-                longitude = data.getDoubleExtra("longitude", 0);
-                locationName = data.getStringExtra("locationName");
-                locationAddress = data.getStringExtra("locationAddress");
+                Place place = PlaceAutocomplete.getPlace(this, data);
+                latitude = place.getLatLng().latitude;
+                longitude = place.getLatLng().longitude;
+                locationName = place.getName().toString();
+                locationAddress = place.getAddress().toString();
 
                 tvLocationName.setText(locationName);
                 tvLocationAddress.setText(locationAddress);
                 tvAddLocation.setVisibility(View.GONE);
                 tvLocationName.setVisibility(View.VISIBLE);
                 tvLocationAddress.setVisibility(View.VISIBLE);
+            }
+            else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
+                Status status = PlaceAutocomplete.getStatus(this, data);
+                Toast.makeText(this, status.getStatusMessage(), Toast.LENGTH_SHORT).show();
             }
         }
     }

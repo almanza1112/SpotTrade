@@ -22,5 +22,5 @@
     -->
 
     <!-- USED API KEY FROM BUBBLES -->
-    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyBOXDvMjCoG8Tr4oBx6si6YLzKcg_0c8r0</string>
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyA49pfMKlTdCb7quOIfiqhd3TnBkxzmIgg</string>
 </resources>
