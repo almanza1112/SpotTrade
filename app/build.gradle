@@ -37,6 +37,7 @@ dependencies {
     compile "com.google.android.gms:play-services-maps:${playServices}"
     compile "com.google.android.gms:play-services-wallet:${playServices}"
     compile "com.google.android.gms:play-services-places:${playServices}"
+    compile "com.google.android.gms:play-services-location:$playServices"
     compile "com.google.firebase:firebase-messaging:${playServices}"
     compile "com.google.firebase:firebase-core:${playServices}"
     compile "com.google.firebase:firebase-auth:${playServices}"
