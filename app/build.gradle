@@ -41,6 +41,7 @@ dependencies {
     compile "com.google.firebase:firebase-core:${playServices}"
     compile "com.google.firebase:firebase-auth:${playServices}"
     compile "com.google.firebase:firebase-storage:${playServices}"
+    compile "com.google.firebase:firebase-database:${playServices}"
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.github.clans:fab:1.6.4'
     compile 'com.android.volley:volley:1.0.0'
