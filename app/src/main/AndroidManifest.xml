@@ -8,9 +8,11 @@
          location permissions for the 'MyLocation' functionality. 
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -69,6 +71,33 @@
 
         <activity android:name=".MapsActivity" android:screenOrientation="portrait"/>
         <activity android:name=".SpotActivity" android:screenOrientation="portrait"/>
+
+
+        <!--
+        <receiver
+            android:name="almanza1112.spottrade.nonActivity.tracking.TrackerBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name=".TrackerActivity.ALARM_ACTION_START"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name=".TrackerActivity.ALARM_ACTION_END"/>
+            </intent-filter>
+        </receiver>
+        -->
+
+        <service android:name="almanza1112.spottrade.nonActivity.tracking.TrackerService"
+            android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

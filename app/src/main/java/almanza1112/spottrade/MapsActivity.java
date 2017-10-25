@@ -3,8 +3,13 @@ package almanza1112.spottrade;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.LocationListener;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -19,7 +24,9 @@ import android.support.design.widget.NavigationView;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ServiceCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -86,6 +93,7 @@ import almanza1112.spottrade.account.personal.Personal;
 import almanza1112.spottrade.login.LoginActivity;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
+import almanza1112.spottrade.nonActivity.tracking.TrackerService;
 import almanza1112.spottrade.yourSpots.YourSpots;
 
 public class MapsActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener{
@@ -301,8 +309,29 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
+        /*
+          TODO: Testing for TrackingService
+          */
+        //LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(TrackerService.STATUS_INTENT));
         refreshMap();
     }
+
+    @Override
+    protected void onPause() {
+        //LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        super.onPause();
+    }
+
+    /*
+     TODO: Testing for TrackingService
+     */
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.e("setTrackingStatus", String.valueOf(intent.getIntExtra(getString(R.string.status), 0)));
+            //setTrackingStatus(intent.getIntExtra(getString(R.string.status), 0));
+        }
+    };
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -315,6 +344,11 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.search:
+                PackageManager pm = getPackageManager();
+                ComponentName componentName = new ComponentName("almanza1112.spottrade", "almanza1112.spottrade.nonActivity.tracking.TrackerService");
+                pm.setComponentEnabledSetting(componentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+                startService(new Intent(this, TrackerService.class));
+                /*
                 try {
                     Intent intent =
                             new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
@@ -324,6 +358,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     e.printStackTrace();
                     Toast.makeText(this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
                 }
+                */
                 break;
 
             case android.R.id.home:
@@ -463,7 +498,37 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         */
 
         // Get LocationManager object from System Service LOCATION_SERVICE
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        /*
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 1, new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                Log.e("location", "Lat: " + location.getLatitude() + "\nLng: " + location.getLongitude());
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+
+            }
+        });
+        */
+
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            Log.e("GPS_Provider", "ERROR, GPS NOT PROVIDED");
+        } else {
+            Log.e("GPS_Provider", "gps provided yo");
+        }
+
         locMan = locationManager;
         // Create a criteria object to retrieve provider
         Criteria criteria = new Criteria();
@@ -473,6 +538,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         this.provider = provider;
 
         myLocation = null;
+
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                 &&
                 ContextCompat.checkSelfPermission(

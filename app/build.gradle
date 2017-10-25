@@ -38,10 +38,13 @@ dependencies {
     compile "com.google.android.gms:play-services-wallet:${playServices}"
     compile "com.google.android.gms:play-services-places:${playServices}"
     compile "com.google.android.gms:play-services-location:$playServices"
+    compile "com.google.android.gms:play-services-gcm:$playServices"
     compile "com.google.firebase:firebase-messaging:${playServices}"
     compile "com.google.firebase:firebase-core:${playServices}"
     compile "com.google.firebase:firebase-auth:${playServices}"
     compile "com.google.firebase:firebase-storage:${playServices}"
+    compile "com.google.firebase:firebase-crash:$playServices"
+    compile "com.google.firebase:firebase-config:$playServices"
     compile "com.google.firebase:firebase-database:${playServices}"
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.github.clans:fab:1.6.4'
