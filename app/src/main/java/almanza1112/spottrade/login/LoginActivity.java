@@ -7,7 +7,6 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -26,7 +25,6 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,12 +46,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     TextInputEditText tietEmail, tietPassword;
 
     private FirebaseAuth firebaseAuth;
-    private FirebaseAuth.AuthStateListener firebaseAuthStateListener;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (SharedPref.getEmail(this).length() > 0){
+        if (SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)) != null){
             startActivity(new Intent(LoginActivity.this, MapsActivity.class));
             finish();
         }
@@ -72,32 +69,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         bLogin.setOnClickListener(this);
 
         firebaseAuth = FirebaseAuth.getInstance();
-        firebaseAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-                if (firebaseUser != null){
-                    Log.e("firebase", "onAuthStateChanged: sign_in ");
-                }
-                else {
-                    Log.e("firebase", "onAuthStateChanged: signed_out ");
-                }
-            }
-        };
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        firebaseAuth.addAuthStateListener(firebaseAuthStateListener);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        if (firebaseAuthStateListener != null){
-            firebaseAuth.removeAuthStateListener(firebaseAuthStateListener);
-        }
     }
 
     @Override
@@ -165,20 +146,24 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                     String firstName = response.getString("firstName");
                                     String lastName = response.getString("lastName");
                                     String password = response.getString("password");
+                                    String totalRatings = response.getString("totalRatings");
+                                    String overallRating = response.getString("overallRating");
+
                                     if (response.has("phoneNumber")){
                                         String phoneNumber = response.getString("phoneNumber");
-                                        SharedPref.setPhoneNumber(LoginActivity.this, phoneNumber);
+                                        SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_phone_number), phoneNumber);
                                     }
-
                                     if (response.has("profilePhotoUrl")){
-                                        SharedPref.setProfilePhotoUrl(LoginActivity.this, response.getString("profilePhotoUrl"));
+                                        SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_photo_url), response.getString("profilePhotoUrl"));
                                     }
 
-                                    SharedPref.setID(LoginActivity.this, id);
-                                    SharedPref.setEmail(LoginActivity.this, email);
-                                    SharedPref.setFirstName(LoginActivity.this, firstName);
-                                    SharedPref.setLastName(LoginActivity.this, lastName);
-                                    SharedPref.setPassword(LoginActivity.this, password);
+                                    SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_id), id);
+                                    SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_email), email);
+                                    SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_first_name), firstName);
+                                    SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_last_name), lastName);
+                                    SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_password), password);
+                                    SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_total_ratings), totalRatings);
+                                    SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_overall_rating), overallRating);
 
                                     firebaseAuth.signInWithEmailAndPassword(email, password).addOnFailureListener(new OnFailureListener() {
                                         @Override

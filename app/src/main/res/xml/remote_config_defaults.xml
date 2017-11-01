@@ -13,6 +13,10 @@
         <value>20</value>
     </entry>
     <entry>
+        <key>LOCATION_DISTANCE_ARRIVED_MIN</key>
+        <value>10</value>
+    </entry>
+    <entry>
         <key>MAX_STATUSES</key>
         <value>10</value>
     </entry>

@@ -5,6 +5,28 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+    <!-- Strings for SharedPreferences -->
+    <string name="logged_in_user_id">logged_in_user_id</string>
+    <string name="logged_in_user_first_name">logged_in_user_first_name</string>
+    <string name="logged_in_user_last_name">logged_in_user_last_name</string>
+    <string name="logged_in_user_email">logged_in_user_email</string>
+    <string name="logged_in_user_password">logged_in_user_password</string>
+    <string name="logged_in_user_phone_number">logged_in_user_phone_number</string>
+    <string name="logged_in_user_photo_url">logged_in_user_photo_url</string>
+    <string name="logged_in_user_total_ratings">logged_in_user_total_ratings</string>
+    <string name="logged_in_user_overall_rating">logged_in_user_overall_rating</string>
+
+    <string name="SpotTradePref">SpotTradePref</string>
+    <string name="bought_lid">lidBought</string>
+    <string name="bought_lat">bought_lat</string>
+    <string name="bought_lng">bought_lng</string>
+    <string name="bought_address">bought_address</string>
+    <string name="bought_name">bought_name</string>
+
+
+
+    <!-- End of strings for SharedPreferences -->
+
     <string name="About">About</string>
     <string name="Accept">Accept</string>
     <string name="Account">Account</string>
@@ -71,6 +93,7 @@
     <string name="got_spotted">got spotted</string>
     <string name="History">History</string>
     <string name="Home">Home</string>
+    <string name="In_transit_to">In transit to</string>
     <string name="Incorrect_Password">Incorrect Password</string>
     <string name="Invalid_email_format">Invalid email format</string>
     <string name="Last_Name">Last Name</string>
@@ -121,6 +144,7 @@
     <string name="Sold_Spot">Sold Spot</string>
     <string name="sold_their_spot">sold their spot</string>
     <string name="Spot">Spot</string>
+    <string name="Spots">Spots</string>
     <string name="Spot_successfully_deleted">Spot successfully deleted</string>
     <string name="Spotted">Spotted</string>
     <string name="spotted_you">spotted you</string>

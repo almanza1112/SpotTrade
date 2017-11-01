@@ -325,10 +325,10 @@ public class AddCreditDebitCard extends Fragment {
         RequestQueue queue = Volley.newRequestQueue(getActivity());
         final JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("id", SharedPref.getID(getActivity()));
-            jsonObject.put("firstName", SharedPref.getFirstName(getActivity()));
-            jsonObject.put("lastName", SharedPref.getLastName(getActivity()));
-            jsonObject.put("email", SharedPref.getEmail(getActivity()));
+            jsonObject.put("id", SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)));
+            jsonObject.put("firstName", SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_first_name)));
+            jsonObject.put("lastName", SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name)));
+            jsonObject.put("email", SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email)));
             jsonObject.put("paymentMethodNonce", paymentMethodNonce);
         }
         catch (JSONException e) {

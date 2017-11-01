@@ -73,7 +73,7 @@ public class ChangePassword extends Fragment {
     private boolean validateCurrentPassword(){
         boolean sitch;
         if (!tietCurrentPassword.getText().toString().isEmpty()){
-            if (tietCurrentPassword.getText().toString().equals(SharedPref.getPassword(getActivity()))){
+            if (tietCurrentPassword.getText().toString().equals(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password)))){
                 sitch = true;
                 tilCurrentPassword.setErrorEnabled(false);
             }
@@ -123,14 +123,14 @@ public class ChangePassword extends Fragment {
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getID(getActivity()), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
                     progressBar.setVisibility(View.INVISIBLE);
                     if (response.getString("status").equals("success")){
-                        SharedPref.clearPassword(getActivity());
-                        SharedPref.setPassword(getActivity(), tietConfirmNewPassword.getText().toString());
+                        SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password));
+                        SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password), tietConfirmNewPassword.getText().toString());
                         Toast.makeText(getActivity(), getResources().getString(R.string.Password) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
                     }
                     else {

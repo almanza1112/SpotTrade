@@ -219,7 +219,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
         HttpConnection httpConnection = new HttpConnection();
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.DELETE,
-                httpConnection.htppConnectionURL() + "/payment/customer/deletepaymentmethod?token=" + token + "&id=" + SharedPref.getID(activity),
+                httpConnection.htppConnectionURL() + "/payment/customer/deletepaymentmethod?token=" + token + "&id=" + SharedPref.getSharedPreferences(activity, activity.getResources().getString(R.string.logged_in_user_id)),
                 null,
                 new Response.Listener<JSONObject>()
                 {

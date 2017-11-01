@@ -194,7 +194,7 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         HttpConnection httpConnection = new HttpConnection();
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
-                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getID(this),
+                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)),
                 null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -266,7 +266,7 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         try {
             jsonObject.put("type", type);
             jsonObject.put("transaction", "available");
-            jsonObject.put("sellerID", SharedPref.getID(this));
+            jsonObject.put("sellerID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
             jsonObject.put("name", locationName);
             jsonObject.put("price", tietPrice.getText().toString());
             jsonObject.put("bidAllowed", cbBids.isChecked());
@@ -275,8 +275,8 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
             jsonObject.put("longitude", String.valueOf(longitude));
             jsonObject.put("description", tietDescription.getText().toString());
 
-            sellerInfoObj.put("sellerFirstName", SharedPref.getFirstName(this));
-            sellerInfoObj.put("sellerLastName", SharedPref.getLastName(this));
+            sellerInfoObj.put("sellerFirstName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_first_name)));
+            sellerInfoObj.put("sellerLastName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_last_name)));
 
             jsonObject.put("sellerInfo", sellerInfoObj);
         }

@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "88729508985-dem5cna796di20jjuacdsj8icrsg0d8e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "almanza1112.spottrade",
+            "certificate_hash": "15c6c4931a158f465b5b62d86df05e1b5c96d7ff"
+          }
+        },
+        {
           "client_id": "88729508985-mp379a72jtgi9hivgvaedgg5sa7s8p7i.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,8 +37,13 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "88729508985-mp379a72jtgi9hivgvaedgg5sa7s8p7i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
           "status": 2

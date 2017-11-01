@@ -1,26 +1,10 @@
 package almanza1112.spottrade.nonActivity.tracking;
 
-/**
- * Created by almanza1112 on 10/21/17.
+/*
+  Created by almanza1112 on 10/21/17.
  */
 
-/**
- * Copyright 2017 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-        import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient;
         import com.google.android.gms.gcm.GcmNetworkManager;
         import com.google.android.gms.gcm.OneoffTask;
         import com.google.android.gms.location.LocationListener;
@@ -43,20 +27,14 @@ package almanza1112.spottrade.nonActivity.tracking;
         import android.app.NotificationManager;
         import android.app.PendingIntent;
         import android.app.Service;
-        import android.content.Context;
         import android.content.Intent;
         import android.content.IntentFilter;
-        import android.content.SharedPreferences;
         import android.location.Location;
-        import android.net.ConnectivityManager;
-        import android.net.NetworkInfo;
         import android.os.BatteryManager;
         import android.os.Bundle;
         import android.os.Environment;
         import android.os.IBinder;
         import android.os.PowerManager;
-        import android.support.annotation.IntDef;
-        import android.support.v4.BuildConfig;
         import android.support.v4.app.NotificationCompat;
         import android.support.v4.content.LocalBroadcastManager;
         import android.util.Log;
@@ -64,8 +42,6 @@ package almanza1112.spottrade.nonActivity.tracking;
 
         import java.io.File;
         import java.io.FileWriter;
-        import java.util.Calendar;
-        import java.util.Date;
         import java.util.HashMap;
         import java.util.Map;
         import java.util.LinkedList;
@@ -84,12 +60,18 @@ public class TrackerService extends Service implements LocationListener {
     private static final int CONFIG_CACHE_EXPIRY = 600;  // 10 minutes.
 
     private GoogleApiClient mGoogleApiClient;
-    private DatabaseReference mFirebaseTransportRef;
+    private DatabaseReference databaseReference;
     private FirebaseRemoteConfig mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
     private LinkedList<Map<String, Object>> mTransportStatuses = new LinkedList<>();
     private NotificationManager mNotificationManager;
     private NotificationCompat.Builder mNotificationBuilder;
     private PowerManager.WakeLock mWakelock;
+
+    String lidBought;
+    Map<String, Object> update = new HashMap<>();
+    Location locationPlaceBought;
+    int locationDistanceArrivedMin;
+
 
     public TrackerService() {
         Log.e("TrackerService", "TrackerService started");
@@ -102,34 +84,38 @@ public class TrackerService extends Service implements LocationListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        fetchRemoteConfig();
 
-        startLocationTracking();
-        Toast.makeText(this, "Tracking Service Started", Toast.LENGTH_SHORT).show();
-        Log.e("onStartCommand", "service starting onStartCommand");
+        lidBought = SharedPref.getSharedPreferences(this, getResources().getString(R.string.bought_lid));
+        String latBought = SharedPref.getSharedPreferences(this, getResources().getString(R.string.bought_lat));
+        String lngBought = SharedPref.getSharedPreferences(this, getResources().getString(R.string.bought_lng));
+
+        locationPlaceBought = new Location("point A");
+        locationPlaceBought.setLatitude(Double.valueOf(latBought));
+        locationPlaceBought.setLongitude(Double.valueOf(lngBought));
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-
+        fetchRemoteConfig();
+        startLocationTracking();
 
         //buildNotification();
-
         //setStatusMessage(R.string.connecting);
+        databaseReference = FirebaseDatabase.getInstance().getReference("tracking");
 
         mFirebaseRemoteConfig.setConfigSettings(new FirebaseRemoteConfigSettings.Builder()
                 .setDeveloperModeEnabled(true).
                         build());
         mFirebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
-
+        locationDistanceArrivedMin = (int) mFirebaseRemoteConfig.getLong("LOCATION_DISTANCE_ARRIVED_MIN");
         //authenticate();
-
     }
 
     @Override
     public void onDestroy() {
+        Log.e("destroy", "destoryed");
         // Set activity title to not tracking.
         //setStatusMessage(R.string.not_tracking);
         // Stop the persistent notification.
@@ -146,6 +132,7 @@ public class TrackerService extends Service implements LocationListener {
         super.onDestroy();
     }
 
+    /*
     private void authenticate() {
         final FirebaseAuth mAuth = FirebaseAuth.getInstance();
         mAuth.signInWithEmailAndPassword(SharedPref.getEmail(this), SharedPref.getPassword(this))
@@ -164,7 +151,7 @@ public class TrackerService extends Service implements LocationListener {
                     }
                 });
     }
-
+*/
     private void fetchRemoteConfig() {
         long cacheExpiration = CONFIG_CACHE_EXPIRY;
         if (mFirebaseRemoteConfig.getInfo().getConfigSettings().isDeveloperModeEnabled()) {
@@ -174,8 +161,8 @@ public class TrackerService extends Service implements LocationListener {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Log.e(TAG, "Remote config fetched");
                         mFirebaseRemoteConfig.activateFetched();
+                        locationDistanceArrivedMin = (int) mFirebaseRemoteConfig.getLong("LOCATION_DISTANCE_ARRIVED_MIN");
                     }
                 });
     }
@@ -188,8 +175,8 @@ public class TrackerService extends Service implements LocationListener {
         String transportId = "transportId (Bryant knows)";
         FirebaseAnalytics.getInstance(this).setUserProperty("transportID", transportId);
         String path = getString(R.string.firebase_path) + transportId;
-        mFirebaseTransportRef = FirebaseDatabase.getInstance().getReference(path);
-        mFirebaseTransportRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference = FirebaseDatabase.getInstance().getReference(path);
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 if (snapshot != null) {
@@ -213,14 +200,11 @@ public class TrackerService extends Service implements LocationListener {
 
         @Override
         public void onConnected(Bundle bundle) {
-            Log.e("googleAPIClient", "connected");
             LocationRequest request = new LocationRequest();
             request.setInterval(mFirebaseRemoteConfig.getLong("LOCATION_REQUEST_INTERVAL"));
-            request.setFastestInterval(mFirebaseRemoteConfig.getLong
-                    ("LOCATION_REQUEST_INTERVAL_FASTEST"));
+            request.setFastestInterval(mFirebaseRemoteConfig.getLong("LOCATION_REQUEST_INTERVAL_FASTEST"));
             request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
-                    request, TrackerService.this);
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, request, TrackerService.this);
             //setStatusMessage(R.string.tracking);
 
             // Hold a partial wake lock to keep CPU awake when the we're tracking location.
@@ -312,10 +296,31 @@ public class TrackerService extends Service implements LocationListener {
      */
     @Override
     public void onLocationChanged(Location location) {
-
-        Log.e("LocationChaged", "Lat: " +location.getLatitude() + "\nLng: " + location.getLongitude());
-
         buildNotification();
+
+        float result = location.distanceTo(locationPlaceBought);
+        if (result <= locationDistanceArrivedMin){
+            Toast.makeText(this, "YOU ARRIVED WOOO", Toast.LENGTH_SHORT).show();
+            stopSelf();
+        }
+
+        update.put("lat", location.getLatitude());
+        update.put("lng", location.getLongitude());
+
+
+
+        databaseReference.child(lidBought).updateChildren(update, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null){
+                    Log.e("update", "works");
+                }
+                else {
+                    Log.e("update", "there was an error");
+                }
+            }
+        });
+
         /*
         fetchRemoteConfig();
 
@@ -341,7 +346,7 @@ public class TrackerService extends Service implements LocationListener {
             // current time.
             mTransportStatuses.set(0, transportStatus);
             // Only need to update 0th status, so we can save bandwidth.
-            mFirebaseTransportRef.child("0").setValue(transportStatus);
+            databaseReference.child("0").setValue(transportStatus);
         } else {
             // Maintain a fixed number of previous statuses.
             while (mTransportStatuses.size() >= mFirebaseRemoteConfig.getLong("MAX_STATUSES")) {
@@ -350,7 +355,7 @@ public class TrackerService extends Service implements LocationListener {
             mTransportStatuses.addFirst(transportStatus);
             // We push the entire list at once since each key/index changes, to
             // minimize network requests.
-            mFirebaseTransportRef.setValue(mTransportStatuses);
+            databaseReference.setValue(mTransportStatuses);
         }
 
         if (BuildConfig.DEBUG) {
@@ -365,13 +370,14 @@ public class TrackerService extends Service implements LocationListener {
     }
 
     private void buildNotification() {
+        String inTransitTo = getResources().getString(R.string.In_transit_to) + " " + SharedPref.getSharedPreferences(this, getResources().getString(R.string.bought_name));
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, MapsActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, MapsActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
         mNotificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_bell_black_24dp)
                 .setColor(getColor(R.color.colorPrimary))
                 .setAutoCancel(true)
+                .setContentText(inTransitTo)
                 .setContentTitle(getString(R.string.app_name));
 
                 //.setOngoing(true)

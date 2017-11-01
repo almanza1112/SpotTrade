@@ -1,16 +1,12 @@
 package almanza1112.spottrade;
 
 import android.Manifest;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.location.LocationListener;
-import android.os.AsyncTask;
+import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.content.Context;
@@ -24,9 +20,7 @@ import android.support.design.widget.NavigationView;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ServiceCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -69,11 +63,12 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -121,9 +116,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private String typeSelected = "all";
     final int[] pos = {2};
 
-    private final int ACCESS_FINE_LOCATION_PERMISSION = 5;
+    private final int ACCESS_FINE_LOCATION_PERMISSION_MAP = 5;
+    private final int ACCESS_FINE_LOCATION_PERMISSION_TRACKING = 6;
 
-    private FirebaseAuth firebaseAuth;
+    private DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -194,15 +190,13 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
         View navHeaderView = navigationView.getHeaderView(0);
         final ImageView ivProfilePhoto = (ImageView) navHeaderView.findViewById(R.id.ivProfilePhoto);
-        if (!SharedPref.getProfilePhotoUrl(this).isEmpty()){
-            Picasso.with(this).load(SharedPref.getProfilePhotoUrl(this)).fit().centerCrop().into(ivProfilePhoto);
+        if (SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_photo_url)) != null){
+            Picasso.with(this).load(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_photo_url))).fit().centerCrop().into(ivProfilePhoto);
         }
         final TextView tvLoggedInFullName = (TextView) navHeaderView.findViewById(R.id.tvLoggedInFullName);
-        tvLoggedInFullName.setText(SharedPref.getFirstName(this) + " " + SharedPref.getLastName(this));
+        tvLoggedInFullName.setText(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_first_name)) + " " + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_last_name)));
         final TextView tvLoggedInEmail = (TextView) navHeaderView.findViewById(R.id.tvLoggedInEmail);
-        tvLoggedInEmail.setText(SharedPref.getEmail(this));
-
-        firebaseAuth = FirebaseAuth.getInstance();
+        tvLoggedInEmail.setText(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_email)));
     }
 
     @Override
@@ -234,21 +228,31 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.bBuyNow:
                 /*
-
                 TODO: MAJOR ISSUE REGARDING REQUEST
                 For when a user that purchases a spot that is selling, code is easy to reject buyer
                 if card gets rejected etc. Need to verify the requester's payment as well as not
                 allowing them to delete their default payment if they have a spot up for Request
                 and if upon purchase of the person accepting the request, throw any errors Gateway,
                 card validation etc.
-
                  */
 
-                if (type.equals("Sell")){
-                    validatePaymentMethod();
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                        ContextCompat.checkSelfPermission(
+                                this,
+                                Manifest.permission.ACCESS_FINE_LOCATION)
+                                != PackageManager.PERMISSION_GRANTED) {
+
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                            ACCESS_FINE_LOCATION_PERMISSION_TRACKING);
                 }
-                else if (type.equals("Request")){
-                    transactionBuyNow();
+                else {
+                    if (type.equals("Sell")){
+                        validatePaymentMethod();
+                    }
+                    else if (type.equals("Request")){
+                        transactionBuyNow();
+                    }
                 }
                 break;
 
@@ -309,29 +313,8 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-        /*
-          TODO: Testing for TrackingService
-          */
-        //LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(TrackerService.STATUS_INTENT));
         refreshMap();
     }
-
-    @Override
-    protected void onPause() {
-        //LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-        super.onPause();
-    }
-
-    /*
-     TODO: Testing for TrackingService
-     */
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.e("setTrackingStatus", String.valueOf(intent.getIntExtra(getString(R.string.status), 0)));
-            //setTrackingStatus(intent.getIntExtra(getString(R.string.status), 0));
-        }
-    };
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -344,11 +327,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.search:
-                PackageManager pm = getPackageManager();
-                ComponentName componentName = new ComponentName("almanza1112.spottrade", "almanza1112.spottrade.nonActivity.tracking.TrackerService");
-                pm.setComponentEnabledSetting(componentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-                startService(new Intent(this, TrackerService.class));
-                /*
                 try {
                     Intent intent =
                             new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
@@ -358,7 +336,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     e.printStackTrace();
                     Toast.makeText(this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
                 }
-                */
                 break;
 
             case android.R.id.home:
@@ -368,7 +345,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.filterMaps:
                 final CharSequence[] items = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request), getResources().getString(R.string.All)};
                 final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-                alertDialogBuilder.setTitle(getResources().getString(R.string.Filter) + " " + getResources().getString(R.string.Your_Spots));
+                alertDialogBuilder.setTitle(getResources().getString(R.string.Filter) + " " + getResources().getString(R.string.Spots));
                 alertDialogBuilder.setSingleChoiceItems(items, pos[0], new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -417,14 +394,14 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 getFragmentManager().popBackStack();
             }
             else {
-                if (isFabMenuClicked){
-                    fabMenu.close(true);
-                    isFabMenuClicked = false;
-                }
-                else if (isMarkerClicked){
+                if (isMarkerClicked){
                     isMarkerClicked = false;
                     hiddenPanel.startAnimation(bottomDown);
                     hiddenPanel.setVisibility(View.INVISIBLE);
+                }
+                else if (isFabMenuClicked){
+                    fabMenu.close(true);
+                    isFabMenuClicked = false;
                 }
                 else {
                     super.onBackPressed();
@@ -499,29 +476,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
         // Get LocationManager object from System Service LOCATION_SERVICE
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        /*
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 1, new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                Log.e("location", "Lat: " + location.getLatitude() + "\nLng: " + location.getLongitude());
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-
-            }
-        });
-        */
 
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             Log.e("GPS_Provider", "ERROR, GPS NOT PROVIDED");
@@ -539,8 +493,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
         myLocation = null;
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                &&
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
                 ContextCompat.checkSelfPermission(
                         this,
                         Manifest.permission.ACCESS_FINE_LOCATION)
@@ -548,7 +501,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    ACCESS_FINE_LOCATION_PERMISSION);
+                    ACCESS_FINE_LOCATION_PERMISSION_MAP);
         }
         else {
             // Get Current Location
@@ -579,14 +532,17 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         mMap.getUiSettings().setRotateGesturesEnabled(false);
         mMap.setOnMarkerClickListener(this);
 
-        getAvailableSpots(typeSelected);
+        if (isServiceRunning(TrackerService.class)){
+            // If the service class is running, then set up the map so that you will see the current transaction
+
+        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         // If request is cancelled, the result arrays are empty.
-        if (requestCode == ACCESS_FINE_LOCATION_PERMISSION) {
+        if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_MAP) {
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -603,7 +559,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 catch (NullPointerException e){
                     e.printStackTrace();
                 }
-
                 currentLocation = new LatLng(latitude, longitude);
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
                 mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
@@ -611,6 +566,19 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             else {
                 // permission denied, boo! Disable the
                 // functionality that depends on this permission.
+                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+        else if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_TRACKING){
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (type.equals("Sell")){
+                    validatePaymentMethod();
+                }
+                else if (type.equals("Request")){
+                    transactionBuyNow();
+                }
+            }
+            else {
                 Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
             }
         }
@@ -629,7 +597,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         RequestQueue queue = Volley.newRequestQueue(this);
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/" + marker.getTag() + "?user=" + SharedPref.getID(this), null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/" + marker.getTag() + "?user=" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -656,7 +624,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                         bBuyNow.setText(getResources().getString(R.string.Accept));
                     }
 
-                    if (response.getString("sellerID").equals(SharedPref.getID(MapsActivity.this))){
+                    if (response.getString("sellerID").equals(SharedPref.getSharedPreferences(MapsActivity.this, getResources().getString(R.string.logged_in_user_id)))){
                         bPlaceBid.setVisibility(View.GONE);
                         bCancelBid.setVisibility(View.GONE);
                         bBuyNow.setVisibility(View.GONE);
@@ -779,8 +747,8 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private void transactionBuyNow() {
         final JSONObject jObject = new JSONObject();
         try {
-            jObject.put("transaction", "complete");
-            jObject.put("buyerID", SharedPref.getID(this));
+            jObject.put("transaction", "ongoing");
+            jObject.put("buyerID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -794,7 +762,37 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 pd.dismiss();
                 try{
                     if (response.getString("status").equals("success")){
-                        setRoute();
+                        String lidBought = response.getString("_id");
+                        String latBought = response.getString("latitude");
+                        String lngBought = response.getString("longitude");
+                        String addressBought = response.getString("address");
+                        String nameBought = response.getString("name");
+
+                        SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.bought_lid), lidBought);
+                        SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.bought_lat), latBought);
+                        SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.bought_lng), lngBought);
+                        SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.bought_address), addressBought);
+                        SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.bought_name), nameBought);
+
+                        Map<String, String> latLng = new HashMap<>();
+                        latLng.put("lat", "null");
+                        latLng.put("lng", "null");
+
+                        databaseReference = FirebaseDatabase.getInstance().getReference("tracking");
+                        databaseReference.child(lidBought).setValue(latLng, new DatabaseReference.CompletionListener() {
+                            @Override
+                            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                if (databaseError == null){
+                                    // There is no error
+                                    startTrackingService();
+                                }
+                                else {
+                                    // There is an error
+
+                                }
+                            }
+                        });
+                        //startNavigationApp(response.getString("latitude"), response.getString("longitude"), response.getString("name"));
                     }
                 }
                 catch (JSONException e){
@@ -814,10 +812,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private void transactionPlaceBid(final String bidAmount){
         final JSONObject jObject = new JSONObject();
         try {
-            jObject.put("bidderID", SharedPref.getID(this));
+            jObject.put("bidderID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
             jObject.put("bidAmount", bidAmount);
-            jObject.put("bidderFirstName", SharedPref.getFirstName(this));
-            jObject.put("bidderLastName", SharedPref.getLastName(this));
+            jObject.put("bidderFirstName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_first_name)));
+            jObject.put("bidderLastName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_last_name)));
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -856,7 +854,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         RequestQueue queue = Volley.newRequestQueue(this);
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/bid/cancel/" + lid + "?user=" + SharedPref.getID(this), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/bid/cancel/" + lid + "?user=" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -934,8 +932,8 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         alertDialogBuilder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
-                firebaseAuth.signOut();
-                SharedPref.clearAll(MapsActivity.this);
+                FirebaseAuth.getInstance().signOut();
+                SharedPref.clearSharedPreferences(MapsActivity.this);
                 startActivity(new Intent(MapsActivity.this, LoginActivity.class));
                 finish();
             }
@@ -960,7 +958,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         HttpConnection httpConnection = new HttpConnection();
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
-                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getID(this),
+                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)),
                 null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -1067,7 +1065,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         HttpConnection httpConnection = new HttpConnection();
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
-                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getID(this),
+                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)),
                 null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -1253,82 +1251,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         alertDialog.show();
     }
 
-    //When user buys spot it will give him directions to the spot
-    private void setRoute(){
-        mMap.clear();
-        mMap.addMarker(new MarkerOptions().position(spotLocation));
-
-        String url = getUrl(currentLocation, spotLocation);
-
-        getDataFromUrl(url);
-    }
-
-    private String getUrl(LatLng origin, LatLng dest) {
-
-        // Origin of route
-        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
-
-        // Destination of route
-        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
-
-
-        // Sensor enabled
-        String sensor = "sensor=false";
-
-        // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&" + sensor;
-
-        // Output format
-        String output = "json";
-
-        // Building the url to the web service
-
-
-        return "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters;
-    }
-
-    private void getDataFromUrl(String url){
-        RequestQueue queue = Volley.newRequestQueue(this);
-
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            JSONArray routesObj = new JSONArray(response.getString("routes"));
-                            JSONObject jBound = routesObj.getJSONObject(0);
-                            JSONObject boundsObj = new JSONObject(jBound.getString("bounds"));
-                            JSONObject northeastObj = boundsObj.getJSONObject("northeast");
-                            JSONObject southwestObj = boundsObj.getJSONObject("southwest");
-                            LatLng boundSouthWest = new LatLng(southwestObj.getDouble("lat"),southwestObj.getDouble("lng"));
-                            LatLng boundNorthEast = new LatLng(northeastObj.getDouble("lat"),northeastObj.getDouble("lng"));
-                            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                            builder.include(boundSouthWest);
-                            builder.include(boundNorthEast);
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 200));
-
-                            hiddenPanel.startAnimation(bottomDown);
-                            hiddenPanel.setVisibility(View.INVISIBLE);
-                        }
-                        catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        new ParserTask().execute(response.toString());
-                    }
-                }, new Response.ErrorListener() {
-
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-                        error.printStackTrace();
-                    }
-                });
-
-        // Access the RequestQueue through your singleton class.
-        queue.add(jsObjRequest);
-    }
-
     private void refreshMap(){
         if (mMap != null){
             mMap.clear();
@@ -1336,74 +1258,67 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
+    private void startTrackingService(){
+        PackageManager pm = getPackageManager();
+        ComponentName componentName = new ComponentName("almanza1112.spottrade", "almanza1112.spottrade.nonActivity.tracking.TrackerService");
+        pm.setComponentEnabledSetting(componentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+        startService(new Intent(this, TrackerService.class));
+    }
 
-        // Parsing the data in non-ui thread
-        @Override
-        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+    private void startNavigationApp(String lat, String lng, String label){
+        Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + lat + "," + lng+"(" + Uri.encode(label) + ")");
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        //mapIntent.setPackage("com.google.android.apps.maps"); //this line of code opens up Google Maps only
+        startActivity(mapIntent);
+    }
 
-            JSONObject jObject;
-            List<List<HashMap<String, String>>> routes = null;
-
-            try {
-                jObject = new JSONObject(jsonData[0]);
-                Log.d("ParserTask", jsonData[0]);
-                DataParser parser = new DataParser();
-                Log.d("ParserTask", parser.toString());
-
-                // Starts parsing data
-                routes = parser.parse(jObject);
-                Log.d("ParserTask","Executing routes");
-                Log.d("ParserTask",routes.toString());
-
-            } catch (Exception e) {
-                Log.d("ParserTask",e.toString());
-                e.printStackTrace();
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
             }
-            return routes;
         }
+        return false;
+    }
 
-        // Executes in UI thread, after the parsing process
-        @Override
-        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-            ArrayList<LatLng> points;
-            PolylineOptions lineOptions = null;
+    private void isOngoingSpots(){
+        progressBar.setVisibility(View.VISIBLE);
+        RequestQueue queue = Volley.newRequestQueue(this);
 
-            // Traversing through all the routes
-            for (int i = 0; i < result.size(); i++) {
-                points = new ArrayList<>();
-                lineOptions = new PolylineOptions();
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/history?sellerID="+ SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)) + "&type=all&transaction=ongoing", null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try{
+                    if (response.getString("status").equals("success")){
+                        String locations = response.getString("location");
+                        JSONArray jsonArray = new JSONArray(locations);
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            JSONObject locationObj = jsonArray.getJSONObject(i);
 
-                // Fetching i-th route
-                List<HashMap<String, String>> path = result.get(i);
+                        }
 
-                // Fetching all the points in i-th route
-                for (int j = 0; j < path.size(); j++) {
-                    HashMap<String, String> point = path.get(j);
-
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
-                    LatLng position = new LatLng(lat, lng);
-
-                    points.add(position);
+                        progressBar.setVisibility(View.GONE);
+                    }
+                    else if (response.getString("status").equals("fail")){
+                        getAvailableSpots(typeSelected);
+                        progressBar.setVisibility(View.GONE);
+                    }
                 }
-
-                // Adding all the points in the route to LineOptions
-                lineOptions.addAll(points);
-                lineOptions.width(10);
-                lineOptions.color(Color.RED);
-
-                Log.d("onPostExecute","onPostExecute lineoptions decoded");
-
+                catch (JSONException e){
+                    e.printStackTrace();
+                }
             }
-
-            // Drawing polyline in the Google Map for the i-th route
-            if(lineOptions != null) {
-                mMap.addPolyline(lineOptions);
-            }
-            else {
-                Log.d("onPostExecute","without Polylines drawn");
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(MapsActivity.this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                error.printStackTrace();
             }
         }
+        );
+        queue.add(jsonObjectRequest);
     }
 }

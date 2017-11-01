@@ -66,7 +66,7 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
     @Override
     public void onBindViewHolder(RecyclerViewHolder holder, int position) {
         String otherUser;
-        if (buyerID.get(position).equals(SharedPref.getID(activity))){
+        if (buyerID.get(position).equals(SharedPref.getSharedPreferences(activity, activity.getResources().getString(R.string.logged_in_user_id)))){
             otherUser = sellerName.get(position);
         }
         else {

@@ -325,17 +325,32 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.e("response", ""+response);
                         try {
                             if (response.getString("status").equals("success")) {
-                                SharedPref.setID(getActivity(), response.getString("_id"));
-                                SharedPref.setFirstName(getActivity(), response.getString("firstName"));
-                                SharedPref.setLastName(getActivity(), response.getString("lastName"));
-                                SharedPref.setEmail(getActivity(), response.getString("email"));
-                                SharedPref.setPassword(getActivity(), response.getString("password"));
-                                SharedPref.setPhoneNumber(getActivity(), response.getString("phoneNumber"));
-                                SharedPref.setTotalRatings(getActivity(), response.getString("totalRatings"));
-                                SharedPref.setOverallRating(getActivity(), response.getString("overallRating"));
+                                String id = response.getString("_id");
+                                String email = response.getString("email");
+                                String firstName = response.getString("firstName");
+                                String lastName = response.getString("lastName");
+                                String password = response.getString("password");
+                                String totalRatings = response.getString("totalRatings");
+                                String overallRating = response.getString("overallRating");
+
+                                if (response.has("phoneNumber")){
+                                    String phoneNumber = response.getString("phoneNumber");
+                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_phone_number), phoneNumber);
+                                }
+                                if (response.has("profilePhotoUrl")){
+                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), response.getString("profilePhotoUrl"));
+                                }
+
+                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id), id);
+                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email), email);
+                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_first_name), firstName);
+                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name), lastName);
+                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password), password);
+                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_total_ratings), totalRatings);
+                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_overall_rating), overallRating);
+
 
                                 firebaseAuth.createUserWithEmailAndPassword(response.getString("email"), response.getString("password")).addOnFailureListener(new OnFailureListener() {
                                     @Override
@@ -347,7 +362,7 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                                     public void onComplete(@NonNull Task<AuthResult> task) {
                                         // If uri is not empty then that means that user wants to upload image
                                         if (uri != null) {
-                                            uploadImageToFirebase(SharedPref.getID(getActivity()));
+                                            uploadImageToFirebase(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)));
                                         }
                                         else{
                                             progressDialog.dismiss();
@@ -401,7 +416,7 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                SharedPref.setProfilePhotoUrl(getActivity(), downloadUrl.toString());
+                SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url));
                 uploadDownloadUrl(downloadUrl.toString());
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -426,7 +441,7 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getID(getActivity()), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 Log.e("uploadDownloadUrl", response +  "");

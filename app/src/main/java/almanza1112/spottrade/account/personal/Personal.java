@@ -88,26 +88,26 @@ public class Personal extends Fragment implements View.OnClickListener {
         ivProfilePhoto = (ImageView) view.findViewById(R.id.ivProfilePhoto);
         final ImageView ivEditProfilePhoto = (ImageView) view.findViewById(R.id.ivEditProfilePhoto);
         ivEditProfilePhoto.setOnClickListener(this);
-        if (!SharedPref.getProfilePhotoUrl(getActivity()).isEmpty()){
-            Picasso.with(getActivity()).load(SharedPref.getProfilePhotoUrl(getActivity())).fit().centerCrop().into(ivProfilePhoto);
+        if (!SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)).isEmpty()){
+            Picasso.with(getActivity()).load(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url))).fit().centerCrop().into(ivProfilePhoto);
         }
 
         tvFistName = (TextView) view.findViewById(R.id.tvFirstName);
-        tvFistName.setText(SharedPref.getFirstName(getActivity()));
+        tvFistName.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_first_name)));
         final ImageView ivEditFirstName = (ImageView) view.findViewById(R.id.ivEditFirstName);
         ivEditFirstName.setOnClickListener(this);
         tvLastName = (TextView) view.findViewById(R.id.tvLastName);
-        tvLastName.setText(SharedPref.getLastName(getActivity()));
+        tvLastName.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name)));
         final ImageView ivEditLastName = (ImageView) view.findViewById(R.id.ivEditLastName);
         ivEditLastName.setOnClickListener(this);
 
         tvEmail = (TextView) view.findViewById(R.id.tvEmail);
-        tvEmail.setText(SharedPref.getEmail(getActivity()));
+        tvEmail.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email)));
         final ImageView ivEditEmail = (ImageView) view.findViewById(R.id.ivEditEmail);
         ivEditEmail.setOnClickListener(this);
         final TextView tvPassword = (TextView) view.findViewById(R.id.tvPassword);
         tvPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        tvPassword.setText(SharedPref.getPassword(getActivity()));
+        tvPassword.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password)));
         final ImageView ivEditPassword = (ImageView) view.findViewById(R.id.ivEditPassword);
         ivEditPassword.setOnClickListener(this);
 
@@ -197,9 +197,9 @@ public class Personal extends Fragment implements View.OnClickListener {
         if (requestCode == GALLERY_CODE && resultCode == RESULT_OK){
             progressBar.setVisibility(View.VISIBLE);
             // Check if there is an image already
-            if (!SharedPref.getProfilePhotoUrl(getActivity()).isEmpty()){
+            if (!SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)).isEmpty()){
                 // There is an image, proceed to delete it
-                StorageReference photoRef = firebaseStorage.getReferenceFromUrl(SharedPref.getProfilePhotoUrl(getActivity()));
+                StorageReference photoRef = firebaseStorage.getReferenceFromUrl(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)));
                 photoRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -222,13 +222,13 @@ public class Personal extends Fragment implements View.OnClickListener {
 
     private void uploadImageToFirebase(Uri uri){
         ivProfilePhoto.setImageURI(uri);
-        StorageReference filePath = storageReference.child("Photos").child(SharedPref.getID(getActivity())).child(uri.getLastPathSegment());
+        StorageReference filePath = storageReference.child("Photos").child(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id))).child(uri.getLastPathSegment());
         filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                SharedPref.clearProfilePhotoUrl(getActivity());
-                SharedPref.setProfilePhotoUrl(getActivity(), downloadUrl.toString());
+                SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url));
+                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), downloadUrl.toString());
                 uploadDownloadUrl(downloadUrl.toString());
                 Toast.makeText(getActivity(), getResources().getString(R.string.Profile_photo_updated), Toast.LENGTH_SHORT).show();
             }
@@ -253,7 +253,7 @@ public class Personal extends Fragment implements View.OnClickListener {
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getID(getActivity()), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 progressBar.setVisibility(View.GONE);
@@ -275,7 +275,7 @@ public class Personal extends Fragment implements View.OnClickListener {
     private void ADupdateProfilePhoto(){
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
         final CharSequence[] items;
-        if (SharedPref.getProfilePhotoUrl(getActivity()).isEmpty()){
+        if (SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)).isEmpty()){
             items = new CharSequence[]{getResources().getString(R.string.Add_profile_photo)};
         }
         else {
@@ -309,13 +309,13 @@ public class Personal extends Fragment implements View.OnClickListener {
                     if (which == 0){
                         progressBar.setVisibility(View.VISIBLE);
                         //delete photo
-                        StorageReference photoRef = firebaseStorage.getReferenceFromUrl(SharedPref.getProfilePhotoUrl(getActivity()));
+                        StorageReference photoRef = firebaseStorage.getReferenceFromUrl(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)));
                         photoRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 // On success of deletion, proceed to add new image
                                 ivProfilePhoto.setImageBitmap(null);
-                                SharedPref.clearProfilePhotoUrl(getActivity());
+                                SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url));
                                 deleteDownloadUrl();
                             }
                         }).addOnFailureListener(new OnFailureListener() {
@@ -355,14 +355,14 @@ public class Personal extends Fragment implements View.OnClickListener {
     private void deleteDownloadUrl(){
         final JSONObject jObject = new JSONObject();
         try {
-            jObject.put("profilePhotoUrl", SharedPref.getProfilePhotoUrl(getActivity()));
+            jObject.put("profilePhotoUrl", SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)));
         } catch (JSONException e) {
             e.printStackTrace();
         }
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/delete/photo/" + SharedPref.getID(getActivity()), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/delete/photo/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 progressBar.setVisibility(View.GONE);
@@ -405,7 +405,7 @@ public class Personal extends Fragment implements View.OnClickListener {
             case "firstName":
                 ivIcon.setImageDrawable(getResources().getDrawable(R.mipmap.ic_account_circle_black_24dp));
                 title += " " + getResources().getString(R.string.First_Name);
-                tietUpdate.setText(SharedPref.getFirstName(getActivity()));
+                tietUpdate.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_first_name)));
                 tietUpdate.setInputType(InputType.TYPE_CLASS_TEXT |
                         InputType.TYPE_TEXT_FLAG_CAP_WORDS);
                 break;
@@ -413,7 +413,7 @@ public class Personal extends Fragment implements View.OnClickListener {
             case "lastName":
                 ivIcon.setImageDrawable(getResources().getDrawable(R.mipmap.ic_account_circle_black_24dp));
                 title += " " + getResources().getString(R.string.Last_Name);
-                tietUpdate.setText(SharedPref.getLastName(getActivity()));
+                tietUpdate.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name)));
                 tietUpdate.setInputType(InputType.TYPE_CLASS_TEXT |
                         InputType.TYPE_TEXT_FLAG_CAP_WORDS);
                 break;
@@ -421,7 +421,7 @@ public class Personal extends Fragment implements View.OnClickListener {
             case "email":
                 ivIcon.setImageDrawable(getResources().getDrawable(R.mipmap.ic_email_grey600_24dp));
                 title += " " + getResources().getString(R.string.Email);
-                tietUpdate.setText(SharedPref.getEmail(getActivity()));
+                tietUpdate.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email)));
                 tietUpdate.setInputType(InputType.TYPE_CLASS_TEXT |
                         InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
                 break;
@@ -493,7 +493,7 @@ public class Personal extends Fragment implements View.OnClickListener {
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getID(getActivity()), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
@@ -501,20 +501,20 @@ public class Personal extends Fragment implements View.OnClickListener {
                     if (response.getString("status").equals("success")) {
                         switch (field) {
                             case "firstName":
-                                SharedPref.clearFirstName(getActivity());
-                                SharedPref.setFirstName(getActivity(), str);
+                                SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_first_name));
+                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_first_name), str);
                                 Toast.makeText(getActivity(), getResources().getString(R.string.First_Name) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
                                 tvFistName.setText(str);
                                 break;
                             case "lastName":
-                                SharedPref.clearLastName(getActivity());
-                                SharedPref.setLastName(getActivity(), str);
+                                SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name));
+                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name), str);
                                 Toast.makeText(getActivity(), getResources().getString(R.string.Last_Name) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
                                 tvLastName.setText(str);
                                 break;
                             case "email":
-                                SharedPref.clearEmail(getActivity());
-                                SharedPref.setEmail(getActivity(), str);
+                                SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email));
+                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email), str);
                                 Toast.makeText(getActivity(), getResources().getString(R.string.Email) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
                                 tvEmail.setText(str);
                                 break;

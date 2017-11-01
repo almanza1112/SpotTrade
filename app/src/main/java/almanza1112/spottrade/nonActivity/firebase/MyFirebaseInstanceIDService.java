@@ -19,6 +19,7 @@ import com.google.firebase.iid.FirebaseInstanceIdService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import almanza1112.spottrade.R;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
@@ -45,7 +46,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         RequestQueue queue = Volley.newRequestQueue(this);
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getID(this), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 Log.e("responseUp", response +"");

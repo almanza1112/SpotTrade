@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -153,11 +152,10 @@ public class History extends Fragment {
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/history?sellerID="+ SharedPref.getID(getActivity()) + "&type=" + type, null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/history?sellerID="+ SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)) + "&type=" + type + "&transaction=complete", null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
-                    Log.e("response", response + "");
                     if (response.getString("status").equals("success")){
                         tvNoHistory.setVisibility(View.GONE);
                         List<String> type = new ArrayList<>();
@@ -179,7 +177,6 @@ public class History extends Fragment {
 
                         for (int i = 0; i < jsonArray.length(); i++){
                             JSONObject locationObj = jsonArray.getJSONObject(i);
-                            Log.e("historyArr", locationObj + "");
                             type.add(locationObj.getString("type"));
                             description.add(locationObj.getString("description"));
                             price.add(locationObj.getString("price"));
@@ -213,7 +210,7 @@ public class History extends Fragment {
                             sellerName.add(sellerInfoObj.getString("sellerFirstName") + " " + sellerInfoObj.getString("sellerLastName"));
 
 
-                            if (buyerID.get(i).equals(SharedPref.getID(getActivity()))){
+                            if (buyerID.get(i).equals(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)))){
                                 if (sellerInfoObj.has("sellerProfilePhotoUrl")){
                                     profilePhotoUrl.add(sellerInfoObj.getString("sellerProfilePhotoUrl"));
                                 }
