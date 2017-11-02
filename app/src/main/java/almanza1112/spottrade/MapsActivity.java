@@ -39,6 +39,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -112,6 +113,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private String locationName="empty", locationAddress="empty";
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private int SPOT_CODE = 1;
+    private int quantity;
     private String lid, price, type;
     private String typeSelected = "all";
     final int[] pos = {2};
@@ -251,6 +253,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                         validatePaymentMethod();
                     }
                     else if (type.equals("Request")){
+                        /*
+                         * TODO
+                         * need to validate received payment form, PAYPAL!
+                         * */
                         transactionBuyNow();
                     }
                 }
@@ -477,12 +483,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         // Get LocationManager object from System Service LOCATION_SERVICE
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            Log.e("GPS_Provider", "ERROR, GPS NOT PROVIDED");
-        } else {
-            Log.e("GPS_Provider", "gps provided yo");
-        }
-
         locMan = locationManager;
         // Create a criteria object to retrieve provider
         Criteria criteria = new Criteria();
@@ -604,6 +604,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     lid = response.getString("_id");
                     tvLocationName.setText(response.getString("name"));
                     price = response.getString("price");
+                    quantity = response.getInt("quantity");
 
                     tvLocationAddress.setText(response.getString("address"));
                     JSONObject sellerInfoObj = response.getJSONObject("sellerInfo");
@@ -977,19 +978,39 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                                                     astr += "*";
                                                 }
                                                 String last4 = astr + jsonArray.getJSONObject(i).getString("last4");
-                                                ADareYouSurePaymentMethod(
-                                                        jsonArray.getJSONObject(i).getString("cardType"),
-                                                        last4,
-                                                        jsonArray.getJSONObject(i).getString("imageUrl"),
-                                                        jsonArray.getJSONObject(i).getString("token"));
+                                                if (quantity > 1){
+                                                    ADselectQuantity(
+                                                            jsonArray.getJSONObject(i).getString("cardType"),
+                                                            last4,
+                                                            jsonArray.getJSONObject(i).getString("imageUrl"),
+                                                            jsonArray.getJSONObject(i).getString("token"));
+                                                }
+                                                else {
+                                                    ADareYouSurePaymentMethod(
+                                                            jsonArray.getJSONObject(i).getString("cardType"),
+                                                            last4,
+                                                            jsonArray.getJSONObject(i).getString("imageUrl"),
+                                                            jsonArray.getJSONObject(i).getString("token"),
+                                                            1);
+                                                }
                                             }
                                             else{
                                                 //means the default payment is PayPal
-                                                ADareYouSurePaymentMethod(
-                                                        "PayPal",
-                                                        jsonArray.getJSONObject(i).getString("email"),
-                                                        jsonArray.getJSONObject(i).getString("imageUrl"),
-                                                        jsonArray.getJSONObject(i).getString("token"));
+                                                if (quantity > 1){
+                                                    ADselectQuantity(
+                                                            "PayPal",
+                                                            jsonArray.getJSONObject(i).getString("email"),
+                                                            jsonArray.getJSONObject(i).getString("imageUrl"),
+                                                            jsonArray.getJSONObject(i).getString("token"));
+                                                }
+                                                else {
+                                                    ADareYouSurePaymentMethod(
+                                                            "PayPal",
+                                                            jsonArray.getJSONObject(i).getString("email"),
+                                                            jsonArray.getJSONObject(i).getString("imageUrl"),
+                                                            jsonArray.getJSONObject(i).getString("token"),
+                                                            1);
+                                                }
                                             }
                                             pd.dismiss();
                                             break;
@@ -1021,10 +1042,56 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         queue.add(jsonObjectRequest);
     }
 
-    private void ADareYouSurePaymentMethod(String paymentType, String paymentCredentials, String paymentImageUrl, final String paymentToken){
+    private void ADselectQuantity(final String paymentType, final String paymentCredentials, final String paymentImageUrl, final String paymentToken){
+        LayoutInflater inflater = getLayoutInflater();
+        View alertLayout = inflater.inflate(R.layout.number_picker, null);
+
+        final NumberPicker npQuantity = (NumberPicker) alertLayout.findViewById(R.id.npQuantity);
+        npQuantity.setMinValue(1);
+        npQuantity.setMaxValue(quantity);
+
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setView(alertLayout);
+        alertDialogBuilder.setTitle(R.string.Quantity);
+        alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDialogBuilder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                ADareYouSurePaymentMethod(
+                        paymentType,
+                        paymentCredentials,
+                        paymentImageUrl,
+                        paymentToken,
+                        npQuantity.getValue());
+            }
+        });
+
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+
+    private void ADareYouSurePaymentMethod(String paymentType, String paymentCredentials, String paymentImageUrl, final String paymentToken, int quantity){
         LayoutInflater inflater = getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.maps_activity_transaction_are_you_sure__alertdialog, null);
 
+
+        TextView tvCompleteTransactionDialog = (TextView) alertLayout.findViewById(R.id.tvCompleteTransactionDialog);
+        String completeTransactionText;
+        if (quantity > 1){
+            int totalPrice = Integer.valueOf(price) * quantity;
+            completeTransactionText = getResources().getString(R.string.You_will_be_charged) + " $" + totalPrice + " ($" + price + " x " + quantity + ") " + getResources().getString(R.string.with_the_following_payment_method);
+        }
+        else {
+
+            completeTransactionText = getResources().getString(R.string.You_will_be_charged) + " $" + price + " " + getResources().getString(R.string.with_the_following_payment_method);
+        }
+        tvCompleteTransactionDialog.setText(completeTransactionText);
         ImageView ivPaymentImage = (ImageView) alertLayout.findViewById(R.id.ivPaymentImage);
         TextView tvPaymentName = (TextView) alertLayout.findViewById(R.id.tvPaymentName);
         TextView tvPaymentCredentials = (TextView) alertLayout.findViewById(R.id.tvPaymentCredentials);
@@ -1044,7 +1111,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         });
-        alertDialogBuilder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
+        alertDialogBuilder.setPositiveButton(R.string.Complete, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 checkout(paymentToken);

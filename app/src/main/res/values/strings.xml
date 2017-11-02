@@ -59,8 +59,8 @@
     <string name="Change_Profile_Photo">Change Profile Photo</string>
     <string name="Checking_for_payment_methods">Checking for payment methods</string>
     <string name="Choose_Payment_Method">Choose Payment Method</string>
+    <string name="Complete">Complete</string>
     <string name="Complete_Transaction">Complete Transaction</string>
-    <string name="Complete_transaction_with_following_payment_method">Complete transaction with following payment method:</string>
     <string name="Completing">Completing</string>
     <string name="Completing_transaction">Completing transaction&#8230;</string>
     <string name="Confirm_Password">Confirm Password</string>
@@ -158,6 +158,8 @@
     <string name="Verifying">Verifying</string>
     <string name="Yes">Yes</string>
     <string name="You_have_no_payment_method">You have no payment method in order to pay for this request. Please add one to proceed.</string>
+    <string name="You_will_be_charged">You will be charged</string>
+    <string name="with_the_following_payment_method">with the following payment method:</string>
     <string name="Your_Spots">Your Spots</string>
     <string name="Zip_Code">Zip Code</string>
 
