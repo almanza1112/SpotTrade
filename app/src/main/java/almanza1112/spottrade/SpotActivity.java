@@ -12,9 +12,11 @@ import android.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,13 +49,14 @@ import almanza1112.spottrade.nonActivity.SharedPref;
  */
 
 public class SpotActivity extends AppCompatActivity implements View.OnClickListener{
-    private TextView tvLocationName, tvLocationAddress, tvAddLocation;
+    private TextView tvLocationName, tvLocationAddress, tvAddLocation, tvQuantity;
     private TextInputLayout tilPrice;
     private TextInputEditText tietDescription, tietPrice;
     private CheckBox cbBids;
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private double latitude, longitude;
     private String locationName, locationAddress, type;
+    private int quantity = 1;
 
     private ProgressDialog pd = null;
 
@@ -90,6 +93,8 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         tvLocationAddress.setOnClickListener(this);
         tvAddLocation = (TextView) findViewById(R.id.tvAddLocation);
         tvAddLocation.setOnClickListener(this);
+        tvQuantity = (TextView) findViewById(R.id.tvQuantity);
+        tvQuantity.setOnClickListener(this);
 
         if (locationName.equals("empty")){
             tvLocationName.setVisibility(View.GONE);
@@ -125,6 +130,35 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
                         postRequest();
                     }
                 }
+                break;
+            case R.id.tvQuantity:
+                LayoutInflater inflater = getLayoutInflater();
+                View alertLayout = inflater.inflate(R.layout.number_picker, null);
+
+                final NumberPicker npQuantity = (NumberPicker) alertLayout.findViewById(R.id.npQuantity);
+                npQuantity.setMinValue(1);
+                npQuantity.setMaxValue(100);
+                npQuantity.setValue(quantity);
+
+                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+                alertDialogBuilder.setView(alertLayout);
+                alertDialogBuilder.setTitle(R.string.Quantity);
+                alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                alertDialogBuilder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        quantity = npQuantity.getValue();
+                        tvQuantity.setText(String.valueOf(quantity));
+                    }
+                });
+
+                final AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
                 break;
             default:
                 try {
@@ -262,7 +296,7 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         pd.setMessage(getResources().getString(R.string.Adding_spot_to_SpotTrade_database));
         RequestQueue queue = Volley.newRequestQueue(this);
         final JSONObject jsonObject = new JSONObject();
-        final JSONObject sellerInfoObj = new JSONObject();
+        //final JSONObject sellerInfoObj = new JSONObject();
         try {
             jsonObject.put("type", type);
             jsonObject.put("transaction", "available");
@@ -274,11 +308,12 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
             jsonObject.put("latitude", String.valueOf(latitude));
             jsonObject.put("longitude", String.valueOf(longitude));
             jsonObject.put("description", tietDescription.getText().toString());
+            jsonObject.put("quantity", quantity);
 
-            sellerInfoObj.put("sellerFirstName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_first_name)));
-            sellerInfoObj.put("sellerLastName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_last_name)));
+            //sellerInfoObj.put("sellerFirstName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_first_name)));
+            //sellerInfoObj.put("sellerLastName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_last_name)));
 
-            jsonObject.put("sellerInfo", sellerInfoObj);
+            //jsonObject.put("sellerInfo", sellerInfoObj);
         }
         catch (JSONException e) {
             e.printStackTrace();

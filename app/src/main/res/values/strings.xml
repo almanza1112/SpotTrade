@@ -130,6 +130,7 @@
     <string name="Profile_Photo">Profile Photo</string>
     <string name="Profile_photo_updated">Profile photo updated</string>
     <string name="Profile_photo_deleted">Profile photo deleted</string>
+    <string name="Quantity">Quantity</string>
     <string name="Registering">Registering</string>
     <string name="Request">Request</string>
     <string name="Request_a_Spot">Request a Spotter</string>
