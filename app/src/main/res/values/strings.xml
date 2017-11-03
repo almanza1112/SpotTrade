@@ -46,6 +46,7 @@
     <string name="Are_you_sure_you_want_to_delete">Are you sure you want to delete:</string>
     <string name="Are_you_sure_you_want_to_delete_this_spot">Are you sure you want to delete this spot?</string>
     <string name="Are_you_sure_you_want_to_log_out">Are you sure you want to log out?</string>
+    <string name="available">available</string>
     <string name="Bid">Bid</string>
     <string name="Bid_canceled">Bid canceled</string>
     <string name="bids">bids</string>

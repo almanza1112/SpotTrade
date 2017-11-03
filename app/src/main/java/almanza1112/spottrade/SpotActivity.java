@@ -94,6 +94,7 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         tvAddLocation = (TextView) findViewById(R.id.tvAddLocation);
         tvAddLocation.setOnClickListener(this);
         tvQuantity = (TextView) findViewById(R.id.tvQuantity);
+        tvQuantity.setText("1 " + getResources().getString(R.string.available));
         tvQuantity.setOnClickListener(this);
 
         if (locationName.equals("empty")){
@@ -153,7 +154,7 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         quantity = npQuantity.getValue();
-                        tvQuantity.setText(String.valueOf(quantity));
+                        tvQuantity.setText(String.valueOf(quantity) + " " + getResources().getString(R.string.available));
                     }
                 });
 
