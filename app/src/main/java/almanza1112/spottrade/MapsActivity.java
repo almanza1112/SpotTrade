@@ -67,9 +67,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -333,6 +335,29 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.search:
+
+                /* TODO: this is an example of how to retrieve data from database
+                databaseReference = FirebaseDatabase.getInstance().getReference().child("tracking").child("lidthatisbought");
+                databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot ds: dataSnapshot.getChildren()){
+                            BuyerTracker buyerTracker = new BuyerTracker();
+                            buyerTracker.setKey(ds.getKey());
+                            buyerTracker.setLat(ds.getValue(BuyerTracker.class).getLat());
+                            buyerTracker.setLng(ds.getValue(BuyerTracker.class).getLng());
+
+                            Log.e("k", "key: " +buyerTracker.getKey() + "\n"+buyerTracker.getLat() + " " + buyerTracker.getLng());
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+                */
+
                 try {
                     Intent intent =
                             new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
@@ -342,6 +367,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     e.printStackTrace();
                     Toast.makeText(this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
                 }
+
                 break;
 
             case android.R.id.home:
@@ -780,7 +806,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                         latLng.put("lng", "null");
 
                         databaseReference = FirebaseDatabase.getInstance().getReference("tracking");
-                        databaseReference.child(lidBought).setValue(latLng, new DatabaseReference.CompletionListener() {
+                        databaseReference.child(lidBought).child(SharedPref.getSharedPreferences(MapsActivity.this, getResources().getString(R.string.logged_in_user_id))).setValue(latLng, new DatabaseReference.CompletionListener() {
                             @Override
                             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                                 if (databaseError == null){

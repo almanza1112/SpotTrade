@@ -6,11 +6,18 @@ package almanza1112.spottrade;
 
 public class BuyerTracker {
 
-    String lat;
-    String lng;
+    private String lat, lng, key;
 
     public BuyerTracker(){
 
+    }
+
+    public void setKey(String key){
+        this.key = key;
+    }
+
+    public String getKey(){
+        return key;
     }
 
     public String getLat() {

@@ -307,9 +307,7 @@ public class TrackerService extends Service implements LocationListener {
         update.put("lat", location.getLatitude());
         update.put("lng", location.getLongitude());
 
-
-
-        databaseReference.child(lidBought).updateChildren(update, new DatabaseReference.CompletionListener() {
+        databaseReference.child(lidBought).child(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id))).updateChildren(update, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 if (databaseError == null){
