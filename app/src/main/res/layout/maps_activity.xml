@@ -221,7 +221,7 @@
                         android:layout_marginRight="@dimen/halfContentPadding"                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="@string/Place_Bid"/>
+                        android:text="@string/Place_Offer"/>
                     <Button
                         android:id="@+id/bCancelBid"
                         android:background="@color/colorAccent"

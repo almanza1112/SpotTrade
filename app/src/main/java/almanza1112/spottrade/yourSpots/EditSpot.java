@@ -77,7 +77,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         tvLocationAddress = (TextView) view.findViewById(R.id.tvLocationAddress);
         tvType = (TextView) view.findViewById(R.id.tvType);
         tvPrice = (TextView) view.findViewById(R.id.tvPrice);
-        CheckBox cbBids = (CheckBox) view.findViewById(R.id.cbBids);
+        CheckBox cbBids = (CheckBox) view.findViewById(R.id.cbOffers);
         cbBids.setChecked(bidAllowed);
         cbBids.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -353,7 +353,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                                 break;
                             case "bidAllowed":
                                 progressBar.setVisibility(View.GONE);
-                                Toast.makeText(getActivity(), getActivity().getString(R.string.Allow_bids) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getActivity(), getActivity().getString(R.string.Allow_offers) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
                                 break;
                             case "name":
                                 tvLocationName.setText(str);

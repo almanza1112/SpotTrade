@@ -52,7 +52,7 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
     private TextView tvLocationName, tvLocationAddress, tvAddLocation, tvQuantity;
     private TextInputLayout tilPrice;
     private TextInputEditText tietDescription, tietPrice;
-    private CheckBox cbBids;
+    private CheckBox cbOffers;
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private double latitude, longitude;
     private String locationName, locationAddress, type;
@@ -110,7 +110,7 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         tietDescription = (TextInputEditText) findViewById(R.id.tietDescription);
         tilPrice = (TextInputLayout) findViewById(R.id.tilPrice);
         tietPrice = (TextInputEditText) findViewById(R.id.tietPrice);
-        cbBids = (CheckBox) findViewById(R.id.cbBids);
+        cbOffers = (CheckBox) findViewById(R.id.cbOffers);
 
         final FloatingActionButton fabDone = (FloatingActionButton) findViewById(R.id.fabDone);
         fabDone.setOnClickListener(this);
@@ -304,7 +304,7 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
             jsonObject.put("sellerID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
             jsonObject.put("name", locationName);
             jsonObject.put("price", tietPrice.getText().toString());
-            jsonObject.put("bidAllowed", cbBids.isChecked());
+            jsonObject.put("offerAllowed", cbOffers.isChecked());
             jsonObject.put("address", locationAddress);
             jsonObject.put("latitude", String.valueOf(latitude));
             jsonObject.put("longitude", String.valueOf(longitude));

@@ -27,21 +27,21 @@ class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerVie
     private List<String> locationAddress;
     private List<String> type;
     private List<String> price;
-    private List<Boolean> bidAllowed;
-    private List<String> bidAmount;
+    private List<Boolean> offerAllowed;
+    private List<String> offerAmount;
     private List<String> description;
     YourSpotsAdapter(
             Activity activity, List<String> lid, List<String> locationName,
             List<String> locationAddress, List<String> type, List<String> price,
-            List<Boolean> bidAllowed, List<String> bidAmount, List<String> description){
+            List<Boolean> offerAllowed, List<String> offerAmount, List<String> description){
         this.activity = activity;
         this.lid = lid;
         this.locationName = locationName;
         this.locationAddress = locationAddress;
         this.type = type;
         this.price = price;
-        this.bidAllowed = bidAllowed;
-        this.bidAmount = bidAmount;
+        this.offerAllowed = offerAllowed;
+        this.offerAmount = offerAmount;
         this.description = description;
     }
 
@@ -57,11 +57,11 @@ class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerVie
         holder.tvLocationAddress.setText(locationAddress.get(position));
         holder.tvType.setText(type.get(position));
         holder.tvPrice.setText(price.get(position));
-        if (bidAllowed.get(position)){
-            holder.tvBidAmount.setText(bidAmount.get(position));
+        if (offerAllowed.get(position)){
+            holder.tvOfferAmount.setText(offerAmount.get(position));
         }
         else{
-            holder.llBids.setVisibility(View.GONE);
+            holder.llOffers.setVisibility(View.GONE);
         }
         holder.tvDescription.setText(description.get(position));
     }
@@ -72,8 +72,8 @@ class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerVie
     }
 
     class RecyclerViewHolder extends RecyclerView.ViewHolder{
-        TextView tvLocationName, tvLocationAddress, tvType, tvBidAmount, tvPrice, tvDescription;
-        LinearLayout llBids;
+        TextView tvLocationName, tvLocationAddress, tvType, tvOfferAmount, tvPrice, tvDescription;
+        LinearLayout llOffers;
         ImageView ivEdit;
         RecyclerViewHolder(View view){
             super(view);
@@ -81,8 +81,8 @@ class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerVie
             tvLocationAddress = (TextView) view.findViewById(R.id.tvLocationAddress);
             tvType = (TextView) view.findViewById(R.id.tvType);
             tvPrice = (TextView) view.findViewById(R.id.tvPrice);
-            llBids = (LinearLayout) view.findViewById(R.id.llBids);
-            tvBidAmount = (TextView) view.findViewById(R.id.tvBidAmount);
+            llOffers = (LinearLayout) view.findViewById(R.id.llOffers);
+            tvOfferAmount = (TextView) view.findViewById(R.id.tvOfferAmount);
             tvDescription = (TextView) view.findViewById(R.id.tvDescription);
             ivEdit = (ImageView) view.findViewById(R.id.ivEdit);
             ivEdit.setOnClickListener(new View.OnClickListener() {
@@ -94,7 +94,7 @@ class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerVie
                     bundle.putString("locationAddress", locationAddress.get(getAdapterPosition()));
                     bundle.putString("type", type.get(getAdapterPosition()));
                     bundle.putString("price", price.get(getAdapterPosition()));
-                    bundle.putBoolean("bidAllowed", bidAllowed.get(getAdapterPosition()));
+                    bundle.putBoolean("offerAllowed", offerAllowed.get(getAdapterPosition()));
                     bundle.putString("description", description.get(getAdapterPosition()));
                     EditSpot editSpot = new EditSpot();
                     editSpot.setArguments(bundle);

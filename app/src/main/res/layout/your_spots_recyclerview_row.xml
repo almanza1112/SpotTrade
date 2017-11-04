@@ -81,7 +81,7 @@
                 android:textAppearance="@android:style/TextAppearance.Small"/>
         </LinearLayout>
         <LinearLayout
-            android:id="@+id/llBids"
+            android:id="@+id/llOffers"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/halfContentPadding"
@@ -93,7 +93,7 @@
                 android:layout_marginRight="@dimen/contentPadding"
                 android:src="@mipmap/ic_wallet_travel_grey600_24dp"/>
             <TextView
-                android:id="@+id/tvBidAmount"
+                android:id="@+id/tvOfferAmount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/contentPadding"

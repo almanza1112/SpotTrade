@@ -27,7 +27,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -67,11 +66,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -665,7 +662,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                         else{
                             if (response.getBoolean("bidden")){
                                 bPlaceBid.setVisibility(View.GONE);
-                                bCancelBid.setText(getResources().getString(R.string.Cancel) + " $" + response.getString("biddenAmount") + " " + getResources().getString(R.string.Bid));
+                                bCancelBid.setText(getResources().getString(R.string.Cancel) + " $" + response.getString("biddenAmount") + " " + getResources().getString(R.string.Offer));
                             }
                             else {
                                 bCancelBid.setVisibility(View.GONE);
@@ -857,7 +854,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     if (response.getString("status").equals("success")){
                         Toast.makeText(MapsActivity.this, "Bid placed", Toast.LENGTH_SHORT).show();
                         bPlaceBid.setVisibility(View.GONE);
-                        bCancelBid.setText(getResources().getString(R.string.Cancel) + " $" + bidAmount + " " + getResources().getString(R.string.Bid));
+                        bCancelBid.setText(getResources().getString(R.string.Cancel) + " $" + bidAmount + " " + getResources().getString(R.string.Offer));
                         bCancelBid.setVisibility(View.VISIBLE);
                     }
                 }
@@ -888,7 +885,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     if (response.getString("status").equals("success")){
                         hiddenPanel.startAnimation(bottomDown);
                         hiddenPanel.setVisibility(View.INVISIBLE);
-                        Toast.makeText(MapsActivity.this, getResources().getString(R.string.Bid_canceled), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MapsActivity.this, getResources().getString(R.string.Offer_canceled), Toast.LENGTH_SHORT).show();
                     }
                     else {
                         Toast.makeText(MapsActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
@@ -915,8 +912,8 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         final EditText etBid = (EditText) alertLayout.findViewById(R.id.etBid);
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setView(alertLayout);
-        alertDialogBuilder.setTitle(R.string.Place_Bid);
-        alertDialogBuilder.setPositiveButton(R.string.Bid, new DialogInterface.OnClickListener() {
+        alertDialogBuilder.setTitle(R.string.Place_Offer);
+        alertDialogBuilder.setPositiveButton(R.string.Offer, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
                 transactionPlaceBid(etBid.getText().toString());

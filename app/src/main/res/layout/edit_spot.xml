@@ -127,14 +127,14 @@
             android:src="@mipmap/ic_create_black_24dp"
             android:tint="@color/grey600"/>
         <CheckBox
-            android:id="@+id/cbBids"
+            android:id="@+id/cbOffers"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="right"
             android:layout_marginLeft="@dimen/contentPadding"
             android:layout_marginStart="@dimen/contentPadding"
-            android:text="@string/Allow_bids"
+            android:text="@string/Allow_offers"
             android:textAppearance="@android:style/TextAppearance.Small"
             android:button="@null"
             android:drawableRight="?android:attr/listChoiceIndicatorMultiple"/>

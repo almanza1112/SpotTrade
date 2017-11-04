@@ -155,8 +155,8 @@ public class YourSpots extends Fragment {
                         List<String> locationAddress = new ArrayList<>();
                         List<String> type = new ArrayList<>();
                         List<String> price = new ArrayList<>();
-                        List<Boolean> bidAllowed = new ArrayList<>();
-                        List<String> bidAmount = new ArrayList<>();
+                        List<Boolean> offerAllowed = new ArrayList<>();
+                        List<String> offerAmount = new ArrayList<>();
                         List<String> description = new ArrayList<>();
 
                         JSONArray locationArray = new JSONArray(response.getString("location"));
@@ -167,16 +167,16 @@ public class YourSpots extends Fragment {
                             locationAddress.add(locationObj.getString("address"));
                             type.add(locationObj.getString("type"));
                             price.add(locationObj.getString("price"));
-                            bidAllowed.add(locationObj.getBoolean("bidAllowed"));
-                            if (locationObj.getBoolean("bidAllowed")){
-                                bidAmount.add(locationObj.getString("biddenAmount") + " " + getResources().getString(R.string.bids));
+                            offerAllowed.add(locationObj.getBoolean("offerAllowed"));
+                            if (locationObj.getBoolean("offerAllowed")){
+                                offerAmount.add(locationObj.getString("offerAmount") + " " + getResources().getString(R.string.offers));
                             }
                             else{
-                                bidAmount.add("0");
+                                offerAmount.add("0");
                             }
                             description.add(locationObj.getString("description"));
                         }
-                        adapter = new YourSpotsAdapter(getActivity(), lid, locationName, locationAddress, type, price, bidAllowed, bidAmount, description);
+                        adapter = new YourSpotsAdapter(getActivity(), lid, locationName, locationAddress, type, price, offerAllowed, offerAmount, description);
                         layoutManager = new LinearLayoutManager(getActivity());
                         rvYourSpots.setLayoutManager(layoutManager);
                         rvYourSpots.setAdapter(adapter);
