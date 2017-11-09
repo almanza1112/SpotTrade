@@ -102,7 +102,7 @@
             android:layout_alignParentBottom="true"
             android:layout_margin="@dimen/contentPadding"
             android:background="@color/colorAccent"
-            android:text="Add Card"
+            android:text="@string/Add_Card"
             android:textColor="@android:color/white" />
     </RelativeLayout>
 </LinearLayout>

@@ -169,7 +169,7 @@ public class YourSpots extends Fragment {
                             price.add(locationObj.getString("price"));
                             offerAllowed.add(locationObj.getBoolean("offerAllowed"));
                             if (locationObj.getBoolean("offerAllowed")){
-                                offerAmount.add(locationObj.getString("offerAmount") + " " + getResources().getString(R.string.offers));
+                                offerAmount.add(locationObj.getString("offeredAmount") + " " + getResources().getString(R.string.offers));
                             }
                             else{
                                 offerAmount.add("0");

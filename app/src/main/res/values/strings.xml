@@ -23,7 +23,7 @@
     <string name="bought_address">bought_address</string>
     <string name="bought_name">bought_name</string>
 
-
+    <string name="payment_method_added">payment_method_added</string>
 
     <!-- End of strings for SharedPreferences -->
 
@@ -31,6 +31,7 @@
     <string name="Accept">Accept</string>
     <string name="Account">Account</string>
     <string name="Active_Spots">Active Spots</string>
+    <string name="Add_Card">Add Card</string>
     <string name="Add_Credit_or_Debit_Card">Add Credit or Debit Card</string>
     <string name="Add_Location">Add Location</string>
     <string name="Add_Payment_Method">Add Payment Method</string>
@@ -60,12 +61,14 @@
     <string name="Change_Profile_Photo">Change Profile Photo</string>
     <string name="Checking_for_payment_methods">Checking for payment methods</string>
     <string name="Choose_Payment_Method">Choose Payment Method</string>
+    <string name="Choose_Type">Choose Type</string>
     <string name="Complete">Complete</string>
     <string name="Complete_Transaction">Complete Transaction</string>
     <string name="Completing">Completing</string>
     <string name="Completing_transaction">Completing transaction&#8230;</string>
     <string name="Confirm_Password">Confirm Password</string>
     <string name="Confirm_New_Password">Confirm New Password</string>
+    <string name="Create_Spot">Create Spot</string>
     <string name="Creating_user">Creating user</string>
     <string name="Current_Password">Current Password</string>
     <string name="CVV">CVV</string>
@@ -74,13 +77,16 @@
     <string name="Deleting">Deleting</string>
     <string name="Deleting_payment_method">Deleting payment method</string>
     <string name="Description">Description</string>
+    <string name="Done">Done</string>
     <string name="Edit_Description">Edit Description</string>
     <string name="Edit_Price">Edit Price</string>
     <string name="Edit_Spot">Edit Spot</string>
     <string name="Edit_Type">Edit Type</string>
     <string name="Email">Email</string>
     <string name="Error">Error</string>
+    <string name="Error_unable_to_delete_payment_method">Error: unable to delete payment method</string>
     <string name="Error_unable_to_change_photo">Error: unable to change photo</string>
+    <string name="Error_unable_to_update_payment_method">Error: unable to update payment method</string>
     <string name="Error_some_features_may_be_unavailable">Error: some features may be unavailable</string>
     <string name="Error_signing_into_Firebase">Error signing into Firebase</string>
     <string name="Error_unable_to_upload_image">Error: unable to upload image</string>
@@ -120,12 +126,13 @@
     <string name="Password">Password</string>
     <string name="Password_doesnt_match">Password doesn\'t match</string>
     <string name="Payment">Payment</string>
+    <string name="Payment_method_deleted">Payment method deleted</string>
     <string name="Payment_Method_Options">Payment Method Options</string>
-    <string name="Payment_method_successfully_added">Payment method successfully added</string>
+    <string name="Payment_method_added">Payment method added</string>
     <string name="Payment_Methods">Payment Methods</string>
     <string name="Personal">Personal</string>
     <string name="Phone_Number">Phone Number</string>
-    <string name="Place_Offer">Place Offer</string>
+    <string name="Make_Offer">Make Offer</string>
     <string name="Please_set_up_Android_Pay">Please set up Android Pay</string>
     <string name="Price">Price</string>
     <string name="Profile_Photo">Profile Photo</string>
@@ -134,12 +141,10 @@
     <string name="Quantity">Quantity</string>
     <string name="Registering">Registering</string>
     <string name="Request">Request</string>
-    <string name="Request_a_Spot">Request a Spotter</string>
     <string name="Requested_Spotter">Requested Spotter</string>
     <string name="Requesting">Requesting</string>
     <string name="Search">Search</string>
     <string name="Sell">Sell</string>
-    <string name="Sell_a_Spot">Sell a Spot</string>
     <string name="Selling">Selling</string>
     <string name="Server_error">Something went wrong: server error</string>
     <string name="Sign_Up">Sign Up</string>

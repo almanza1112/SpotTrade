@@ -43,14 +43,17 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
     private List<String> expirationDate;
     private List<String> paymentToken;
     private List<Boolean> isDefault;
+    private Payment payment;
 
     private int defaultPos;
 
     private ProgressDialog pd = null;
 
-    PaymentAdapter(Activity activity, List<String> paymentType, List<String> paymentTypeName,
+    PaymentAdapter(Payment payment,Activity activity, List<String> paymentType, List<String> paymentTypeName,
                    List<String> imageURL, List<String> credentials, List<String> expirationDate,
                    List<String> token, List<Boolean> isDefault){
+        this.payment = payment;
+        this.paymentType = paymentType;
         this.activity = activity;
         this.paymentType = paymentType;
         this.paymentTypeName = paymentTypeName;
@@ -159,7 +162,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                         notifyDataSetChanged();
                     }
                     else {
-                        Toast.makeText(activity, "Error: could not update default payment method", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_update_payment_method), Toast.LENGTH_SHORT).show();
                     }
                     pd.dismiss();
                 }
@@ -228,8 +231,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                         try{
                             pd.dismiss();
                             if (response.getString("status").equals("success")){
-                                Toast.makeText(activity, "Payment method deleted", Toast.LENGTH_SHORT).show();
-
+                                payment.setSnackbar(activity.getResources().getString(R.string.Payment_method_deleted));
                                 if (response.has("defaultPaymentMethodToken")) {
                                     isDefault.set(paymentToken.indexOf(response.getString("defaultPaymentMethodToken")), true);
                                 }
@@ -244,7 +246,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                                 notifyDataSetChanged();
                             }
                             else{
-                                Toast.makeText(activity, "Error: could not delete payment method", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_delete_payment_method), Toast.LENGTH_SHORT).show();
                             }
                         }
                         catch (JSONException e){

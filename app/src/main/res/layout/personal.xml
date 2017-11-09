@@ -123,6 +123,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true"
+                    android:paddingLeft="@dimen/contentPadding"
                     android:src="@mipmap/ic_account_edit_grey600_24dp"/>
             </RelativeLayout>
             <RelativeLayout
@@ -155,6 +156,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true"
+                    android:paddingLeft="@dimen/contentPadding"
                     android:src="@mipmap/ic_account_edit_grey600_24dp"/>
             </RelativeLayout>
         </LinearLayout>
@@ -201,6 +203,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
+            android:paddingLeft="@dimen/contentPadding"
             android:src="@mipmap/ic_account_edit_grey600_24dp"/>
     </RelativeLayout>
 
@@ -244,6 +247,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
+            android:paddingLeft="@dimen/contentPadding"
             android:src="@mipmap/ic_account_edit_grey600_24dp"/>
     </RelativeLayout>
 </RelativeLayout>

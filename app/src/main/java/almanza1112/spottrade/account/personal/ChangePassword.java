@@ -1,7 +1,7 @@
 package almanza1112.spottrade.account.personal;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.app.Fragment;
@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -36,6 +37,7 @@ public class ChangePassword extends Fragment {
     private TextInputLayout tilCurrentPassword, tilNewPassword, tilConfirmNewPassword;
     private TextInputEditText tietCurrentPassword, tietNewPassword, tietConfirmNewPassword;
     private ProgressBar progressBar;
+    private Snackbar snackbar;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.change_password, container, false);
@@ -57,8 +59,8 @@ public class ChangePassword extends Fragment {
         tilConfirmNewPassword = (TextInputLayout) view.findViewById(R.id.tilConfirmNewPassword);
         tietConfirmNewPassword = (TextInputEditText) view.findViewById(R.id.tietConfirmNewPassword);
 
-        final FloatingActionButton fabDone = (FloatingActionButton) view.findViewById(R.id.fabDone);
-        fabDone.setOnClickListener(new View.OnClickListener() {
+        final Button bChangePassword = (Button) view.findViewById(R.id.bChangePassword);
+        bChangePassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (validateCurrentPassword() && validateNewPassword()){
@@ -68,6 +70,14 @@ public class ChangePassword extends Fragment {
         });
 
         return view;
+    }
+
+    @Override
+    public void onDestroy() {
+        if(snackbar != null){
+            snackbar.dismiss();
+        }
+        super.onDestroy();
     }
 
     private boolean validateCurrentPassword(){
@@ -131,10 +141,11 @@ public class ChangePassword extends Fragment {
                     if (response.getString("status").equals("success")){
                         SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password));
                         SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password), tietConfirmNewPassword.getText().toString());
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Password) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
+                        snackbar = Snackbar.make(getActivity().findViewById(R.id.personal_activity), getResources().getString(R.string.Password) + " " + getResources().getString(R.string.updated), Snackbar.LENGTH_SHORT);
+                        snackbar.show();
                     }
                     else {
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 }
                 catch (JSONException e){

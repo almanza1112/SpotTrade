@@ -1,5 +1,6 @@
 package almanza1112.spottrade.account.payment;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
@@ -120,22 +121,30 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
         from = getArguments().getString("from");
-        if (from.equals("Payment") || from.equals("MapsActivity")){
-            setHasOptionsMenu(true);
+        if (from.equals("MapsActivity")) {
+            try {
+                paymentMethodAddedListener = (PaymentMethodAddedListener) activity;
+            } catch (ClassCastException e) {
+                throw new ClassCastException(activity.toString() + " must implement OnItemClickedListener");
+            }
         }
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        if (from.equals("Payment") || from.equals("MapsActivity")) {
-            MenuItem searchItem = menu.findItem(R.id.search);
-            searchItem.setVisible(false);
-            MenuItem filterItem = menu.findItem(R.id.filterMaps);
-            filterItem.setVisible(false);
-        }
+        MenuItem searchItem = menu.findItem(R.id.search);
+        searchItem.setVisible(false);
+        MenuItem filterItem = menu.findItem(R.id.filterMaps);
+        filterItem.setVisible(false);
     }
 
     @Override
@@ -143,6 +152,9 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
         switch (v.getId()){
             case R.id.llCreditDebitCard:
                 AddCreditDebitCard addCreditDebitCard = new AddCreditDebitCard();
+                Bundle bundle = new Bundle();
+                bundle.putString("from", from);
+                addCreditDebitCard.setArguments(bundle);
                 FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.add_payment_method, addCreditDebitCard);
                 fragmentTransaction.addToBackStack(null);
@@ -162,6 +174,19 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
                 break;
         }
     }
+
+    PaymentMethodAddedListener paymentMethodAddedListener = paymentMethodAddedCallback;
+
+    public interface PaymentMethodAddedListener{
+        void onPaymentMethodAdded(String result);
+    }
+
+    public static PaymentMethodAddedListener paymentMethodAddedCallback = new PaymentMethodAddedListener() {
+        @Override
+        public void onPaymentMethodAdded(String result) {
+
+        }
+    };
 
     private void getClientToken(final String type){
         pd.setTitle(type);
@@ -256,7 +281,13 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
                         try{
                             pd.dismiss();
                             if (response.getString("status").equals("success")){
-                                Toast.makeText(getActivity(), getResources().getString(R.string.Payment_method_successfully_added), Toast.LENGTH_SHORT).show();
+                                Log.e("addPayment", from);
+                                if (from.equals("Payment")) {
+                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.payment_method_added), "added");
+                                }
+                                else if (from.equals("MapsActivity")){
+                                    paymentMethodAddedListener.onPaymentMethodAdded("added");
+                                }
                                 getFragmentManager().popBackStack();
                             }
                         }

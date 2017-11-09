@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.app.Fragment;
@@ -21,7 +22,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -73,6 +73,8 @@ public class Personal extends Fragment implements View.OnClickListener {
 
     StorageReference storageReference;
     FirebaseStorage firebaseStorage;
+
+    private Snackbar snackbar;
 
     @Nullable
     @Override
@@ -131,6 +133,14 @@ public class Personal extends Fragment implements View.OnClickListener {
         toggle.syncState();
 
         return view;
+    }
+
+    @Override
+    public void onDestroy() {
+        if (snackbar != null){
+            snackbar.dismiss();
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -209,7 +219,7 @@ public class Personal extends Fragment implements View.OnClickListener {
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_photo), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -230,7 +240,7 @@ public class Personal extends Fragment implements View.OnClickListener {
                 SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url));
                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), downloadUrl.toString());
                 uploadDownloadUrl(downloadUrl.toString());
-                Toast.makeText(getActivity(), getResources().getString(R.string.Profile_photo_updated), Toast.LENGTH_SHORT).show();
+                setSnackBar(getResources().getString(R.string.Profile_photo_updated));
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -257,14 +267,12 @@ public class Personal extends Fragment implements View.OnClickListener {
             @Override
             public void onResponse(JSONObject response) {
                 progressBar.setVisibility(View.GONE);
-
-                Log.e("setDownloadUrl", response +  "");
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                 error.printStackTrace();
             }
         }
@@ -368,7 +376,7 @@ public class Personal extends Fragment implements View.OnClickListener {
                 progressBar.setVisibility(View.GONE);
                 try{
                     if (response.getString("status").equals("success")){
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Profile_photo_deleted), Toast.LENGTH_SHORT).show();
+                        setSnackBar(getResources().getString(R.string.Profile_photo_deleted));
                     }
                     else {
                         Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_photo), Toast.LENGTH_SHORT).show();
@@ -382,7 +390,7 @@ public class Personal extends Fragment implements View.OnClickListener {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                 error.printStackTrace();
             }
         }
@@ -426,6 +434,7 @@ public class Personal extends Fragment implements View.OnClickListener {
                         InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
                 break;
         }
+        tietUpdate.setSelection(tietUpdate.getText().length());
         alertDialogBuilder.setTitle(title);
         alertDialogBuilder.setPositiveButton(R.string.Update, new DialogInterface.OnClickListener() {
             @Override
@@ -499,28 +508,30 @@ public class Personal extends Fragment implements View.OnClickListener {
                 try {
                     progressBar.setVisibility(View.GONE);
                     if (response.getString("status").equals("success")) {
+                        String snackBarText = "";
                         switch (field) {
                             case "firstName":
                                 SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_first_name));
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_first_name), str);
-                                Toast.makeText(getActivity(), getResources().getString(R.string.First_Name) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
+                                snackBarText = getResources().getString(R.string.First_Name) + " " + getResources().getString(R.string.updated);
                                 tvFistName.setText(str);
                                 break;
                             case "lastName":
                                 SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name));
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name), str);
-                                Toast.makeText(getActivity(), getResources().getString(R.string.Last_Name) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
+                                snackBarText = getResources().getString(R.string.Last_Name) + " " + getResources().getString(R.string.updated);
                                 tvLastName.setText(str);
                                 break;
                             case "email":
                                 SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email));
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email), str);
-                                Toast.makeText(getActivity(), getResources().getString(R.string.Email) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
+                                snackBarText = getResources().getString(R.string.Email) + " " + getResources().getString(R.string.updated);
                                 tvEmail.setText(str);
                                 break;
                         }
+                        setSnackBar(snackBarText);
                     } else {
-                        Toast.makeText(getContext(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -539,5 +550,10 @@ public class Personal extends Fragment implements View.OnClickListener {
     private boolean validateEmail(String email) {
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
+    }
+
+    private void setSnackBar(String snackBarText){
+        snackbar = Snackbar.make(getActivity().findViewById(R.id.personal_activity), snackBarText, Snackbar.LENGTH_SHORT);
+        snackbar.show();
     }
 }

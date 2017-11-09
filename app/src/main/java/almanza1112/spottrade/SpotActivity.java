@@ -5,7 +5,6 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.app.FragmentTransaction;
@@ -15,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.NumberPicker;
 import android.widget.TextView;
@@ -49,7 +49,7 @@ import almanza1112.spottrade.nonActivity.SharedPref;
  */
 
 public class SpotActivity extends AppCompatActivity implements View.OnClickListener{
-    private TextView tvLocationName, tvLocationAddress, tvAddLocation, tvQuantity;
+    private TextView tvType, tvLocationName, tvLocationAddress, tvAddLocation, tvQuantity;
     private TextInputLayout tilPrice;
     private TextInputEditText tietDescription, tietPrice;
     private CheckBox cbOffers;
@@ -59,13 +59,14 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
     private int quantity = 1;
 
     private ProgressDialog pd = null;
+    final int[] pos = {0};
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
-        type = intent.getStringExtra("type");
         locationName = intent.getStringExtra("locationName");
         locationAddress = intent.getStringExtra("locationAddress");
         latitude = intent.getDoubleExtra("latitude", 0);
@@ -76,17 +77,15 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         pd = new ProgressDialog(this);
 
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+
         setSupportActionBar(toolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-        if (type.equals("Request")){
-            toolbar.setTitle(R.string.Request_a_Spot);
-        }
-        else if (type.equals("Sell")){
-            toolbar.setTitle(R.string.Sell_a_Spot);
-        }
+        toolbar.setTitle(R.string.Create_Spot);
 
+        tvType = (TextView) findViewById(R.id.tvType);
+        tvType.setOnClickListener(this);
         tvLocationName = (TextView) findViewById(R.id.tvLocationName);
         tvLocationName.setOnClickListener(this);
         tvLocationAddress = (TextView) findViewById(R.id.tvLocationAddress);
@@ -112,14 +111,48 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         tietPrice = (TextInputEditText) findViewById(R.id.tietPrice);
         cbOffers = (CheckBox) findViewById(R.id.cbOffers);
 
-        final FloatingActionButton fabDone = (FloatingActionButton) findViewById(R.id.fabDone);
-        fabDone.setOnClickListener(this);
+        final Button bCreateSpot = (Button) findViewById(R.id.bCreateSpot);
+        bCreateSpot.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.fabDone:
+            case R.id.tvType:
+                final CharSequence[] items = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request)};
+                final AlertDialog.Builder alertDB = new AlertDialog.Builder(this);
+                alertDB.setTitle(R.string.Type);
+                alertDB.setSingleChoiceItems(items, pos[0], new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        pos[0] = which;
+                    }
+                });
+                alertDB.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                alertDB.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (pos[0] == 0){
+                            type = "Sell";
+                            tvType.setText(R.string.Sell);
+                        }
+                        else {
+                            type = "Request";
+                            tvType.setText(R.string.Request);
+                        }
+                    }
+                });
+
+                final AlertDialog ad = alertDB.create();
+                ad.show();
+
+                break;
+            case R.id.bCreateSpot:
                 if (validatePrice()) {
                     pd.setTitle(R.string.Adding_Spot);
                     pd.setCancelable(false);

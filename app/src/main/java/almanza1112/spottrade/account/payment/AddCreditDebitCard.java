@@ -1,5 +1,6 @@
 package almanza1112.spottrade.account.payment;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.os.Bundle;
@@ -53,9 +54,11 @@ import almanza1112.spottrade.nonActivity.SharedPref;
 
 public class AddCreditDebitCard extends Fragment {
 
+
     private ProgressDialog pd = null;
     private TextInputEditText tietCardNumber, tietExpirationDate, tietCVV, tietZipCode;
     private TextInputLayout tilCardNumber, tilExpirationDate, tilCVV, tilZipCode;
+    private String from;
 
     final PaymentMethodNonceCreatedListener paymentMethodNonceCreatedListener = new PaymentMethodNonceCreatedListener() {
         @Override
@@ -64,6 +67,7 @@ public class AddCreditDebitCard extends Fragment {
 
         }
     };
+
     final BraintreeErrorListener errorListener = new BraintreeErrorListener() {
         @Override
         public void onError(Exception error) {
@@ -130,7 +134,7 @@ public class AddCreditDebitCard extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                //Log.e("on", "s: " + s + "\nstart: " + start + "\nbefore: " + before + "\ncount: " + count);
+
             }
 
             @Override
@@ -221,6 +225,32 @@ public class AddCreditDebitCard extends Fragment {
         });
         return view;
     }
+
+    public interface CreditCardAddedListener {
+        void onCreditCardAdded(String result);
+    }
+
+    CreditCardAddedListener creditCardAddedListener = creditCardAddedCallback;
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        from = getArguments().getString("from");
+        if (from.equals("MapsActivity")) {
+            try {
+                creditCardAddedListener = (CreditCardAddedListener) activity;
+            } catch (ClassCastException e) {
+                throw new ClassCastException(activity.toString() + " must implement OnItemClickedListener");
+            }
+        }
+    }
+
+    private static CreditCardAddedListener creditCardAddedCallback = new CreditCardAddedListener() {
+        @Override
+        public void onCreditCardAdded(String result) {
+
+        }
+    };
 
     private boolean validateFields(){
         boolean sitch, cardNum, exprDate, cvv, zipcode;
@@ -344,7 +374,12 @@ public class AddCreditDebitCard extends Fragment {
                         try{
                             pd.dismiss();
                             if (response.getString("status").equals("success")){
-                                Toast.makeText(getActivity(), getResources().getString(R.string.Payment_method_successfully_added), Toast.LENGTH_SHORT).show();
+                                if (from.equals("MapsActivity")) {
+                                    creditCardAddedListener.onCreditCardAdded("added");
+                                }
+                                else if (from.equals("Payment")){
+                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.payment_method_added), "added");
+                                }
                                 getFragmentManager().popBackStack();
                                 getFragmentManager().popBackStack();
                             }

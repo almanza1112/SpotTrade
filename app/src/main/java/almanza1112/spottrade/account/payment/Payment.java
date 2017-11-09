@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -46,6 +47,7 @@ public class Payment extends Fragment {
 
     private ProgressBar progressBar;
     RecyclerView rvPaymentMethods;
+    public Snackbar snackbar;
 
     @Nullable
     @Override
@@ -98,6 +100,23 @@ public class Payment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.payment_method_added)) != null){
+            SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.payment_method_added));
+            setSnackbar(getResources().getString(R.string.Payment_method_added));
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        if (snackbar != null){
+            snackbar.dismiss();
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -163,7 +182,7 @@ public class Payment extends Fragment {
                                     }
                                 }
                                 if (!isEmpty){
-                                    RecyclerView.Adapter  adapter = new PaymentAdapter(getActivity(), paymentType, paymentTypeName, imageURL, credentials, expirationDate, token, isDefault);
+                                    RecyclerView.Adapter  adapter = new PaymentAdapter(Payment.this ,getActivity(), paymentType, paymentTypeName, imageURL, credentials, expirationDate, token, isDefault);
                                     RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
                                     rvPaymentMethods.setLayoutManager(layoutManager);
                                     rvPaymentMethods.setAdapter(adapter);
@@ -171,7 +190,7 @@ public class Payment extends Fragment {
 
                             }
                             else if (!response.getString("status").equals("fail")) {
-                                Toast.makeText(getActivity(), "Error: could not retrieve payment methods", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                             }
                             progressBar.setVisibility(View.GONE);
                         }
@@ -189,4 +208,10 @@ public class Payment extends Fragment {
         );
         queue.add(jsonObjectRequest);
     }
+
+    public void setSnackbar(String snackbarText) {
+        snackbar = Snackbar.make(getActivity().findViewById(R.id.payment_activity), snackbarText, Snackbar.LENGTH_SHORT);
+        snackbar.show();
+    }
+
 }

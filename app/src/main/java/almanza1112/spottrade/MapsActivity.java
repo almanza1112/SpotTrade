@@ -16,9 +16,11 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
@@ -27,6 +29,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -51,11 +54,13 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.github.clans.fab.FloatingActionButton;
-import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -81,6 +86,7 @@ import java.util.List;
 import java.util.Map;
 
 import almanza1112.spottrade.account.feedback.Feedback;
+import almanza1112.spottrade.account.payment.AddCreditDebitCard;
 import almanza1112.spottrade.account.payment.AddPaymentMethod;
 import almanza1112.spottrade.account.payment.Payment;
 import almanza1112.spottrade.account.history.History;
@@ -91,9 +97,14 @@ import almanza1112.spottrade.nonActivity.SharedPref;
 import almanza1112.spottrade.nonActivity.tracking.TrackerService;
 import almanza1112.spottrade.yourSpots.YourSpots;
 
-public class MapsActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener{
+public class MapsActivity extends AppCompatActivity
+        implements View.OnClickListener,
+            OnMapReadyCallback,
+            GoogleMap.OnMarkerClickListener,
+            NavigationView.OnNavigationItemSelectedListener,
+            AddPaymentMethod.PaymentMethodAddedListener,
+            AddCreditDebitCard.CreditCardAddedListener {
     private ProgressBar progressBar;
-    private FloatingActionMenu fabMenu;
     private GoogleMap mMap;
     Location myLocation;
     private ProgressDialog pd = null;
@@ -104,10 +115,11 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     private Animation bottomUp, bottomDown;
     private TextView tvFullName, tvUserRating, tvTotalRating, tvLocationName, tvLocationAddress, tvTransaction, tvDescription;
     private ImageView ivSellerProfilePhoto;
-    private Button bBuyNow, bPlaceBid, bCancelBid, bDelete;
+    private Button bBuyNow, bMakeOffer, bCancelOffer, bDelete;
     private Marker marker;
+    private GoogleApiClient mGoogleApiClient;
 
-    private boolean isFabMenuClicked, isMarkerClicked;
+    private boolean isMarkerClicked;
     private double latitude =0, longitude=0;
     private String locationName="empty", locationAddress="empty";
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
@@ -136,6 +148,9 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        ImageView myLocationButton = (ImageView) mapFragment.getView().findViewById(2);
+        myLocationButton.setPadding(0, 100, 0, 0);
+
         mapFragment.getMapAsync(this);
 
         setSupportActionBar(toolbar);
@@ -154,26 +169,18 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         tvLocationName = (TextView) findViewById(R.id.tvLocationName);
         bBuyNow = (Button) findViewById(R.id.bBuyNow);
         bBuyNow.setOnClickListener(this);
-        bPlaceBid = (Button) findViewById(R.id.bPlaceBid);
-        bPlaceBid.setOnClickListener(this);
-        bCancelBid = (Button) findViewById(R.id.bCancelBid);
-        bCancelBid.setOnClickListener(this);
+        bMakeOffer = (Button) findViewById(R.id.bMakeOffer);
+        bMakeOffer.setOnClickListener(this);
+        bCancelOffer = (Button) findViewById(R.id.bCancelOffer);
+        bCancelOffer.setOnClickListener(this);
         bDelete = (Button) findViewById(R.id.bDelete);
         bDelete.setOnClickListener(this);
 
-        fabMenu = (FloatingActionMenu) findViewById(R.id.fabMenu);
-        fabMenu.setOnMenuToggleListener(new FloatingActionMenu.OnMenuToggleListener() {
-            @Override
-            public void onMenuToggle(boolean opened) {
-                isFabMenuClicked = opened;
-            }
-        });
+        FloatingActionButton fabMyLocation = (FloatingActionButton) findViewById(R.id.fabMyLocation);
+        fabMyLocation.setOnClickListener(this);
 
-        FloatingActionButton fabRequest = (FloatingActionButton) findViewById(R.id.fabRequest);
-        fabRequest.setOnClickListener(this);
-
-        FloatingActionButton fabSell = (FloatingActionButton) findViewById(R.id.fabSell);
-        fabSell.setOnClickListener(this);
+        FloatingActionButton fabSpot = (FloatingActionButton) findViewById(R.id.fabSpot);
+        fabSpot.setOnClickListener(this);
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close){
@@ -203,20 +210,11 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.fabSell:
-                fabMenu.close(true);
-                startActivityForResult(new Intent(MapsActivity.this, SpotActivity.class)
-                        .putExtra("type", "Sell")
-                        .putExtra("locationName", locationName)
-                        .putExtra("locationAddress", locationAddress)
-                        .putExtra("latitude", latitude)
-                        .putExtra("longitude", longitude), SPOT_CODE);
+            case R.id.fabMyLocation:
+                getMyLocation();
                 break;
-
-            case R.id.fabRequest:
-                fabMenu.close(true);
+            case R.id.fabSpot:
                 startActivityForResult(new Intent(MapsActivity.this, SpotActivity.class)
-                        .putExtra("type", "Request")
                         .putExtra("locationName", locationName)
                         .putExtra("locationAddress", locationAddress)
                         .putExtra("latitude", latitude)
@@ -261,12 +259,12 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
 
-            case R.id.bPlaceBid:
-                ADplaceBid();
+            case R.id.bMakeOffer:
+                ADmakeOffer();
                 break;
 
-            case R.id.bCancelBid:
-                transactionCancelBid();
+            case R.id.bCancelOffer:
+                transactionCancelOffer();
                 break;
         }
     }
@@ -422,19 +420,13 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             if (count > 0){
                 getFragmentManager().popBackStack();
             }
+            else if (isMarkerClicked){
+                isMarkerClicked = false;
+                hiddenPanel.startAnimation(bottomDown);
+                hiddenPanel.setVisibility(View.INVISIBLE);
+            }
             else {
-                if (isMarkerClicked){
-                    isMarkerClicked = false;
-                    hiddenPanel.startAnimation(bottomDown);
-                    hiddenPanel.setVisibility(View.INVISIBLE);
-                }
-                else if (isFabMenuClicked){
-                    fabMenu.close(true);
-                    isFabMenuClicked = false;
-                }
-                else {
-                    super.onBackPressed();
-                }
+                super.onBackPressed();
             }
         }
     }
@@ -449,8 +441,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 String name = data.getStringExtra("name");
                 String id = data.getStringExtra("id");
                 LatLng locash = new LatLng(latitude, longitude);
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(locash));
-                mMap.animateCamera(CameraUpdateFactory.zoomTo(18));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(locash, 16));
                 marker = mMap.addMarker(new MarkerOptions().position(locash).title(name));
                 marker.setTag(id);
             }
@@ -463,8 +454,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 locationName = place.getName().toString();
                 locationAddress = place.getAddress().toString();
                 LatLng locash = new LatLng(latitude, longitude);
-                mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(locash));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(locash, 16));
 
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(this, data);
@@ -543,8 +533,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
             currentLocation = new LatLng(latitude, longitude);
 
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
         }
 
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
@@ -583,8 +572,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     e.printStackTrace();
                 }
                 currentLocation = new LatLng(latitude, longitude);
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
-                mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
             }
             else {
                 // permission denied, boo! Disable the
@@ -612,8 +600,8 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         this.marker = marker;
         isMarkerClicked = true;
         tvDescription.setVisibility(View.VISIBLE);
-        bCancelBid.setVisibility(View.VISIBLE);
-        bPlaceBid.setVisibility(View.VISIBLE);
+        bCancelOffer.setVisibility(View.VISIBLE);
+        bMakeOffer.setVisibility(View.VISIBLE);
         bBuyNow.setVisibility(View.VISIBLE);
         bDelete.setVisibility(View.VISIBLE);
 
@@ -649,23 +637,23 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     }
 
                     if (response.getString("sellerID").equals(SharedPref.getSharedPreferences(MapsActivity.this, getResources().getString(R.string.logged_in_user_id)))){
-                        bPlaceBid.setVisibility(View.GONE);
-                        bCancelBid.setVisibility(View.GONE);
+                        bMakeOffer.setVisibility(View.GONE);
+                        bCancelOffer.setVisibility(View.GONE);
                         bBuyNow.setVisibility(View.GONE);
                     }
                     else {
                         bDelete.setVisibility(View.GONE);
-                        if (!response.getBoolean("bidAllowed")) {
-                            bPlaceBid.setVisibility(View.GONE);
-                            bCancelBid.setVisibility(View.GONE);
+                        if (!response.getBoolean("offerAllowed")) {
+                            bMakeOffer.setVisibility(View.GONE);
+                            bCancelOffer.setVisibility(View.GONE);
                         }
                         else{
-                            if (response.getBoolean("bidden")){
-                                bPlaceBid.setVisibility(View.GONE);
-                                bCancelBid.setText(getResources().getString(R.string.Cancel) + " $" + response.getString("biddenAmount") + " " + getResources().getString(R.string.Offer));
+                            if (response.getBoolean("offered")){
+                                bMakeOffer.setVisibility(View.GONE);
+                                bCancelOffer.setText(getResources().getString(R.string.Cancel) + " $" + response.getString("offeredAmount") + " " + getResources().getString(R.string.Offer));
                             }
                             else {
-                                bCancelBid.setVisibility(View.GONE);
+                                bCancelOffer.setVisibility(View.GONE);
                             }
                         }
                     }
@@ -696,9 +684,56 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
         hiddenPanel.startAnimation(bottomUp);
         hiddenPanel.setVisibility(View.VISIBLE);
+        hiddenPanel.setElevation(20);
 
         return false;
     }
+
+    @Override
+    public void onCreditCardAdded(String result) {
+        if (result.equals("added")){
+            validatePaymentMethod();
+        }
+    }
+
+    @Override
+    public void onPaymentMethodAdded(String result) {
+        if (result.equals("added")){
+            validatePaymentMethod();
+        }
+    }
+
+    private void getMyLocation() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(mLocationRequestCallback)
+                .addApi(LocationServices.API)
+                .build();
+        mGoogleApiClient.connect();
+    }
+
+    private GoogleApiClient.ConnectionCallbacks mLocationRequestCallback = new GoogleApiClient
+            .ConnectionCallbacks() {
+
+        @Override
+        public void onConnected(Bundle bundle) {
+            LocationRequest request = new LocationRequest();
+            request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, request, new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+                    mGoogleApiClient.disconnect();
+                }
+            });
+        }
+
+        @Override
+        public void onConnectionSuspended(int reason) {
+            Log.e("googleAPIClient", "suspended because: " + reason);
+            // TODO: Handle gracefully
+        }
+    };
 
     private void getAvailableSpots(String typeSelected){
         progressBar.setVisibility(View.VISIBLE);
@@ -833,13 +868,13 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         queue.add(jsonObjectRequest);
     }
 
-    private void transactionPlaceBid(final String bidAmount){
+    private void transactionMakeOffer(final String offerAmount){
         final JSONObject jObject = new JSONObject();
         try {
-            jObject.put("bidderID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
-            jObject.put("bidAmount", bidAmount);
-            jObject.put("bidderFirstName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_first_name)));
-            jObject.put("bidderLastName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_last_name)));
+            jObject.put("offererID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
+            jObject.put("offerAmount", offerAmount);
+            jObject.put("offererFirstName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_first_name)));
+            jObject.put("offererLastName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_last_name)));
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -847,15 +882,15 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         RequestQueue queue = Volley.newRequestQueue(this);
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/bid/" + lid, jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/offer/" + lid, jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
                     if (response.getString("status").equals("success")){
-                        Toast.makeText(MapsActivity.this, "Bid placed", Toast.LENGTH_SHORT).show();
-                        bPlaceBid.setVisibility(View.GONE);
-                        bCancelBid.setText(getResources().getString(R.string.Cancel) + " $" + bidAmount + " " + getResources().getString(R.string.Offer));
-                        bCancelBid.setVisibility(View.VISIBLE);
+                        Toast.makeText(MapsActivity.this, "Offer Made", Toast.LENGTH_SHORT).show();
+                        bMakeOffer.setVisibility(View.GONE);
+                        bCancelOffer.setText(getResources().getString(R.string.Cancel) + " $" + offerAmount + " " + getResources().getString(R.string.Offer));
+                        bCancelOffer.setVisibility(View.VISIBLE);
                     }
                 }
                 catch (JSONException e){
@@ -872,13 +907,13 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         queue.add(jsonObjectRequest);
     }
 
-    private void transactionCancelBid(){
+    private void transactionCancelOffer(){
         final JSONObject jObject = new JSONObject();
 
         RequestQueue queue = Volley.newRequestQueue(this);
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/bid/cancel/" + lid + "?user=" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/offer/cancel/" + lid + "?user=" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -905,18 +940,18 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         queue.add(jsonObjectRequest);
     }
 
-    private void ADplaceBid(){
+    private void ADmakeOffer(){
         LayoutInflater inflater = getLayoutInflater();
-        View alertLayout = inflater.inflate(R.layout.maps_activity_place_bid_alertdialog, null);
+        View alertLayout = inflater.inflate(R.layout.maps_activity_make_offer_alertdialog, null);
 
-        final EditText etBid = (EditText) alertLayout.findViewById(R.id.etBid);
+        final EditText etOffer = (EditText) alertLayout.findViewById(R.id.etOffer);
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setView(alertLayout);
-        alertDialogBuilder.setTitle(R.string.Place_Offer);
+        alertDialogBuilder.setTitle(R.string.Make_Offer);
         alertDialogBuilder.setPositiveButton(R.string.Offer, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
-                transactionPlaceBid(etBid.getText().toString());
+                transactionMakeOffer(etOffer.getText().toString());
             }
         });
         alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
@@ -1098,7 +1133,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         alertDialog.show();
     }
 
-
     private void ADareYouSurePaymentMethod(String paymentType, String paymentCredentials, String paymentImageUrl, final String paymentToken, int quantity){
         LayoutInflater inflater = getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.maps_activity_transaction_are_you_sure__alertdialog, null);
@@ -1261,7 +1295,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 fragmentTransaction.replace(R.id.drawer_layout, addPaymentMethod);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
-
             }
         });
 
@@ -1410,5 +1443,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         }
         );
         queue.add(jsonObjectRequest);
+    }
+
+    public void setSnackBar(String snackBarText){
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.coordinatorLayout), snackBarText, Snackbar.LENGTH_SHORT);
+        snackbar.show();
     }
 }
