@@ -330,11 +330,10 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
         pd.setMessage(getResources().getString(R.string.Adding_spot_to_SpotTrade_database));
         RequestQueue queue = Volley.newRequestQueue(this);
         final JSONObject jsonObject = new JSONObject();
-        //final JSONObject sellerInfoObj = new JSONObject();
+        final JSONObject sellerInfoObj = new JSONObject();
         try {
             jsonObject.put("type", type);
             jsonObject.put("transaction", "available");
-            jsonObject.put("sellerID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
             jsonObject.put("name", locationName);
             jsonObject.put("price", tietPrice.getText().toString());
             jsonObject.put("offerAllowed", cbOffers.isChecked());
@@ -343,11 +342,14 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
             jsonObject.put("longitude", String.valueOf(longitude));
             jsonObject.put("description", tietDescription.getText().toString());
             jsonObject.put("quantity", quantity);
+            jsonObject.put("hasBuyer", false);
+
+            sellerInfoObj.put("sellerID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
+            jsonObject.put("sellerInfo", sellerInfoObj);
 
             //sellerInfoObj.put("sellerFirstName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_first_name)));
             //sellerInfoObj.put("sellerLastName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_last_name)));
 
-            //jsonObject.put("sellerInfo", sellerInfoObj);
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -360,7 +362,6 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            Log.e("postRequest", response + "");
                             String status = response.getString("status");
                             if (status.equals("success")){
                                 pd.dismiss();

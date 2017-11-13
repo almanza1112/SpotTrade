@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    android:id="@+id/spot_activity"
+<RelativeLayout android:id="@+id/spot_activity"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clickable="true"
-    android:background="@android:color/white">
+    android:background="@android:color/white"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -164,7 +164,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/contentPadding"
-            android:layout_marginLeft="@dimen/contentPadding">
+            android:layout_marginLeft="@dimen/contentPadding"
+            app:counterEnabled="true"
+            app:counterMaxLength="120">
             <android.support.design.widget.TextInputEditText
                 android:id="@+id/tietDescription"
                 android:layout_width="match_parent"

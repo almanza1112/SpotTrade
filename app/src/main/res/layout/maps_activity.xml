@@ -75,14 +75,20 @@
                         android:id="@+id/tvTransaction"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/contentPadding"
                         android:textAppearance="@android:style/TextAppearance.Large"
                         android:textColor="@android:color/white"/>
+                    <TextView
+                        android:id="@+id/tvQuantity"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@android:style/TextAppearance.Medium"
+                        android:textColor="@android:color/white" />
                     <TextView
                         android:id="@+id/tvDescription"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="@android:style/TextAppearance.Small"
+                        android:textStyle="italic"
                         android:textColor="@android:color/white"/>
                 </LinearLayout>
                 <LinearLayout

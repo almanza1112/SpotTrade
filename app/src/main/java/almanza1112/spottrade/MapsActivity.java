@@ -113,7 +113,9 @@ public class MapsActivity extends AppCompatActivity
     LatLng currentLocation, spotLocation;
     private ViewGroup hiddenPanel;
     private Animation bottomUp, bottomDown;
-    private TextView tvFullName, tvUserRating, tvTotalRating, tvLocationName, tvLocationAddress, tvTransaction, tvDescription;
+    private TextView    tvFullName, tvUserRating, tvTotalRating,
+                        tvLocationName, tvLocationAddress, tvTransaction,
+                        tvDescription, tvQuantity;
     private ImageView ivSellerProfilePhoto;
     private Button bBuyNow, bMakeOffer, bCancelOffer, bDelete;
     private Marker marker;
@@ -159,6 +161,7 @@ public class MapsActivity extends AppCompatActivity
         bottomDown = AnimationUtils.loadAnimation(this, R.anim.bottom_down);
         hiddenPanel = (ViewGroup)findViewById(R.id.hidden_panel);
 
+        tvQuantity = (TextView) findViewById(R.id.tvQuantity);
         ivSellerProfilePhoto = (ImageView) findViewById(R.id.ivProfilePhoto);
         tvFullName = (TextView) findViewById(R.id.tvFullName);
         tvUserRating = (TextView) findViewById(R.id.tvUserRating);
@@ -254,7 +257,7 @@ public class MapsActivity extends AppCompatActivity
                          * TODO
                          * need to validate received payment form, PAYPAL!
                          * */
-                        transactionBuyNow();
+                        transactionBuyNow(1);
                     }
                 }
                 break;
@@ -544,6 +547,7 @@ public class MapsActivity extends AppCompatActivity
         mMap.getUiSettings().setRotateGesturesEnabled(false);
         mMap.setOnMarkerClickListener(this);
 
+        isOngoingSpots();
         if (isServiceRunning(TrackerService.class)){
             // If the service class is running, then set up the map so that you will see the current transaction
 
@@ -586,7 +590,7 @@ public class MapsActivity extends AppCompatActivity
                     validatePaymentMethod();
                 }
                 else if (type.equals("Request")){
-                    transactionBuyNow();
+                    transactionBuyNow(1);
                 }
             }
             else {
@@ -622,6 +626,7 @@ public class MapsActivity extends AppCompatActivity
                     tvFullName.setText(sellerInfoObj.getString("sellerFirstName") + " " + sellerInfoObj.getString("sellerLastName"));
                     tvUserRating.setText(" - "+sellerInfoObj.getString("sellerOverallRating"));
                     tvTotalRating.setText("("+sellerInfoObj.getString("sellerTotalRatings")+")");
+                    tvQuantity.setText(quantity + " " + getResources().getString(R.string.available));
 
                     if (sellerInfoObj.has("sellerProfilePhotoUrl")){
                         Picasso.with(MapsActivity.this).load(sellerInfoObj.getString("sellerProfilePhotoUrl")).fit().centerCrop().into(ivSellerProfilePhoto);
@@ -636,7 +641,7 @@ public class MapsActivity extends AppCompatActivity
                         bBuyNow.setText(getResources().getString(R.string.Accept));
                     }
 
-                    if (response.getString("sellerID").equals(SharedPref.getSharedPreferences(MapsActivity.this, getResources().getString(R.string.logged_in_user_id)))){
+                    if (sellerInfoObj.getString("sellerID").equals(SharedPref.getSharedPreferences(MapsActivity.this, getResources().getString(R.string.logged_in_user_id)))){
                         bMakeOffer.setVisibility(View.GONE);
                         bCancelOffer.setVisibility(View.GONE);
                         bBuyNow.setVisibility(View.GONE);
@@ -803,11 +808,11 @@ public class MapsActivity extends AppCompatActivity
         queue.add(jsonObjectRequest);
     }
 
-    private void transactionBuyNow() {
+    private void transactionBuyNow(int quantity) {
         final JSONObject jObject = new JSONObject();
         try {
-            jObject.put("transaction", "ongoing");
             jObject.put("buyerID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
+            jObject.put("quantity", quantity);
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -1133,20 +1138,19 @@ public class MapsActivity extends AppCompatActivity
         alertDialog.show();
     }
 
-    private void ADareYouSurePaymentMethod(String paymentType, String paymentCredentials, String paymentImageUrl, final String paymentToken, int quantity){
+    private void ADareYouSurePaymentMethod(String paymentType, String paymentCredentials, String paymentImageUrl, final String paymentToken, final int quantity){
         LayoutInflater inflater = getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.maps_activity_transaction_are_you_sure__alertdialog, null);
 
 
+        final float totalPrice = Float.valueOf(price) * quantity;
         TextView tvCompleteTransactionDialog = (TextView) alertLayout.findViewById(R.id.tvCompleteTransactionDialog);
         String completeTransactionText;
         if (quantity > 1){
-            int totalPrice = Integer.valueOf(price) * quantity;
             completeTransactionText = getResources().getString(R.string.You_will_be_charged) + " $" + totalPrice + " ($" + price + " x " + quantity + ") " + getResources().getString(R.string.with_the_following_payment_method);
         }
         else {
-
-            completeTransactionText = getResources().getString(R.string.You_will_be_charged) + " $" + price + " " + getResources().getString(R.string.with_the_following_payment_method);
+            completeTransactionText = getResources().getString(R.string.You_will_be_charged) + " $" + totalPrice + " " + getResources().getString(R.string.with_the_following_payment_method);
         }
         tvCompleteTransactionDialog.setText(completeTransactionText);
         ImageView ivPaymentImage = (ImageView) alertLayout.findViewById(R.id.ivPaymentImage);
@@ -1164,14 +1168,14 @@ public class MapsActivity extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
-                ADotherPaymentMethod();
+                ADotherPaymentMethod(quantity, totalPrice);
 
             }
         });
         alertDialogBuilder.setPositiveButton(R.string.Complete, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                checkout(paymentToken);
+                checkout(paymentToken, quantity, totalPrice);
             }
         });
 
@@ -1179,7 +1183,7 @@ public class MapsActivity extends AppCompatActivity
         alertDialog.show();
     }
 
-    private void ADotherPaymentMethod(){
+    private void ADotherPaymentMethod(final int quantity, final float totalPrice){
         pd.setTitle(R.string.Loading);
         pd.setMessage(getResources().getString(R.string.Loading_payment_methods));
         pd.setCancelable(false);
@@ -1247,7 +1251,7 @@ public class MapsActivity extends AppCompatActivity
                                 alertDialogBuilder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        checkout(tokenString[0]);
+                                        checkout(tokenString[0], quantity, totalPrice);
                                     }
                                 });
 
@@ -1302,7 +1306,7 @@ public class MapsActivity extends AppCompatActivity
         alertDialog.show();
     }
 
-    private void checkout(String token){
+    private void checkout(String token, final int quantity, float totalPrice){
         pd.setTitle(R.string.Completing);
         pd.setMessage(getResources().getString(R.string.Completing_transaction));
         pd.setCancelable(false);
@@ -1311,7 +1315,7 @@ public class MapsActivity extends AppCompatActivity
         final JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("paymentMethodToken", token);
-            jsonObject.put("amount", price);
+            jsonObject.put("amount", totalPrice);
 
         }
         catch (JSONException e) {
@@ -1326,7 +1330,7 @@ public class MapsActivity extends AppCompatActivity
                     public void onResponse(JSONObject response) {
                         try{
                             if (response.getString("status").equals("success")){
-                                transactionBuyNow();
+                                transactionBuyNow(quantity);
                             }
                             else {
                                 ADerrorProcessingPayment();
@@ -1414,12 +1418,12 @@ public class MapsActivity extends AppCompatActivity
             @Override
             public void onResponse(JSONObject response) {
                 try{
+                    Log.e("isOnGoingSpots", response + "");
                     if (response.getString("status").equals("success")){
                         String locations = response.getString("location");
                         JSONArray jsonArray = new JSONArray(locations);
                         for (int i = 0; i < jsonArray.length(); i++) {
                             JSONObject locationObj = jsonArray.getJSONObject(i);
-
                         }
 
                         progressBar.setVisibility(View.GONE);

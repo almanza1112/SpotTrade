@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -152,7 +153,7 @@ public class History extends Fragment {
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/history?sellerID="+ SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)) + "&type=" + type + "&transaction=complete", null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/history?sellerID="+ SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)) + "&type=" + type, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -164,17 +165,14 @@ public class History extends Fragment {
                         List<String> dateCompleted = new ArrayList<>();
                         List<String> locationName = new ArrayList<>();
                         List<String> locationAddress = new ArrayList<>();
-                        List<String> latitude = new ArrayList<>();
-                        List<String> longitude = new ArrayList<>();
-                        List<String> buyerID = new ArrayList<>();
-                        List<String> buyerName = new ArrayList<>();
-                        List<String> sellerID = new ArrayList<>();
-                        List<String> sellerName = new ArrayList<>();
-                        List<String> profilePhotoUrl = new ArrayList<>();
+                        List<String> locationStaticMapUrl = new ArrayList<>();
+                        List<String> otherName = new ArrayList<>();
+                        List<String> otherPhotoUrl = new ArrayList<>();
 
                         String locations = response.getString("location");
                         JSONArray jsonArray = new JSONArray(locations);
 
+                        String lat, lng;
                         for (int i = 0; i < jsonArray.length(); i++){
                             JSONObject locationObj = jsonArray.getJSONObject(i);
                             type.add(locationObj.getString("type"));
@@ -184,50 +182,46 @@ public class History extends Fragment {
                             dateCompleted.add(convertedDate);
                             locationName.add(locationObj.getString("name"));
                             locationAddress.add(locationObj.getString("address"));
-                            latitude.add(locationObj.getString("latitude"));
-                            longitude.add(locationObj.getString("longitude"));
-                            buyerID.add(locationObj.getString("buyerID"));
-                            sellerID.add(locationObj.getString("sellerID"));
-
-                            String buyerProfilePhotoUrl = "empty";
-                            if (locationObj.has("buyerInfo")){
-                                String buyerInfoString = locationObj.getString("buyerInfo");
-                                JSONObject buyerInfoObj = new JSONObject(buyerInfoString);
-                                buyerName.add(buyerInfoObj.getString("buyerFirstName") + " " + buyerInfoObj.getString("buyerLastName"));
-                                if (buyerInfoObj.has("buyerProfilePhotoUrl")){
-                                    buyerProfilePhotoUrl = buyerInfoObj.getString("buyerProfilePhotoUrl");
+                            lat = locationObj.getString("latitude");
+                            lng = locationObj.getString("longitude");
+                            String url = "http://maps.google.com/maps/api/staticmap?center=" +
+                                    lat +
+                                    "," +
+                                    lng +
+                                    "&zoom=15&size=1000x150&scale=2&sensor=false";
+                            locationStaticMapUrl.add(url);
+                            // If logged_in_user_id == sellerID of spot then show the buyer's info
+                            if (locationObj.
+                                    getJSONObject("sellerInfo").
+                                    getString("sellerID").
+                                    equals(SharedPref.getSharedPreferences(
+                                            getActivity(),
+                                            getResources().getString(R.string.logged_in_user_id)))){
+                                if (locationObj.getBoolean("hasMultipleBuyers")){
+                                    otherName.add(locationObj.getString("totalBuyers") +
+                                            " " +
+                                            getResources().getString(R.string.sold));
+                                    otherPhotoUrl.add("empty");
                                 }
-                                else {
-                                    buyerProfilePhotoUrl = "empty";
-                                }
-                            }
-                            else {
-                                buyerName.add("ERROR");
-                            }
-
-                            String sellerInfoString = locationObj.getString("sellerInfo");
-                            JSONObject sellerInfoObj = new JSONObject(sellerInfoString);
-                            sellerName.add(sellerInfoObj.getString("sellerFirstName") + " " + sellerInfoObj.getString("sellerLastName"));
-
-
-                            if (buyerID.get(i).equals(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)))){
-                                if (sellerInfoObj.has("sellerProfilePhotoUrl")){
-                                    profilePhotoUrl.add(sellerInfoObj.getString("sellerProfilePhotoUrl"));
-                                }
-                                else {
-                                    profilePhotoUrl.add("empty");
+                                else if (!locationObj.getBoolean("hasMultipleBuyers")){
+                                    Log.e("test", locationObj.getJSONArray("buyerInfo") + " ");
+                                    otherName.add(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerFirstName") +
+                                            " " + locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerLastName"));
+                                    otherPhotoUrl.add(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerProfilePhotoUrl"));
                                 }
                             }
                             else {
-                                profilePhotoUrl.add(buyerProfilePhotoUrl);
+                                // Else if logged_in_user_id != sellerID then get the seller's information
+                                otherName.add(locationObj.getJSONObject("sellerInfo").getString("sellerFirstName") +
+                                        " " +
+                                        locationObj.getJSONObject("sellerInfo").getString("sellerLastName"));
+                                otherPhotoUrl.add(locationObj.getJSONObject("sellerInfo").getString("sellerProfilePhotoUrl"));
                             }
-
                         }
 
                         adapter = new HistoryAdapter(   getActivity(), type, description, price,
                                                         dateCompleted, locationName, locationAddress,
-                                                        latitude, longitude, buyerID, buyerName,
-                                                        sellerID, sellerName, profilePhotoUrl);
+                                                        locationStaticMapUrl, otherName, otherPhotoUrl);
                         layoutManager = new LinearLayoutManager(getActivity());
                         rvHistory.setLayoutManager(layoutManager);
                         rvHistory.setAdapter(adapter);

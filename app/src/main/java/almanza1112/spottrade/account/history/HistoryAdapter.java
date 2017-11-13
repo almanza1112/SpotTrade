@@ -13,7 +13,6 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 import almanza1112.spottrade.R;
-import almanza1112.spottrade.nonActivity.SharedPref;
 
 /**
  * Created by almanza1112 on 7/26/17.
@@ -28,19 +27,14 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
     private List<String> dateCompleted;
     private List<String> locationName;
     private List<String> locationAddress;
-    private List<String> latitude;
-    private List<String> longitude;
-    private List<String> buyerID;
-    private List<String> buyerName;
-    private List<String> sellerID;
-    private List<String> sellerName;
-    private List<String> profilePhotoUrl;
+    private List<String> locationStaticMapUrl;
+    private List<String> otherName;
+    private List<String> otherPhotoUrl;
 
     HistoryAdapter(Activity activity, List<String> type, List<String> description,
                    List<String> price, List<String> dateCompleted, List<String> locationName,
-                   List<String> locationAddress, List<String> latitude,
-                   List<String> longitude, List<String> buyerID, List<String> buyerName,
-                   List<String> sellerID, List<String> sellerName, List<String> profilePhotoUrl){
+                   List<String> locationAddress, List<String> locationStaticMapUrl,
+                   List<String> otherName, List<String> otherPhotoUrl){
         this.activity = activity;
         this.type = type;
         this.description = description;
@@ -48,13 +42,9 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
         this.dateCompleted = dateCompleted;
         this.locationName = locationName;
         this.locationAddress = locationAddress;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.buyerID = buyerID;
-        this.buyerName = buyerName;
-        this.sellerID = sellerID;
-        this.sellerName = sellerName;
-        this.profilePhotoUrl = profilePhotoUrl;
+        this.locationStaticMapUrl = locationStaticMapUrl;
+        this.otherName = otherName;
+        this.otherPhotoUrl = otherPhotoUrl;
     }
 
     @Override
@@ -65,21 +55,13 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
 
     @Override
     public void onBindViewHolder(RecyclerViewHolder holder, int position) {
-        String otherUser;
-        if (buyerID.get(position).equals(SharedPref.getSharedPreferences(activity, activity.getResources().getString(R.string.logged_in_user_id)))){
-            otherUser = sellerName.get(position);
-        }
-        else {
-            otherUser = buyerName.get(position);
-        }
-        Picasso.with(activity).load(profilePhotoUrl.get(position)).fit().centerCrop().into(holder.ivProfilePhoto);
-        String url = "http://maps.google.com/maps/api/staticmap?center=" + latitude.get(position) + "," + longitude.get(position) + "&zoom=15&size=1000x150&scale=2&sensor=false";
-        Picasso.with(activity).load(url).fit().into(holder.ivStaticMap);
+        Picasso.with(activity).load(otherPhotoUrl.get(position)).fit().centerCrop().into(holder.ivProfilePhoto);
+        Picasso.with(activity).load(locationStaticMapUrl.get(position)).fit().into(holder.ivStaticMap);
         holder.tvLocationName.setText(locationName.get(position));
         holder.tvLocationAddress.setText(locationAddress.get(position));
         holder.tvType.setText(type.get(position));
         holder.tvDescription.setText(description.get(position));
-        holder.tvOtherUser.setText(otherUser);
+        holder.tvOtherUser.setText(otherName.get(position));
         holder.tvPrice.setText(price.get(position));
         holder.tvDateCompleted.setText(dateCompleted.get(position));
     }
