@@ -616,6 +616,7 @@ public class MapsActivity extends AppCompatActivity
             @Override
             public void onResponse(JSONObject response) {
                 try{
+                    Log.e("onMarker", response + "");
                     lid = response.getString("_id");
                     tvLocationName.setText(response.getString("name"));
                     price = response.getString("price");

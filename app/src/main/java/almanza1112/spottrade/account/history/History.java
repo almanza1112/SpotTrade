@@ -157,17 +157,14 @@ public class History extends Fragment {
             @Override
             public void onResponse(JSONObject response) {
                 try{
+                    Log.e("response", response + "");
                     if (response.getString("status").equals("success")){
                         tvNoHistory.setVisibility(View.GONE);
                         List<String> type = new ArrayList<>();
-                        List<String> description = new ArrayList<>();
-                        List<String> price = new ArrayList<>();
                         List<String> dateCompleted = new ArrayList<>();
                         List<String> locationName = new ArrayList<>();
                         List<String> locationAddress = new ArrayList<>();
                         List<String> locationStaticMapUrl = new ArrayList<>();
-                        List<String> otherName = new ArrayList<>();
-                        List<String> otherPhotoUrl = new ArrayList<>();
 
                         String locations = response.getString("location");
                         JSONArray jsonArray = new JSONArray(locations);
@@ -176,9 +173,7 @@ public class History extends Fragment {
                         for (int i = 0; i < jsonArray.length(); i++){
                             JSONObject locationObj = jsonArray.getJSONObject(i);
                             type.add(locationObj.getString("type"));
-                            description.add(locationObj.getString("description"));
-                            price.add(locationObj.getString("price"));
-                            String convertedDate = epochToDateString(locationObj.getLong("dateCompleted"));
+                            String convertedDate = epochToDateString(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getLong("dateTransactionCompleted"));
                             dateCompleted.add(convertedDate);
                             locationName.add(locationObj.getString("name"));
                             locationAddress.add(locationObj.getString("address"));
@@ -188,40 +183,16 @@ public class History extends Fragment {
                                     lat +
                                     "," +
                                     lng +
-                                    "&zoom=15&size=1000x150&scale=2&sensor=false";
+                                    "&zoom=15&" +
+                                    "markers=color:0xFFC107|" + lat + "," + lng +
+                                    "&size=1000x150&scale=2&" +
+                                    "key=" + getResources().getString(R.string.google_maps_key);
                             locationStaticMapUrl.add(url);
-                            // If logged_in_user_id == sellerID of spot then show the buyer's info
-                            if (locationObj.
-                                    getJSONObject("sellerInfo").
-                                    getString("sellerID").
-                                    equals(SharedPref.getSharedPreferences(
-                                            getActivity(),
-                                            getResources().getString(R.string.logged_in_user_id)))){
-                                if (locationObj.getBoolean("hasMultipleBuyers")){
-                                    otherName.add(locationObj.getString("totalBuyers") +
-                                            " " +
-                                            getResources().getString(R.string.sold));
-                                    otherPhotoUrl.add("empty");
-                                }
-                                else if (!locationObj.getBoolean("hasMultipleBuyers")){
-                                    Log.e("test", locationObj.getJSONArray("buyerInfo") + " ");
-                                    otherName.add(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerFirstName") +
-                                            " " + locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerLastName"));
-                                    otherPhotoUrl.add(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerProfilePhotoUrl"));
-                                }
-                            }
-                            else {
-                                // Else if logged_in_user_id != sellerID then get the seller's information
-                                otherName.add(locationObj.getJSONObject("sellerInfo").getString("sellerFirstName") +
-                                        " " +
-                                        locationObj.getJSONObject("sellerInfo").getString("sellerLastName"));
-                                otherPhotoUrl.add(locationObj.getJSONObject("sellerInfo").getString("sellerProfilePhotoUrl"));
-                            }
                         }
 
-                        adapter = new HistoryAdapter(   getActivity(), type, description, price,
-                                                        dateCompleted, locationName, locationAddress,
-                                                        locationStaticMapUrl, otherName, otherPhotoUrl);
+                        adapter = new HistoryAdapter(   getActivity(), type, dateCompleted,
+                                                        locationName, locationAddress,
+                                                        locationStaticMapUrl);
                         layoutManager = new LinearLayoutManager(getActivity());
                         rvHistory.setLayoutManager(layoutManager);
                         rvHistory.setAdapter(adapter);
