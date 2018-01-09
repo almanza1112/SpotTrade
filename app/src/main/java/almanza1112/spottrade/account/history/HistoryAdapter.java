@@ -1,6 +1,9 @@
 package almanza1112.spottrade.account.history;
 
 import android.app.Activity;
+import android.app.FragmentTransaction;
+import android.os.Bundle;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,16 +24,18 @@ import almanza1112.spottrade.R;
 class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHolder>{
 
     private Activity activity;
+    private List<String> id;
     private List<String> type;
     private List<String> dateCompleted;
     private List<String> locationName;
     private List<String> locationAddress;
     private List<String> locationStaticMapUrl;
 
-    HistoryAdapter(Activity activity, List<String> type,
+    HistoryAdapter(Activity activity, List<String> id,List<String> type,
                    List<String> dateCompleted, List<String> locationName,
                    List<String> locationAddress, List<String> locationStaticMapUrl){
         this.activity = activity;
+        this.id = id;
         this.type = type;
         this.dateCompleted = dateCompleted;
         this.locationName = locationName;
@@ -64,11 +69,27 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
     }
 
     class RecyclerViewHolder extends RecyclerView.ViewHolder{
+        CardView    cvHistory;
         ImageView   ivTypeIcon, ivStaticMap;
         TextView    tvLocationName, tvLocationAddress,
                     tvDateCompleted;
         RecyclerViewHolder(View view){
             super(view);
+            cvHistory = (CardView) view.findViewById(R.id.cvHistory);
+            cvHistory.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    HistorySpot historySpot = new HistorySpot();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("locationName",locationName.get(getAdapterPosition()));
+                    bundle.putString("id", id.get(getAdapterPosition()));
+                    historySpot.setArguments(bundle);
+                    FragmentTransaction fragmentTransaction = activity.getFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.history, historySpot);
+                    fragmentTransaction.addToBackStack(null);
+                    fragmentTransaction.commit();
+                }
+            });
             ivTypeIcon = (ImageView) view.findViewById(R.id.ivTypeIcon);
             ivStaticMap = (ImageView) view.findViewById(R.id.ivStaticMap);
             tvLocationName = (TextView) view.findViewById(R.id.tvLocationName);

@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -157,9 +156,9 @@ public class History extends Fragment {
             @Override
             public void onResponse(JSONObject response) {
                 try{
-                    Log.e("response", response + "");
                     if (response.getString("status").equals("success")){
                         tvNoHistory.setVisibility(View.GONE);
+                        List<String> id = new ArrayList<>();
                         List<String> type = new ArrayList<>();
                         List<String> dateCompleted = new ArrayList<>();
                         List<String> locationName = new ArrayList<>();
@@ -172,6 +171,7 @@ public class History extends Fragment {
                         String lat, lng;
                         for (int i = 0; i < jsonArray.length(); i++){
                             JSONObject locationObj = jsonArray.getJSONObject(i);
+                            id.add(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("_id"));
                             type.add(locationObj.getString("type"));
                             String convertedDate = epochToDateString(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getLong("dateTransactionCompleted"));
                             dateCompleted.add(convertedDate);
@@ -190,7 +190,7 @@ public class History extends Fragment {
                             locationStaticMapUrl.add(url);
                         }
 
-                        adapter = new HistoryAdapter(   getActivity(), type, dateCompleted,
+                        adapter = new HistoryAdapter(   getActivity(), id, type, dateCompleted,
                                                         locationName, locationAddress,
                                                         locationStaticMapUrl);
                         layoutManager = new LinearLayoutManager(getActivity());

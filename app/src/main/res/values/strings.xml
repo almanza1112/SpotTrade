@@ -54,6 +54,7 @@
     <string name="Bought_Spot">Bought Spot</string>
     <string name="bought_your_spot">bought your spot</string>
     <string name="Buy_Now">Buy Now</string>
+    <string name="Buyer">Buyer</string>
     <string name="Cancel">Cancel</string>
     <string name="Cancel_Offer">Cancel Offer</string>
     <string name="Card_Number">Card Number</string>
@@ -72,6 +73,7 @@
     <string name="Creating_user">Creating user</string>
     <string name="Current_Password">Current Password</string>
     <string name="CVV">CVV</string>
+    <string name="Date_Time_Purchased">Date &amp; Time Purchased</string>
     <string name="Default">Default</string>
     <string name="Delete">Delete</string>
     <string name="Deleting">Deleting</string>
@@ -141,10 +143,12 @@
     <string name="Quantity">Quantity</string>
     <string name="Registering">Registering</string>
     <string name="Request">Request</string>
+    <string name="Requested">Requested</string>
     <string name="Requested_Spotter">Requested Spotter</string>
     <string name="Requesting">Requesting</string>
     <string name="Search">Search</string>
     <string name="Sell">Sell</string>
+    <string name="Seller">Seller</string>
     <string name="Selling">Selling</string>
     <string name="Server_error">Something went wrong: server error</string>
     <string name="Sign_Up">Sign Up</string>
@@ -164,6 +168,7 @@
     <string name="Uploading_profile_image">Uploading profile image</string>
     <string name="Verifying">Verifying</string>
     <string name="Yes">Yes</string>
+    <string name="You">You</string>
     <string name="You_have_no_payment_method">You have no payment method in order to pay for this request. Please add one to proceed.</string>
     <string name="You_will_be_charged">You will be charged</string>
     <string name="with_the_following_payment_method">with the following payment method:</string>
