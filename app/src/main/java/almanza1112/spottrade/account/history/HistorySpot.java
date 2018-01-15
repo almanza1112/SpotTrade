@@ -6,7 +6,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -133,6 +132,7 @@ public class HistorySpot extends Fragment {
                             Picasso.
                                     with(getActivity()).
                                     load(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerProfilePhotoUrl")).
+                                    fit().
                                     into(ivBuyerProfilePhoto);
                             tvSellerText.setText(getResources().getString(R.string.Seller));
                             tvSellerName.setText(getResources().getString(R.string.You));
@@ -158,7 +158,6 @@ public class HistorySpot extends Fragment {
                             tvBuyerText.setText(getResources().getString(R.string.Buyer));
                             tvBuyerName.setText(getResources().getString(R.string.You));
                         }
-                        Log.e("quant", locationObj.getJSONArray("buyerInfo") + "");
                         int quantityBought = locationObj.getJSONArray("buyerInfo").getJSONObject(0).getInt("quantityBought");
                         double price = Double.valueOf(locationObj.getString("price"));
                         double total = quantityBought * price;

@@ -196,7 +196,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/contentPadding"
         android:orientation="horizontal">
@@ -205,49 +205,51 @@
             android:layout_height="match_parent"
             android:layout_marginRight="@dimen/contentPadding"
             android:src="@mipmap/ic_currency_usd_grey600_24dp"/>
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_marginLeft="@dimen/contentPadding"
-            android:orientation="vertical">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:textColor="@android:color/black"
-                android:text="@string/Quantity"/>
-            <TextView
-                android:id="@+id/tvQuantity"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/quarterContentPadding"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:textColor="@color/grey600"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:textColor="@android:color/black"
-                android:text="@string/Price"/>
-            <TextView
-                android:id="@+id/tvPrice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/quarterContentPadding"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:textColor="@color/grey600"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:textColor="@android:color/black"
-                android:text="Total"/>
-            <TextView
-                android:id="@+id/tvTotal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:textColor="@color/grey600"/>
-        </LinearLayout>
+            android:stretchColumns="*">
+            <TableRow>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:textAppearance="@android:style/TextAppearance.Small"
+                    android:textColor="@android:color/black"
+                    android:text="@string/Quantity"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:textAppearance="@android:style/TextAppearance.Small"
+                    android:textColor="@android:color/black"
+                    android:text="@string/Price"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:textAppearance="@android:style/TextAppearance.Small"
+                    android:textColor="@android:color/black"
+                    android:text="Total"/>
+            </TableRow>
+            <TableRow>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:id="@+id/tvQuantity"
+                    android:textAppearance="@android:style/TextAppearance.Small"
+                    android:textColor="@color/grey600"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:id="@+id/tvPrice"
+                    android:textAppearance="@android:style/TextAppearance.Small"
+                    android:textColor="@color/grey600"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:id="@+id/tvTotal"
+                    android:textAppearance="@android:style/TextAppearance.Small"
+                    android:textColor="@color/grey600"/>
+            </TableRow>
+        </TableLayout>
     </LinearLayout>
 </LinearLayout>
