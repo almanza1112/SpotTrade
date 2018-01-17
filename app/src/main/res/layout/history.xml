@@ -42,5 +42,5 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:textAppearance="@android:style/TextAppearance.Medium"
-        android:text="No history"/>
+        android:text="@string/No_history"/>
 </RelativeLayout>

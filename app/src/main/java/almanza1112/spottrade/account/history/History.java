@@ -199,6 +199,8 @@ public class History extends Fragment {
                         progressBar.setVisibility(View.GONE);
                     }
                     else if (response.getString("status").equals("fail")){
+                        rvHistory.setAdapter(null);
+                        tvNoHistory.setVisibility(View.VISIBLE);
                         progressBar.setVisibility(View.GONE);
                     }
                 }

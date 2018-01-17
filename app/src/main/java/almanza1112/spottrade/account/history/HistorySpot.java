@@ -43,7 +43,7 @@ public class HistorySpot extends Fragment {
 
     private ProgressBar progressBar;
     private TextView tvLocationName, tvLocationAddress, tvDate, tvSellerText, tvSellerName,
-            tvBuyerText, tvBuyerName, tvQuantity, tvPrice, tvTotal;
+            tvBuyerText, tvBuyerName, tvQuantity, tvPrice, tvTotal, tvDescription, tvFeedback;
     private ImageView ivStaticMap, ivSellerProfilePhoto, ivBuyerProfilePhoto;
     private CardView cvSellerProfilePhoto, cvBuyerProfilePhoto;
 
@@ -78,6 +78,8 @@ public class HistorySpot extends Fragment {
         tvQuantity = (TextView) view.findViewById(R.id.tvQuantity);
         tvPrice = (TextView) view.findViewById(R.id.tvPrice);
         tvTotal = (TextView) view.findViewById(R.id.tvTotal);
+        tvDescription = (TextView) view.findViewById(R.id.tvDescription);
+        tvFeedback = (TextView) view.findViewById(R.id.tvFeedback);
 
         getInformation(id);
         return view;
@@ -119,7 +121,7 @@ public class HistorySpot extends Fragment {
                                 "markers=color:0xFFC107|" + lat + "," + lng +
                                 "&size=1000x150&scale=2&" +
                                 "key=" + getResources().getString(R.string.google_maps_key);
-                        Picasso.with(getActivity()).load(url).into(ivStaticMap);
+                        Picasso.with(getActivity()).load(url).fit().into(ivStaticMap);
                         String dateTime = epochToDateString(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getLong("datePurchased")); // TODO: change "datePurchased" to "dateTransactionCompleted"
                         tvDate.setText(dateTime);
                         String type = locationObj.getString("type");
@@ -164,6 +166,7 @@ public class HistorySpot extends Fragment {
                         tvQuantity.setText(quantityBought + "");
                         tvPrice.setText("$" + price);
                         tvTotal.setText("$" + total);
+                        tvDescription.setText(locationObj.getString("description"));
                         progressBar.setVisibility(View.GONE);
                     }
                     else if (response.getString("status").equals("fail")){
