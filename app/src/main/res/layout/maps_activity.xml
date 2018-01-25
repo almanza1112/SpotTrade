@@ -233,7 +233,7 @@
             fab:layout_anchor="@+id/fabSpot"
             fab:layout_anchorGravity="top|end"
             android:layout_gravity="top|end"
-            fab:fabSize="normal"
+            fab:fabSize="mini"
             android:layout_marginRight="@dimen/quarterContentPadding"
             fab:useCompatPadding="true"/>
         <android.support.design.widget.FloatingActionButton

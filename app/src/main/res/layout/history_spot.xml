@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:background="@android:color/white"
     android:clickable="true"
     android:elevation="10dp">
@@ -12,11 +12,13 @@
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentTop="true"
         android:elevation="@dimen/toolbarElevation"
         android:background="@color/colorPrimary"/>
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="4dp">
+        android:layout_height="4dp"
+        android:layout_below="@id/toolbar">
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="48dp"
@@ -33,6 +35,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/toolbar"
         android:fillViewport="true">
         <LinearLayout
             android:layout_width="match_parent"
@@ -66,7 +69,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/halfContentPadding"
                         android:textAppearance="@android:style/TextAppearance.Small"
-                        android:textColor="@color/grey600"/>
+                        android:textColor="@android:color/darker_gray"/>
                     <ImageView
                         android:id="@+id/ivStaticMap"
                         android:layout_width="match_parent"
@@ -99,7 +102,8 @@
                         android:id="@+id/tvDate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAppearance="@android:style/TextAppearance.Small" />
+                        android:textAppearance="@android:style/TextAppearance.Small"
+                        android:textColor="@android:color/darker_gray"/>
                 </LinearLayout>
             </LinearLayout>
 
@@ -138,7 +142,7 @@
                             android:layout_below="@+id/tvSellerText"
                             android:layout_marginRight="@dimen/quarterContentPadding"
                             android:textAppearance="@android:style/TextAppearance.Small"
-                            android:textColor="@color/grey600"/>
+                            android:textColor="@android:color/darker_gray"/>
                         <android.support.v7.widget.CardView
                             android:id="@+id/cvSellerProfilePhoto"
                             android:layout_width="40dp"
@@ -179,7 +183,7 @@
                             android:layout_below="@+id/tvBuyerText"
                             android:layout_marginRight="@dimen/quarterContentPadding"
                             android:textAppearance="@android:style/TextAppearance.Small"
-                            android:textColor="@color/grey600"/>
+                            android:textColor="@android:color/darker_gray"/>
                         <android.support.v7.widget.CardView
                             android:id="@+id/cvBuyerProfilePhoto"
                             android:layout_width="40dp"
@@ -245,19 +249,19 @@
                             android:layout_weight="1"
                             android:id="@+id/tvQuantity"
                             android:textAppearance="@android:style/TextAppearance.Small"
-                            android:textColor="@color/grey600"/>
+                            android:textColor="@android:color/darker_gray"/>
                         <TextView
                             android:layout_width="0dp"
                             android:layout_weight="1"
                             android:id="@+id/tvPrice"
                             android:textAppearance="@android:style/TextAppearance.Small"
-                            android:textColor="@color/grey600"/>
+                            android:textColor="@android:color/darker_gray"/>
                         <TextView
                             android:layout_width="0dp"
                             android:layout_weight="1"
                             android:id="@+id/tvTotal"
                             android:textAppearance="@android:style/TextAppearance.Small"
-                            android:textColor="@color/grey600"/>
+                            android:textColor="@android:color/darker_gray"/>
                     </TableRow>
                 </TableLayout>
             </LinearLayout>
@@ -292,7 +296,7 @@
                     android:layout_below="@+id/tvDescriptionTitle"
                     android:layout_toRightOf="@id/ivDescriptionIcon"
                     android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textColor="@color/grey600"/>
+                    android:textColor="@android:color/darker_gray"/>
             </RelativeLayout>
 
             <RelativeLayout
@@ -327,8 +331,8 @@
                     android:layout_toRightOf="@+id/ivFeedbackIcon"
                     android:text="aasdfadasjdkasdhas dhuiasd asuid hasuid asud asuyhd asyudsd yhas dyuhasdyshd asyuhdsyhd asuhd sh dfhsdfhsd fsuh "
                     android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textColor="@color/grey600" />
+                    android:textColor="@android:color/darker_gray" />
             </RelativeLayout>
         </LinearLayout>
     </ScrollView>
-</LinearLayout>
+</RelativeLayout>

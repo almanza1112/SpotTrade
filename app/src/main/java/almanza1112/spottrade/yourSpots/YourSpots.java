@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -145,7 +146,7 @@ public class YourSpots extends Fragment {
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/all?sellerID="+ SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)) + "&transaction=available&type=" + type, null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/yourspots?id="+ SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)) + "&transaction=available&type=" + type, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -155,6 +156,7 @@ public class YourSpots extends Fragment {
                         List<String> locationAddress = new ArrayList<>();
                         List<String> type = new ArrayList<>();
                         List<String> price = new ArrayList<>();
+                        List<Integer> quantity = new ArrayList<>();
                         List<Boolean> offerAllowed = new ArrayList<>();
                         List<String> offerAmount = new ArrayList<>();
                         List<String> description = new ArrayList<>();
@@ -166,17 +168,26 @@ public class YourSpots extends Fragment {
                             locationName.add(locationObj.getString("name"));
                             locationAddress.add(locationObj.getString("address"));
                             type.add(locationObj.getString("type"));
+                            quantity.add(locationObj.getInt("quantity"));
                             price.add(locationObj.getString("price"));
                             offerAllowed.add(locationObj.getBoolean("offerAllowed"));
+                            description.add(locationObj.getString("description"));
                             if (locationObj.getBoolean("offerAllowed")){
-                                offerAmount.add(locationObj.getString("offeredAmount") + " " + getResources().getString(R.string.offers));
+                                int offersTotal = locationObj.getInt("offersTotal");
+                                String offersTotalString;
+                                if (offersTotal == 1){
+                                    offersTotalString = offersTotal + " " + getResources().getString(R.string.offer);
+                                }
+                                else {
+                                    offersTotalString = offersTotal + " " + getResources().getString(R.string.offers);
+                                }
+                                offerAmount.add(offersTotalString);
                             }
                             else{
                                 offerAmount.add("0");
                             }
-                            description.add(locationObj.getString("description"));
                         }
-                        adapter = new YourSpotsAdapter(getActivity(), lid, locationName, locationAddress, type, price, offerAllowed, offerAmount, description);
+                        adapter = new YourSpotsAdapter(getActivity(), lid, locationName, locationAddress, type, quantity, price, offerAllowed, offerAmount, description);
                         layoutManager = new LinearLayoutManager(getActivity());
                         rvYourSpots.setLayoutManager(layoutManager);
                         rvYourSpots.setAdapter(adapter);

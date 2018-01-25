@@ -48,9 +48,6 @@
     <string name="Are_you_sure_you_want_to_delete_this_spot">Are you sure you want to delete this spot?</string>
     <string name="Are_you_sure_you_want_to_log_out">Are you sure you want to log out?</string>
     <string name="available">available</string>
-    <string name="Offer">Offer</string>
-    <string name="Offer_canceled">Offer canceled</string>
-    <string name="offers">offers</string>
     <string name="Bought_Spot">Bought Spot</string>
     <string name="bought_your_spot">bought your spot</string>
     <string name="Buy_Now">Buy Now</string>
@@ -63,6 +60,7 @@
     <string name="Checking_for_payment_methods">Checking for payment methods</string>
     <string name="Choose_Payment_Method">Choose Payment Method</string>
     <string name="Choose_Type">Choose Type</string>
+    <string name="Confirm">Confirm</string>
     <string name="Complete">Complete</string>
     <string name="Complete_Transaction">Complete Transaction</string>
     <string name="Completing">Completing</string>
@@ -124,6 +122,10 @@
     <string name="Not_Now">Not Now</string>
     <string name="Notifications">Notifications</string>
     <string name="Obtaining_credentials">Obtaining credentials</string>
+    <string name="Offer">Offer</string>
+    <string name="Offer_canceled">Offer canceled</string>
+    <string name="offer">offer</string>
+    <string name="offers">offers</string>
     <string name="OK">OK</string>
     <string name="Other_Method">Other Method</string>
     <string name="Password">Password</string>
@@ -158,6 +160,7 @@
     <string name="sold_their_spot">sold their spot</string>
     <string name="Spot">Spot</string>
     <string name="Spots">Spots</string>
+    <string name="spots_">spots</string>
     <string name="Spot_successfully_deleted">Spot successfully deleted</string>
     <string name="Spotted">Spotted</string>
     <string name="spotted_you">spotted you</string>
@@ -170,6 +173,7 @@
     <string name="Verifying">Verifying</string>
     <string name="Yes">Yes</string>
     <string name="You">You</string>
+    <string name="Your_offer_is">Your offer is</string> <string name="_for">for</string> <string name="for_a_total_of">for a total of</string>
     <string name="You_have_no_payment_method">You have no payment method in order to pay for this request. Please add one to proceed.</string>
     <string name="You_will_be_charged">You will be charged</string>
     <string name="with_the_following_payment_method">with the following payment method:</string>

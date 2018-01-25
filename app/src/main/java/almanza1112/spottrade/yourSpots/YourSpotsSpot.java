@@ -5,8 +5,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,6 +21,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,11 +38,16 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import almanza1112.spottrade.R;
 import almanza1112.spottrade.nonActivity.HttpConnection;
+import almanza1112.spottrade.nonActivity.SharedPref;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -45,12 +55,18 @@ import static android.app.Activity.RESULT_OK;
  * Created by almanza1112 on 8/16/17.
  */
 
-public class EditSpot extends Fragment implements View.OnClickListener{
+public class YourSpotsSpot extends Fragment implements View.OnClickListener{
 
     private ProgressBar progressBar;
     private String lid;
+    private int quantity;
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
-    TextView tvLocationName, tvLocationAddress, tvType, tvPrice, tvDescription;
+    private Snackbar snackbar;
+    TextView tvLocationName, tvLocationAddress, tvType, tvPrice, tvQuantity, tvDescription;
+
+    RecyclerView rvOffers;
+    RecyclerView.Adapter adapter;
+    RecyclerView.LayoutManager layoutManager;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,15 +77,16 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         String address = getArguments().getString("locationAddress");
         String type = getArguments().getString("type");
         String price = getArguments().getString("price");
+        quantity = getArguments().getInt("quantity");
         String description = getArguments().getString("description");
-        boolean bidAllowed = getArguments().getBoolean("bidAllowed");
+        boolean bidAllowed = getArguments().getBoolean("offerAllowed");
 
         final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.setTitle(R.string.Edit_Spot);
+        toolbar.setTitle(name);
 
         progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
 
@@ -77,13 +94,14 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         tvLocationAddress = (TextView) view.findViewById(R.id.tvLocationAddress);
         tvType = (TextView) view.findViewById(R.id.tvType);
         tvPrice = (TextView) view.findViewById(R.id.tvPrice);
+        tvQuantity = (TextView) view.findViewById(R.id.tvQuantity);
         CheckBox cbBids = (CheckBox) view.findViewById(R.id.cbOffers);
         cbBids.setChecked(bidAllowed);
         cbBids.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 progressBar.setVisibility(View.VISIBLE);
-                updateField("bidAllowed", String.valueOf(isChecked));
+                updateField("offerAllowed", String.valueOf(isChecked));
             }
         });
         tvDescription = (TextView) view.findViewById(R.id.tvDescription);
@@ -94,16 +112,22 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         ivEditType.setOnClickListener(this);
         final ImageView ivEditPrice = (ImageView) view.findViewById(R.id.ivEditPrice);
         ivEditPrice.setOnClickListener(this);
+        final ImageView ivEditQuantity = (ImageView) view.findViewById(R.id.ivEditQuantity);
+        ivEditQuantity.setOnClickListener(this);
         final ImageView ivEditDescription = (ImageView) view.findViewById(R.id.ivEditDescription);
         ivEditDescription.setOnClickListener(this);
         final Button bDelete = (Button) view.findViewById(R.id.bDelete);
         bDelete.setOnClickListener(this);
+        rvOffers = (RecyclerView) view.findViewById(R.id.rvOffers);
 
         tvLocationName.setText(name);
         tvLocationAddress.setText(address);
         tvType.setText(type);
         tvPrice.setText(price);
+        tvQuantity.setText(String.valueOf(quantity));
         tvDescription.setText(description);
+
+        getOffers();
 
         return view;
     }
@@ -129,6 +153,10 @@ public class EditSpot extends Fragment implements View.OnClickListener{
 
             case R.id.ivEditPrice:
                 ADeditPrice();
+                break;
+
+            case R.id.ivEditQuantity:
+                ADeditQuantity();
                 break;
 
             case R.id.ivEditDescription:
@@ -172,6 +200,47 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         searchItem.setVisible(false);
         MenuItem filterItem = menu.findItem(R.id.filterMaps);
         filterItem.setVisible(false);
+    }
+
+    @Override
+    public void onDestroy() {
+        if (snackbar != null){
+            snackbar.dismiss();
+        }
+        super.onDestroy();
+    }
+
+    private void getOffers(){
+        progressBar.setVisibility(View.VISIBLE);
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/yourspots/offers?lid="+lid, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try{
+                    Log.e("response", response + "");
+                    if (response.getString("status").equals("success")){
+
+                        //adapter = new YourSpotsAdapter(getActivity(), lid, locationName, locationAddress, type, quantity, price, offerAllowed, offerAmount, description);
+                        //layoutManager = new LinearLayoutManager(getActivity());
+                        //rvOffers.setLayoutManager(layoutManager);
+                        //rvOffers.setAdapter(adapter);
+                        //progressBar.setVisibility(View.GONE);
+                    }
+                }
+                catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        }
+        );
+        queue.add(jsonObjectRequest);
     }
 
     private void ADeditType(){
@@ -239,6 +308,36 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                 dialog.dismiss();
             }
         });
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    private void ADeditQuantity(){
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View alertLayout = inflater.inflate(R.layout.number_picker, null);
+
+        final NumberPicker npQuantity = (NumberPicker) alertLayout.findViewById(R.id.npQuantity);
+        npQuantity.setMinValue(1);
+        npQuantity.setMaxValue(100);
+        npQuantity.setValue(quantity);
+
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+        alertDialogBuilder.setView(alertLayout);
+        alertDialogBuilder.setTitle(R.string.Quantity);
+        alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDialogBuilder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                progressBar.setVisibility(View.VISIBLE);
+                updateField("quantity", String.valueOf(npQuantity.getValue()));
+            }
+        });
+
         final AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
     }
@@ -337,35 +436,34 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                     if (response.getString("status").equals("success")){
                         switch (field){
                             case "type":
-                                progressBar.setVisibility(View.GONE);
-                                Toast.makeText(getActivity(), getResources().getString(R.string.Type) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
+                                setSnackbar(getResources().getString(R.string.Type) + " " + getResources().getString(R.string.updated));
                                 tvType.setText(str);
                                 break;
                             case "price":
-                                progressBar.setVisibility(View.GONE);
-                                Toast.makeText(getActivity(), getResources().getString(R.string.Price) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
+                                setSnackbar(getResources().getString(R.string.Price) + " " + getResources().getString(R.string.updated));
                                 tvPrice.setText(str);
                                 break;
+                            case "quantity":
+                                setSnackbar(getResources().getString(R.string.Quantity) + " " + getResources().getString(R.string.updated));
+                                quantity = Integer.valueOf(str);
+                                tvQuantity.setText(String.valueOf(quantity));
+                                break;
                             case "description":
-                                progressBar.setVisibility(View.GONE);
-                                Toast.makeText(getActivity(), getActivity().getString(R.string.Description) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
+                                setSnackbar(getActivity().getString(R.string.Description) + " " + getResources().getString(R.string.updated));
                                 tvDescription.setText(str);
                                 break;
                             case "bidAllowed":
-                                progressBar.setVisibility(View.GONE);
-                                Toast.makeText(getActivity(), getActivity().getString(R.string.Allow_offers) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
+                                setSnackbar(getActivity().getString(R.string.Allow_offers) + " " + getResources().getString(R.string.updated));
                                 break;
                             case "name":
+                                setSnackbar(getActivity().getString(R.string.Location) + " " + getResources().getString(R.string.updated));
                                 tvLocationName.setText(str);
                                 break;
                             case "address":
                                 tvLocationAddress.setText(str);
                                 break;
-                            case "longitude":
-                                progressBar.setVisibility(View.GONE);
-                                Toast.makeText(getActivity(), getActivity().getString(R.string.Location) + " " + getResources().getString(R.string.updated), Toast.LENGTH_SHORT).show();
-                                break;
                         }
+                        progressBar.setVisibility(View.GONE);
                     }
                 }
                 catch(JSONException e){
@@ -375,10 +473,16 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                progressBar.setVisibility(View.GONE);
                 error.printStackTrace();
             }
         }
         );
         queue.add(jsonObjectRequest);
+    }
+
+    public void setSnackbar(String snackbarText) {
+        snackbar = Snackbar.make(getActivity().findViewById(R.id.edit_spot), snackbarText, Snackbar.LENGTH_SHORT);
+        snackbar.show();
     }
 }

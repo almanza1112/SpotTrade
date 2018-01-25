@@ -263,7 +263,12 @@ public class MapsActivity extends AppCompatActivity
                 break;
 
             case R.id.bMakeOffer:
-                ADmakeOffer();
+                if (quantity == 1){
+                    ADmakeOfferPrice(false, 1);
+                }
+                else {
+                    ADmakeOfferQuantity();
+                }
                 break;
 
             case R.id.bCancelOffer:
@@ -874,11 +879,12 @@ public class MapsActivity extends AppCompatActivity
         queue.add(jsonObjectRequest);
     }
 
-    private void transactionMakeOffer(final String offerAmount){
+    private void transactionMakeOffer(final String offerAmount, int quantity){
         final JSONObject jObject = new JSONObject();
         try {
             jObject.put("offererID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
-            jObject.put("offerAmount", offerAmount);
+            jObject.put("offerPrice", offerAmount);
+            jObject.put("offerQuantity", quantity);
             jObject.put("offererFirstName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_first_name)));
             jObject.put("offererLastName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_last_name)));
         }
@@ -946,18 +952,86 @@ public class MapsActivity extends AppCompatActivity
         queue.add(jsonObjectRequest);
     }
 
-    private void ADmakeOffer(){
+    private void ADmakeOfferQuantity(){
+        LayoutInflater inflater = getLayoutInflater();
+        View alertLayout = inflater.inflate(R.layout.number_picker, null);
+
+        final NumberPicker numberPicker = (NumberPicker) alertLayout.findViewById(R.id.npQuantity);
+        numberPicker.setMinValue(1);
+        numberPicker.setMaxValue(this.quantity);
+        numberPicker.setValue(1);
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setView(alertLayout);
+        alertDialogBuilder.setTitle(getResources().getString(R.string.Make_Offer)+ " - " + getResources().getString(R.string.Quantity));
+        alertDialogBuilder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1) {
+                ADmakeOfferPrice(true, numberPicker.getValue());
+            }
+        });
+        alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    private void ADmakeOfferPrice(final boolean hasMoreThanOne, final int quantity){
+        String title = getResources().getString(R.string.Make_Offer);
+        String positiveButton = getResources().getString(R.string.Offer);
+        if (hasMoreThanOne){
+            title += " - " + getResources().getString(R.string.Price);
+            positiveButton = getResources().getString(R.string.OK);
+        }
         LayoutInflater inflater = getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.maps_activity_make_offer_alertdialog, null);
 
-        final EditText etOffer = (EditText) alertLayout.findViewById(R.id.etOffer);
+        final EditText etOfferPrice = (EditText) alertLayout.findViewById(R.id.etOfferPrice);
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
         alertDialogBuilder.setView(alertLayout);
-        alertDialogBuilder.setTitle(R.string.Make_Offer);
+        alertDialogBuilder.setTitle(title);
+        alertDialogBuilder.setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1) {
+                if (hasMoreThanOne){
+                    ADconfirmQuantityAndPrice(etOfferPrice.getText().toString(), quantity);
+                }
+                else {
+                    transactionMakeOffer(etOfferPrice.getText().toString(), 1);
+                }
+            }
+        });
+        alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    private void ADconfirmQuantityAndPrice(final String offeredPrice, final int quantity){
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        double price = Double.valueOf(offeredPrice);
+        double totalPrice = price * quantity;
+        alertDialogBuilder.setMessage(
+                getResources().getString(R.string.Your_offer_is) + " $" +
+                offeredPrice + " " +
+                getResources().getString(R.string._for) + " " +
+                quantity + " " +
+                getResources().getString(R.string.spots_) + " " +
+                getResources().getString(R.string.for_a_total_of) + ": $" +
+                totalPrice);
+        alertDialogBuilder.setTitle(getResources().getString(R.string.Make_Offer) + " - " + getResources().getString(R.string.Confirm));
         alertDialogBuilder.setPositiveButton(R.string.Offer, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
-                transactionMakeOffer(etOffer.getText().toString());
+                transactionMakeOffer(offeredPrice, quantity);
             }
         });
         alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
