@@ -661,7 +661,7 @@ public class MapsActivity extends AppCompatActivity
                         else{
                             if (response.getBoolean("offered")){
                                 bMakeOffer.setVisibility(View.GONE);
-                                bCancelOffer.setText(getResources().getString(R.string.Cancel) + " $" + response.getString("offeredAmount") + " " + getResources().getString(R.string.Offer));
+                                bCancelOffer.setText(getResources().getString(R.string.Cancel) + " " + getResources().getString(R.string.Offer));
                             }
                             else {
                                 bCancelOffer.setVisibility(View.GONE);
