@@ -72,6 +72,7 @@
     <string name="Current_Password">Current Password</string>
     <string name="CVV">CVV</string>
     <string name="Date_Time_Purchased">Date &amp; Time Purchased</string>
+    <string name="Decline">Decline</string>
     <string name="Default">Default</string>
     <string name="Delete">Delete</string>
     <string name="Deleting">Deleting</string>
@@ -118,6 +119,7 @@
     <string name="No">No</string>
     <string name="No_feedback">No feedback</string>
     <string name="No_history">No history</string>
+    <string name="No_offers">No offers</string>
     <string name="No_Payment_Method">No Payment Method</string>
     <string name="Not_Now">Not Now</string>
     <string name="Notifications">Notifications</string>
@@ -125,6 +127,7 @@
     <string name="Offer">Offer</string>
     <string name="Offer_canceled">Offer canceled</string>
     <string name="offer">offer</string>
+    <string name="_Offers">Offers</string>
     <string name="offers">offers</string>
     <string name="OK">OK</string>
     <string name="Other_Method">Other Method</string>
@@ -171,6 +174,8 @@
     <string name="Updating_default_payment_method">Updating default payment method</string>
     <string name="Uploading_profile_image">Uploading profile image</string>
     <string name="Verifying">Verifying</string>
+    <string name="View_1_offer">View 1 offer</string>
+    <string name="View_all">View all</string>
     <string name="Yes">Yes</string>
     <string name="You">You</string>
     <string name="Your_offer_is">Your offer is</string> <string name="_for">for</string> <string name="for_a_total_of">for a total of</string>

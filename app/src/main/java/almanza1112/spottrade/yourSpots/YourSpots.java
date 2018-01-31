@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -158,7 +157,8 @@ public class YourSpots extends Fragment {
                         List<String> price = new ArrayList<>();
                         List<Integer> quantity = new ArrayList<>();
                         List<Boolean> offerAllowed = new ArrayList<>();
-                        List<String> offerAmount = new ArrayList<>();
+                        List<Integer> offerTotal = new ArrayList<>();
+                        List<String> offerTotalString = new ArrayList<>();
                         List<String> description = new ArrayList<>();
 
                         JSONArray locationArray = new JSONArray(response.getString("location"));
@@ -174,6 +174,7 @@ public class YourSpots extends Fragment {
                             description.add(locationObj.getString("description"));
                             if (locationObj.getBoolean("offerAllowed")){
                                 int offersTotal = locationObj.getInt("offersTotal");
+                                offerTotal.add(offersTotal);
                                 String offersTotalString;
                                 if (offersTotal == 1){
                                     offersTotalString = offersTotal + " " + getResources().getString(R.string.offer);
@@ -181,13 +182,14 @@ public class YourSpots extends Fragment {
                                 else {
                                     offersTotalString = offersTotal + " " + getResources().getString(R.string.offers);
                                 }
-                                offerAmount.add(offersTotalString);
+                                offerTotalString.add(offersTotalString);
                             }
                             else{
-                                offerAmount.add("0");
+                                offerTotal.add(0);
+                                offerTotalString.add("0");
                             }
                         }
-                        adapter = new YourSpotsAdapter(getActivity(), lid, locationName, locationAddress, type, quantity, price, offerAllowed, offerAmount, description);
+                        adapter = new YourSpotsAdapter(getActivity(), lid, locationName, locationAddress, type, quantity, price, offerAllowed, offerTotal, offerTotalString, description);
                         layoutManager = new LinearLayoutManager(getActivity());
                         rvYourSpots.setLayoutManager(layoutManager);
                         rvYourSpots.setAdapter(adapter);

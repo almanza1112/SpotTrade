@@ -1,16 +1,14 @@
 package almanza1112.spottrade.yourSpots;
 
 import android.app.AlertDialog;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +19,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -38,16 +37,11 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import almanza1112.spottrade.R;
 import almanza1112.spottrade.nonActivity.HttpConnection;
-import almanza1112.spottrade.nonActivity.SharedPref;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -55,18 +49,14 @@ import static android.app.Activity.RESULT_OK;
  * Created by almanza1112 on 8/16/17.
  */
 
-public class YourSpotsSpot extends Fragment implements View.OnClickListener{
+public class EditSpot extends Fragment implements View.OnClickListener{
 
     private ProgressBar progressBar;
     private String lid;
     private int quantity;
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private Snackbar snackbar;
-    TextView tvLocationName, tvLocationAddress, tvType, tvPrice, tvQuantity, tvDescription;
-
-    RecyclerView rvOffers;
-    RecyclerView.Adapter adapter;
-    RecyclerView.LayoutManager layoutManager;
+    TextView tvLocationName, tvLocationAddress, tvType, tvPrice, tvQuantity, tvDescription, tvViewOffers;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -80,6 +70,7 @@ public class YourSpotsSpot extends Fragment implements View.OnClickListener{
         quantity = getArguments().getInt("quantity");
         String description = getArguments().getString("description");
         boolean bidAllowed = getArguments().getBoolean("offerAllowed");
+        int offerTotal = getArguments().getInt("offerTotal");
 
         final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
@@ -105,6 +96,8 @@ public class YourSpotsSpot extends Fragment implements View.OnClickListener{
             }
         });
         tvDescription = (TextView) view.findViewById(R.id.tvDescription);
+        tvViewOffers = (TextView) view.findViewById(R.id.tvViewOffers);
+        LinearLayout llViewOffers = (LinearLayout) view.findViewById(R.id.llViewOffers);
 
         final ImageView ivEditLocation = (ImageView) view.findViewById(R.id.ivEditLocation);
         ivEditLocation.setOnClickListener(this);
@@ -118,7 +111,6 @@ public class YourSpotsSpot extends Fragment implements View.OnClickListener{
         ivEditDescription.setOnClickListener(this);
         final Button bDelete = (Button) view.findViewById(R.id.bDelete);
         bDelete.setOnClickListener(this);
-        rvOffers = (RecyclerView) view.findViewById(R.id.rvOffers);
 
         tvLocationName.setText(name);
         tvLocationAddress.setText(address);
@@ -127,8 +119,22 @@ public class YourSpotsSpot extends Fragment implements View.OnClickListener{
         tvQuantity.setText(String.valueOf(quantity));
         tvDescription.setText(description);
 
-        getOffers();
-
+        if (bidAllowed){
+            if (offerTotal == 1){
+                tvViewOffers.setText(getResources().getString(R.string.View_1_offer));
+                tvViewOffers.setOnClickListener(this);
+            }
+            else if (offerTotal > 1){
+                tvViewOffers.setText(getResources().getString(R.string.View_all) + " " + offerTotal + " " + getResources().getString(R.string.offers));
+                tvViewOffers.setOnClickListener(this);
+            }
+            else { // offerTotal == 0
+                tvViewOffers.setText(getResources().getString(R.string.No_offers));
+            }
+        }
+        else {
+            llViewOffers.setVisibility(View.GONE);
+        }
         return view;
     }
 
@@ -161,6 +167,17 @@ public class YourSpotsSpot extends Fragment implements View.OnClickListener{
 
             case R.id.ivEditDescription:
                 ADeditDescription();
+                break;
+
+            case R.id.tvViewOffers:
+                Bundle bundle = new Bundle();
+                bundle.putString("lid", lid);
+                ViewOffers viewOffers = new ViewOffers();
+                viewOffers.setArguments(bundle);
+                FragmentTransaction fragmentTransaction = getActivity().getFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.edit_spot, viewOffers);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
                 break;
 
             case R.id.bDelete:
@@ -208,39 +225,6 @@ public class YourSpotsSpot extends Fragment implements View.OnClickListener{
             snackbar.dismiss();
         }
         super.onDestroy();
-    }
-
-    private void getOffers(){
-        progressBar.setVisibility(View.VISIBLE);
-        RequestQueue queue = Volley.newRequestQueue(getActivity());
-
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/yourspots/offers?lid="+lid, null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try{
-                    Log.e("response", response + "");
-                    if (response.getString("status").equals("success")){
-
-                        //adapter = new YourSpotsAdapter(getActivity(), lid, locationName, locationAddress, type, quantity, price, offerAllowed, offerAmount, description);
-                        //layoutManager = new LinearLayoutManager(getActivity());
-                        //rvOffers.setLayoutManager(layoutManager);
-                        //rvOffers.setAdapter(adapter);
-                        //progressBar.setVisibility(View.GONE);
-                    }
-                }
-                catch (JSONException e){
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
-            }
-        }
-        );
-        queue.add(jsonObjectRequest);
     }
 
     private void ADeditType(){

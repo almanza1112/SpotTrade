@@ -29,12 +29,13 @@ class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerVie
     private List<Integer> quantity;
     private List<String> price;
     private List<Boolean> offerAllowed;
-    private List<String> offerAmount;
+    private List<Integer> offerTotal;
+    private List<String> offerTotalString;
     private List<String> description;
     YourSpotsAdapter(
             Activity activity, List<String> lid, List<String> locationName,
             List<String> locationAddress, List<String> type, List<Integer> quantity, List<String> price,
-            List<Boolean> offerAllowed, List<String> offerAmount, List<String> description){
+            List<Boolean> offerAllowed, List<Integer> offerTotal, List<String> offerTotalString, List<String> description){
         this.activity = activity;
         this.lid = lid;
         this.locationName = locationName;
@@ -43,7 +44,8 @@ class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerVie
         this.quantity = quantity;
         this.price = price;
         this.offerAllowed = offerAllowed;
-        this.offerAmount = offerAmount;
+        this.offerTotal = offerTotal;
+        this.offerTotalString = offerTotalString;
         this.description = description;
     }
 
@@ -68,7 +70,7 @@ class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerVie
             holder.tvQuantity.setVisibility(View.VISIBLE);
         }
         if (offerAllowed.get(position)){
-            holder.tvOfferAmount.setText(offerAmount.get(position));
+            holder.tvOfferAmount.setText(offerTotalString.get(position));
         }
         else{
             holder.tvOfferAmount.setVisibility(View.GONE);
@@ -104,10 +106,11 @@ class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerVie
                     bundle.putInt("quantity", quantity.get(getAdapterPosition()));
                     bundle.putBoolean("offerAllowed", offerAllowed.get(getAdapterPosition()));
                     bundle.putString("description", description.get(getAdapterPosition()));
-                    YourSpotsSpot yourSpotsSpot = new YourSpotsSpot();
-                    yourSpotsSpot.setArguments(bundle);
+                    bundle.putInt("offerTotal", offerTotal.get(getAdapterPosition()));
+                    EditSpot editSpot = new EditSpot();
+                    editSpot.setArguments(bundle);
                     FragmentTransaction fragmentTransaction = activity.getFragmentManager().beginTransaction();
-                    fragmentTransaction.replace(R.id.drawer_layout, yourSpotsSpot);
+                    fragmentTransaction.replace(R.id.your_spots, editSpot);
                     fragmentTransaction.addToBackStack(null);
                     fragmentTransaction.commit();
                 }
