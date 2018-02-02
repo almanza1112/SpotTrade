@@ -126,6 +126,7 @@
     <string name="Obtaining_credentials">Obtaining credentials</string>
     <string name="Offer">Offer</string>
     <string name="Offer_canceled">Offer canceled</string>
+    <string name="Offer_declined">Offer declined</string>
     <string name="offer">offer</string>
     <string name="_Offers">Offers</string>
     <string name="offers">offers</string>

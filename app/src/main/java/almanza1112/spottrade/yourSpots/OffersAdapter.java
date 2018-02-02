@@ -2,18 +2,31 @@ package almanza1112.spottrade.yourSpots;
 
 import android.app.Activity;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 
 import almanza1112.spottrade.R;
+import almanza1112.spottrade.nonActivity.HttpConnection;
+import almanza1112.spottrade.nonActivity.SharedPref;
 
 /**
  * Created by almanza1112 on 1/30/18.
@@ -21,7 +34,11 @@ import almanza1112.spottrade.R;
 
 class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolder> {
 
+    private ViewOffers viewOffers;
     private Activity activity;
+    private String lid;
+    private List<String> _id;
+    private List<String> userID;
     private List<String> firstName;
     private List<String> profilePhotoUrl;
     private List<String> priceOffered;
@@ -29,10 +46,15 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
     private List<String> totalOfferPrice;
     private List<Long> dateOffered;
 
-    OffersAdapter(  Activity activity, List<String> firstName, List<String> profilePhotoUrl,
+    OffersAdapter(  ViewOffers viewOffers, Activity activity, String lid, List<String> _id,
+                    List<String> userID, List<String> firstName, List<String> profilePhotoUrl,
                     List<String> priceOffered, List<Integer> quantityOffered,
                     List<String> totalOfferPrice, List<Long> dateOffered){
+        this.viewOffers = viewOffers;
         this.activity = activity;
+        this.lid = lid;
+        this._id = _id;
+        this.userID = userID;
         this.firstName = firstName;
         this.profilePhotoUrl = profilePhotoUrl;
         this.priceOffered = priceOffered;
@@ -74,6 +96,112 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
             tvTotalOffered = (TextView) view.findViewById(R.id.tvTotalOffered);
             bDeclineOffer = (Button) view.findViewById(R.id.bDeclineOffer);
             bAcceptOffer = (Button) view.findViewById(R.id.bAcceptOffer);
+            bDeclineOffer.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    declineOffer(_id.get(getAdapterPosition()), userID.get(getAdapterPosition()), getAdapterPosition());
+                }
+            });
+            bAcceptOffer.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    acceptOffer(    _id.get(getAdapterPosition()),
+                                    priceOffered.get(getAdapterPosition()),
+                                    quantityOffered.get(getAdapterPosition()),
+                                    userID.get(getAdapterPosition()));
+                }
+            });
         }
+    }
+
+    private void declineOffer(String id, String uid, final int position){
+        viewOffers.setProgressBar(View.VISIBLE);
+        final JSONObject jObject = new JSONObject();
+        try {
+            jObject.put("lid", lid);
+            jObject.put("_id", id); // id of the item in offers array
+            jObject.put("userID", uid);
+            jObject.put("sellerID", SharedPref.getSharedPreferences(activity, activity.getResources().getString(R.string.logged_in_user_id)));
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestQueue queue = Volley.newRequestQueue(activity);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/yourspots/offers/decline", jObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try{
+                    if (response.getString("status").equals("success")){
+                        viewOffers.setSnackbar(activity.getResources().getString(R.string.Offer_declined));
+                        _id.remove(position);
+                        userID.remove(position);
+                        firstName.remove(position);
+                        profilePhotoUrl.remove(position);
+                        priceOffered.remove(position);
+                        quantityOffered.remove(position);
+                        totalOfferPrice.remove(position);
+                        dateOffered.remove(position);
+                        notifyDataSetChanged();
+                    }
+                    else {
+                        Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                    }
+                }
+                catch (JSONException e){
+                    e.printStackTrace();
+                }
+                viewOffers.setProgressBar(View.GONE);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+            }
+        }
+        );
+        queue.add(jsonObjectRequest);
+    }
+
+    private void acceptOffer(String id, String price,int quantity, String uid){
+        final JSONObject jObject = new JSONObject();
+        try {
+            jObject.put("lid", lid);
+            jObject.put("_id", id); // id of the item in offers array
+            jObject.put("quantityBought", quantity);
+            jObject.put("offerPrice", price);
+            jObject.put("buyerID", uid);
+            jObject.put("sellerID", SharedPref.getSharedPreferences(activity, activity.getResources().getString(R.string.logged_in_user_id)));
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestQueue queue = Volley.newRequestQueue(activity);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/yourspots/offers/accept", jObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try{
+                    if (response.getString("status").equals("success")){
+                        Log.e("accept", response + "");
+                    }
+                    else {
+                        Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                    }
+                }
+                catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        }
+        );
+        queue.add(jsonObjectRequest);
     }
 }

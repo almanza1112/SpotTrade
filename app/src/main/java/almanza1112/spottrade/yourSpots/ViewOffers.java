@@ -3,10 +3,12 @@ package almanza1112.spottrade.yourSpots;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +40,7 @@ public class ViewOffers extends Fragment {
 
     private ProgressBar progressBar;
     private String lid;
+    public Snackbar snackbar;
 
     RecyclerView rvOffers;
     RecyclerView.Adapter adapter;
@@ -71,6 +74,8 @@ public class ViewOffers extends Fragment {
             public void onResponse(JSONObject response) {
                 try{
                     if (response.getString("status").equals("success")){
+                        List<String> _id = new ArrayList<>();
+                        List<String> userID = new ArrayList<>();
                         List<String> firstName = new ArrayList<>();
                         List<String> profilePhotoUrl = new ArrayList<>();
                         List<String> priceOffered = new ArrayList<>();
@@ -80,6 +85,8 @@ public class ViewOffers extends Fragment {
 
                         JSONArray offersArr = new JSONArray(response.getString("offers"));
                         for (int i = 0; i < offersArr.length(); i++){
+                            _id.add(offersArr.getJSONObject(i).getString("_id"));
+                            userID.add(offersArr.getJSONObject(i).getString("offererID"));
                             firstName.add(  offersArr.getJSONObject(i).getString("offererFirstName") + " " +
                                             offersArr.getJSONObject(i).getString("offererLastName") + " " +
                                             offersArr.getJSONObject(i).getString("offererOverallRating") + "(" +
@@ -100,7 +107,7 @@ public class ViewOffers extends Fragment {
                             dateOffered.add(offersArr.getJSONObject(i).getLong("offerDate"));
                         }
 
-                        adapter = new OffersAdapter(    getActivity(), firstName, profilePhotoUrl,
+                        adapter = new OffersAdapter(    ViewOffers.this, getActivity(), lid, _id, userID, firstName, profilePhotoUrl,
                                                         priceOffered, quantityOffered, totalOfferPrice,
                                                         dateOffered);
                         layoutManager = new LinearLayoutManager(getActivity());
@@ -121,5 +128,14 @@ public class ViewOffers extends Fragment {
         }
         );
         queue.add(jsonObjectRequest);
+    }
+
+    public void setSnackbar(String snackbarText) {
+        snackbar = Snackbar.make(getActivity().findViewById(R.id.view_offers), snackbarText, Snackbar.LENGTH_SHORT);
+        snackbar.show();
+    }
+
+    public void setProgressBar(int view){
+        progressBar.setVisibility(view);
     }
 }
