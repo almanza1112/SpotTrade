@@ -110,7 +110,7 @@ class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerVie
                     EditSpot editSpot = new EditSpot();
                     editSpot.setArguments(bundle);
                     FragmentTransaction fragmentTransaction = activity.getFragmentManager().beginTransaction();
-                    fragmentTransaction.replace(R.id.your_spots, editSpot);
+                    fragmentTransaction.replace(R.id.drawer_layout, editSpot);
                     fragmentTransaction.addToBackStack(null);
                     fragmentTransaction.commit();
                 }

@@ -51,6 +51,7 @@ import static android.app.Activity.RESULT_OK;
 
 public class EditSpot extends Fragment implements View.OnClickListener{
 
+    private Toolbar toolbar;
     private ProgressBar progressBar;
     private String lid;
     private int quantity;
@@ -72,7 +73,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         boolean bidAllowed = getArguments().getBoolean("offerAllowed");
         int offerTotal = getArguments().getInt("offerTotal");
 
-        final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
@@ -92,7 +93,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 progressBar.setVisibility(View.VISIBLE);
-                updateField("offerAllowed", String.valueOf(isChecked));
+                updateField("offerAllowed", String.valueOf(isChecked), null);
             }
         });
         tvDescription = (TextView) view.findViewById(R.id.tvDescription);
@@ -175,7 +176,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                 ViewOffers viewOffers = new ViewOffers();
                 viewOffers.setArguments(bundle);
                 FragmentTransaction fragmentTransaction = getActivity().getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.edit_spot, viewOffers);
+                fragmentTransaction.replace(R.id.drawer_layout, viewOffers);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
                 break;
@@ -191,12 +192,16 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE){
             if (resultCode == RESULT_OK){
-                progressBar.setVisibility(View.VISIBLE);
                 Place place = PlaceAutocomplete.getPlace(getActivity(), data);
-                updateField("name", place.getName().toString());
-                updateField("address", place.getAddress().toString());
-                updateField("latitude", String.valueOf(place.getLatLng().latitude));
-                updateField("longitude", String.valueOf(place.getLatLng().longitude));
+                JSONObject jsonObject = new JSONObject();
+                try{
+                    jsonObject.put("name", place.getName().toString());
+                    jsonObject.put("address", place.getAddress().toString());
+                    jsonObject.put("latitude", String.valueOf(place.getLatLng().latitude));
+                    jsonObject.put("longitude", String.valueOf(place.getLatLng().longitude));
+                }
+                catch (JSONException e){e.printStackTrace();}
+                updateField("location", null, jsonObject);
             }
             else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(getActivity(), data);
@@ -231,7 +236,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         final CharSequence[] items = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request)};
         final int i;
         final int[] newI = new int[1];
-        if (tvType.getText().toString().equals("Selling")){
+        if (tvType.getText().toString().equals("Sell")){
             i = 0;
         }
         else {
@@ -249,7 +254,6 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         alertDialogBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                progressBar.setVisibility(View.VISIBLE);
                 String str;
                 if (newI[0] == 0){
                     str = "Sell";
@@ -257,7 +261,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                 else {
                     str = "Request";
                 }
-                updateField("type", str);
+                updateField("type", str, null);
             }
         });
         alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
@@ -276,14 +280,14 @@ public class EditSpot extends Fragment implements View.OnClickListener{
 
         final EditText etPrice = (EditText) alertLayout.findViewById(R.id.etPrice);
         etPrice.setText(tvPrice.getText().toString());
+        etPrice.setSelection(etPrice.getText().length());
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
         alertDialogBuilder.setView(alertLayout);
         alertDialogBuilder.setTitle(R.string.Edit_Price);
         alertDialogBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                progressBar.setVisibility(View.VISIBLE);
-                updateField("price", etPrice.getText().toString());
+                updateField("price", etPrice.getText().toString(), null);
             }
         });
         alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
@@ -317,8 +321,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         alertDialogBuilder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                progressBar.setVisibility(View.VISIBLE);
-                updateField("quantity", String.valueOf(npQuantity.getValue()));
+                updateField("quantity", String.valueOf(npQuantity.getValue()), null);
             }
         });
 
@@ -332,14 +335,14 @@ public class EditSpot extends Fragment implements View.OnClickListener{
 
         final EditText etDescription = (EditText) alertLayout.findViewById(R.id.etDescription);
         etDescription.setText(tvDescription.getText().toString());
+        etDescription.setSelection(tvDescription.getText().length());
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
         alertDialogBuilder.setView(alertLayout);
         alertDialogBuilder.setTitle(R.string.Edit_Description);
         alertDialogBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                progressBar.setVisibility(View.VISIBLE);
-                updateField("description", etDescription.getText().toString());
+                updateField("description", etDescription.getText().toString(), null);
             }
         });
         alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
@@ -402,10 +405,16 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         queue.add(jsonObjectRequest);
     }
 
-    private void updateField(final String field, final String str) {
-        final JSONObject jObject = new JSONObject();
+    private void updateField(final String field, final String str, final JSONObject location) {
+        progressBar.setVisibility(View.VISIBLE);
+        JSONObject jObject = new JSONObject();
         try {
-            jObject.put(field, str);
+            if (location == null){
+                jObject.put(field, str);
+            }
+            else {
+                jObject = location;
+            }
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -439,20 +448,17 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                             case "bidAllowed":
                                 setSnackbar(getActivity().getString(R.string.Allow_offers) + " " + getResources().getString(R.string.updated));
                                 break;
-                            case "name":
+                            case "location":
                                 setSnackbar(getActivity().getString(R.string.Location) + " " + getResources().getString(R.string.updated));
-                                tvLocationName.setText(str);
-                                break;
-                            case "address":
-                                tvLocationAddress.setText(str);
+                                toolbar.setTitle(location.getString("name"));
+                                tvLocationName.setText(location.getString("name"));
+                                tvLocationAddress.setText(location.getString("address"));
                                 break;
                         }
-                        progressBar.setVisibility(View.GONE);
                     }
                 }
-                catch(JSONException e){
-                    e.printStackTrace();
-                }
+                catch(JSONException e){e.printStackTrace();}
+                progressBar.setVisibility(View.GONE);
             }
         }, new Response.ErrorListener() {
             @Override
