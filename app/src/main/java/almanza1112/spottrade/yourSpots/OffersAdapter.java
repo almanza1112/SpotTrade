@@ -2,7 +2,6 @@ package almanza1112.spottrade.yourSpots;
 
 import android.app.Activity;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,7 +72,7 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
     public void onBindViewHolder(RecyclerViewHolder holder, int position) {
         holder.tvOffererName.setText(firstName.get(position));
         Picasso.with(activity).load(profilePhotoUrl.get(position)).fit().centerCrop().into(holder.ivOffererProfilePhoto);
-        holder.tvPriceOffered.setText(priceOffered.get(position));
+        holder.tvPriceOffered.setText("$"+priceOffered.get(position));
         holder.tvQuantityOffered.setText(quantityOffered.get(position) + "");
         holder.tvTotalOffered.setText(totalOfferPrice.get(position));
     }
@@ -108,7 +107,8 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
                     acceptOffer(    _id.get(getAdapterPosition()),
                                     priceOffered.get(getAdapterPosition()),
                                     quantityOffered.get(getAdapterPosition()),
-                                    userID.get(getAdapterPosition()));
+                                    userID.get(getAdapterPosition()),
+                                    getAdapterPosition());
                 }
             });
         }
@@ -129,7 +129,7 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
         RequestQueue queue = Volley.newRequestQueue(activity);
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/yourspots/offers/decline", jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/offers/decline", jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -150,13 +150,14 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
                     }
                 }
                 catch (JSONException e){
-                    e.printStackTrace();
+                    Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                 }
                 viewOffers.setProgressBar(View.GONE);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                viewOffers.setProgressBar(View.GONE);
                 Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
             }
         }
@@ -164,7 +165,8 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
         queue.add(jsonObjectRequest);
     }
 
-    private void acceptOffer(String id, String price,int quantity, String uid){
+    private void acceptOffer(final String id, String price, int quantity, String uid, final int position){
+        viewOffers.setProgressBar(View.VISIBLE);
         final JSONObject jObject = new JSONObject();
         try {
             jObject.put("lid", lid);
@@ -180,25 +182,41 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
         RequestQueue queue = Volley.newRequestQueue(activity);
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/yourspots/offers/accept", jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/offers/accept", jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
                     if (response.getString("status").equals("success")){
-                        Log.e("accept", response + "");
+                        if (response.getBoolean("isComplete") || _id.size() == 1){
+                            viewOffers.offerAccepted(lid, id);
+                        }
+                        else{
+                            viewOffers.setSnackbar(activity.getResources().getString(R.string.Offer_accepted));
+                            _id.remove(position);
+                            userID.remove(position);
+                            firstName.remove(position);
+                            profilePhotoUrl.remove(position);
+                            priceOffered.remove(position);
+                            quantityOffered.remove(position);
+                            totalOfferPrice.remove(position);
+                            dateOffered.remove(position);
+                            notifyDataSetChanged();
+                        }
                     }
                     else {
                         Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 }
                 catch (JSONException e){
-                    e.printStackTrace();
+                    Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                 }
+                viewOffers.setProgressBar(View.GONE);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
+                viewOffers.setProgressBar(View.GONE);
+                Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
             }
         }
         );

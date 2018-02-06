@@ -95,6 +95,7 @@ import almanza1112.spottrade.login.LoginActivity;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 import almanza1112.spottrade.nonActivity.tracking.TrackerService;
+import almanza1112.spottrade.yourSpots.ViewOffers;
 import almanza1112.spottrade.yourSpots.YourSpots;
 
 public class MapsActivity extends AppCompatActivity
@@ -103,7 +104,8 @@ public class MapsActivity extends AppCompatActivity
             GoogleMap.OnMarkerClickListener,
             NavigationView.OnNavigationItemSelectedListener,
             AddPaymentMethod.PaymentMethodAddedListener,
-            AddCreditDebitCard.CreditCardAddedListener {
+            AddCreditDebitCard.CreditCardAddedListener,
+            ViewOffers.OfferAcceptedListener{
     private ProgressBar progressBar;
     private GoogleMap mMap;
     Location myLocation;
@@ -712,6 +714,13 @@ public class MapsActivity extends AppCompatActivity
         if (result.equals("added")){
             validatePaymentMethod();
         }
+    }
+
+    @Override
+    public void onOfferAccepted(String lid, String id) {
+        // Offer got accepted and now is going to redirect
+        Log.e("onOfferAccpted", lid + "\n" + id);
+        Toast.makeText(this, "OKAY THIS WORKS", Toast.LENGTH_SHORT).show();
     }
 
     private void getMyLocation() {
@@ -1489,7 +1498,7 @@ public class MapsActivity extends AppCompatActivity
         RequestQueue queue = Volley.newRequestQueue(this);
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/history?sellerID="+ SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)) + "&type=all&transaction=ongoing", null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/transaction/check?uid="+ SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{

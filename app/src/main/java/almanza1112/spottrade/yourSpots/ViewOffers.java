@@ -1,5 +1,6 @@
 package almanza1112.spottrade.yourSpots;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -73,6 +74,16 @@ public class ViewOffers extends Fragment {
     }
 
     @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            offerAcceptedListener = (OfferAcceptedListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString() + " must implement OnItemClickedListener");
+        }
+    }
+
+    @Override
     public void onPrepareOptionsMenu(Menu menu) {
         MenuItem searchItem = menu.findItem(R.id.search);
         searchItem.setVisible(false);
@@ -86,6 +97,26 @@ public class ViewOffers extends Fragment {
             snackbar.dismiss();
         }
         super.onDestroy();
+    }
+
+    OfferAcceptedListener offerAcceptedListener = onOfferAcceptedMethodCallback;
+
+    public interface OfferAcceptedListener{
+        void onOfferAccepted(String lid, String id);
+    }
+
+    public static OfferAcceptedListener onOfferAcceptedMethodCallback = new OfferAcceptedListener() {
+        @Override
+        public void onOfferAccepted(String lid, String id) {
+
+        }
+    };
+
+    public void offerAccepted(String lid, String id){
+        offerAcceptedListener.onOfferAccepted(lid, id);
+        getFragmentManager().popBackStack();
+        getFragmentManager().popBackStack();
+        getFragmentManager().popBackStack();
     }
 
     private void getOffers(){
@@ -125,7 +156,7 @@ public class ViewOffers extends Fragment {
                             String price = offersArr.getJSONObject(i).getString("offerPrice");
                             int quantity = offersArr.getJSONObject(i).getInt("offerQuantity");
                             double finalPrice = Double.valueOf(price) * quantity;
-                            priceOffered.add("$"+price);
+                            priceOffered.add(price);
                             quantityOffered.add(quantity);
                             totalOfferPrice.add("$"+finalPrice);
                             dateOffered.add(offersArr.getJSONObject(i).getLong("offerDate"));
