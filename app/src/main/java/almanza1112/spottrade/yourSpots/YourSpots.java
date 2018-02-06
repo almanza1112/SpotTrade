@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -193,17 +194,22 @@ public class YourSpots extends Fragment {
                         layoutManager = new LinearLayoutManager(getActivity());
                         rvYourSpots.setLayoutManager(layoutManager);
                         rvYourSpots.setAdapter(adapter);
-                        progressBar.setVisibility(View.GONE);
+                    }
+                    else {
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 }
                 catch (JSONException e){
-                    e.printStackTrace();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+
                 }
+                progressBar.setVisibility(View.GONE);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
             }
         }
         );

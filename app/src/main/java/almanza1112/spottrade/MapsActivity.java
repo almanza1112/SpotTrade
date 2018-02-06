@@ -217,7 +217,7 @@ public class MapsActivity extends AppCompatActivity
                 getMyLocation();
                 break;
             case R.id.fabSpot:
-                startActivityForResult(new Intent(MapsActivity.this, SpotActivity.class)
+                startActivityForResult(new Intent(MapsActivity.this, CreateSpotActivity.class)
                         .putExtra("locationName", locationName)
                         .putExtra("locationAddress", locationAddress)
                         .putExtra("latitude", latitude)

@@ -137,7 +137,6 @@ public class ChangePassword extends Fragment {
             @Override
             public void onResponse(JSONObject response) {
                 try{
-                    progressBar.setVisibility(View.INVISIBLE);
                     if (response.getString("status").equals("success")){
                         SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password));
                         SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password), tietConfirmNewPassword.getText().toString());
@@ -145,17 +144,19 @@ public class ChangePassword extends Fragment {
                         snackbar.show();
                     }
                     else {
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_password), Toast.LENGTH_SHORT).show();
                     }
                 }
                 catch (JSONException e){
-                    e.printStackTrace();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_password), Toast.LENGTH_SHORT).show();
                 }
+                progressBar.setVisibility(View.GONE);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_password), Toast.LENGTH_SHORT).show();
             }
         }
         );

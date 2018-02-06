@@ -233,24 +233,27 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
                                             });
                                             break;
                                     }
-                                } catch (InvalidArgumentException e) {
+                                }
+                                catch (InvalidArgumentException e) {
                                     // There was an issue with your authorization string.
-                                    e.printStackTrace();
+                                    Toast.makeText(getActivity(), getResources().getString(R.string.Error_invalid_argument), Toast.LENGTH_SHORT).show();
                                 }
                             }
                             else {
-                                Log.e("client", "error retrieving clienToken");
+                                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                             }
                         }
                         catch (JSONException e){
-                            e.printStackTrace();
+                            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                         }
+                        pd.dismiss();
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
+                        pd.dismiss();
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -279,9 +282,7 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
                     @Override
                     public void onResponse(JSONObject response) {
                         try{
-                            pd.dismiss();
                             if (response.getString("status").equals("success")){
-                                Log.e("addPayment", from);
                                 if (from.equals("Payment")) {
                                     SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.payment_method_added), "added");
                                 }
@@ -290,18 +291,22 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
                                 }
                                 getFragmentManager().popBackStack();
                             }
+                            else {
+                                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                            }
                         }
                         catch (JSONException e){
-                            e.printStackTrace();
+                            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                         }
+                        pd.dismiss();
                     }
                 }, new Response.ErrorListener() {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         // TODO Auto-generated method stub
-                        Log.e("addPaymentMethod", "error");
-                        error.printStackTrace();
+                        pd.dismiss();
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 }){
             @Override

@@ -10,7 +10,6 @@ import android.support.design.widget.TextInputLayout;
 import android.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -48,7 +47,7 @@ import almanza1112.spottrade.nonActivity.SharedPref;
  * Created by almanza1112 on 6/29/17.
  */
 
-public class SpotActivity extends AppCompatActivity implements View.OnClickListener{
+public class CreateSpotActivity extends AppCompatActivity implements View.OnClickListener{
     private TextView tvType, tvLocationName, tvLocationAddress, tvAddLocation, tvQuantity;
     private TextInputLayout tilPrice;
     private TextInputEditText tietDescription, tietPrice;
@@ -201,7 +200,6 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
                                     .build(this);
                     startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
                 } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
-                    e.printStackTrace();
                     Toast.makeText(this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
                 }
                 break;
@@ -283,14 +281,16 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
                             }
                         }
                         catch (JSONException e){
-                            e.printStackTrace();
+                            pd.dismiss();
+                            Toast.makeText(CreateSpotActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
+                        pd.dismiss();
+                        Toast.makeText(CreateSpotActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -312,7 +312,7 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(DialogInterface dialog, int which) {
                 Bundle bundle = new Bundle();
                 AddPaymentMethod addPaymentMethod = new AddPaymentMethod();
-                bundle.putString("from", "SpotActivity");
+                bundle.putString("from", "CreateSpotActivity");
                 addPaymentMethod.setArguments(bundle);
                 FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.spot_activity, addPaymentMethod);
@@ -346,10 +346,6 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
 
             sellerInfoObj.put("sellerID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
             jsonObject.put("sellerInfo", sellerInfoObj);
-
-            //sellerInfoObj.put("sellerFirstName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_first_name)));
-            //sellerInfoObj.put("sellerLastName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_last_name)));
-
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -373,17 +369,22 @@ public class SpotActivity extends AppCompatActivity implements View.OnClickListe
                                 setResult(RESULT_OK, intent);
                                 finish();
                             }
+                            else {
+                                pd.dismiss();
+                                Toast.makeText(CreateSpotActivity.this, getResources().getString(R.string.Error_unable_to_add_spot), Toast.LENGTH_SHORT).show();
+                            }
                         }
                         catch (JSONException e){
-                            e.printStackTrace();
+                            pd.dismiss();
+                            Toast.makeText(CreateSpotActivity.this, getResources().getString(R.string.Error_unable_to_add_spot), Toast.LENGTH_SHORT).show();
                         }
                     }
                 }, new Response.ErrorListener() {
-
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         // TODO Auto-generated method stub
-                        error.printStackTrace();
+                        pd.dismiss();
+                        Toast.makeText(CreateSpotActivity.this, getResources().getString(R.string.Error_unable_to_add_spot), Toast.LENGTH_SHORT).show();
                     }
                 }){
             @Override

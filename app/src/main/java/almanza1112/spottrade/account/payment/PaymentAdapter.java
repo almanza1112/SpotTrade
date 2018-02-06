@@ -164,16 +164,17 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                     else {
                         Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_update_payment_method), Toast.LENGTH_SHORT).show();
                     }
-                    pd.dismiss();
                 }
                 catch (JSONException e){
-                    e.printStackTrace();
+                    Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_delete_payment_method), Toast.LENGTH_SHORT).show();
                 }
+                pd.dismiss();
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
+                pd.dismiss();
+                Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_delete_payment_method), Toast.LENGTH_SHORT).show();
             }
         }
         );
@@ -229,7 +230,6 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                     @Override
                     public void onResponse(JSONObject response) {
                         try{
-                            pd.dismiss();
                             if (response.getString("status").equals("success")){
                                 payment.setSnackbar(activity.getResources().getString(R.string.Payment_method_deleted));
                                 if (response.has("defaultPaymentMethodToken")) {
@@ -250,15 +250,17 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                             }
                         }
                         catch (JSONException e){
-                            e.printStackTrace();
+                            Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_delete_payment_method), Toast.LENGTH_SHORT).show();
                         }
+                        pd.dismiss();
                     }
                 },
                 new Response.ErrorListener()
                 {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
+                        pd.dismiss();
+                        Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_delete_payment_method), Toast.LENGTH_SHORT).show();
                     }
                 }
         );

@@ -219,6 +219,7 @@ public class Personal extends Fragment implements View.OnClickListener {
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+                        progressBar.setVisibility(View.GONE);
                         Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -240,13 +241,11 @@ public class Personal extends Fragment implements View.OnClickListener {
                 SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url));
                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), downloadUrl.toString());
                 uploadDownloadUrl(downloadUrl.toString());
-                setSnackBar(getResources().getString(R.string.Profile_photo_updated));
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 progressBar.setVisibility(View.GONE);
-                e.printStackTrace();
                 Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
             }
         });
@@ -266,14 +265,24 @@ public class Personal extends Fragment implements View.OnClickListener {
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
+                try{
+                    if (response.getString("status").equals("success")){
+                        setSnackBar(getResources().getString(R.string.Profile_photo_updated));
+                    }
+                    else {
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_photo), Toast.LENGTH_SHORT).show();
+                    }
+                }
+                catch (JSONException e){
+                    Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_photo), Toast.LENGTH_SHORT).show();
+                }
                 progressBar.setVisibility(View.GONE);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
-                error.printStackTrace();
+                Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_photo), Toast.LENGTH_SHORT).show();
             }
         }
         );
@@ -329,6 +338,7 @@ public class Personal extends Fragment implements View.OnClickListener {
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
+                                progressBar.setVisibility(View.GONE);
                                 Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_photo), Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -373,7 +383,6 @@ public class Personal extends Fragment implements View.OnClickListener {
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/delete/photo/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                progressBar.setVisibility(View.GONE);
                 try{
                     if (response.getString("status").equals("success")){
                         setSnackBar(getResources().getString(R.string.Profile_photo_deleted));
@@ -383,15 +392,15 @@ public class Personal extends Fragment implements View.OnClickListener {
                     }
                 }
                 catch (JSONException e){
-                    e.printStackTrace();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_photo), Toast.LENGTH_SHORT).show();
                 }
+                progressBar.setVisibility(View.GONE);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
-                error.printStackTrace();
+                Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_photo), Toast.LENGTH_SHORT).show();
             }
         }
         );
@@ -439,7 +448,7 @@ public class Personal extends Fragment implements View.OnClickListener {
         alertDialogBuilder.setPositiveButton(R.string.Update, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
-
+                // This is empty because onClickListener is implemented below
             }
         });
         alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
@@ -506,7 +515,6 @@ public class Personal extends Fragment implements View.OnClickListener {
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    progressBar.setVisibility(View.GONE);
                     if (response.getString("status").equals("success")) {
                         String snackBarText = "";
                         switch (field) {
@@ -531,16 +539,18 @@ public class Personal extends Fragment implements View.OnClickListener {
                         }
                         setSnackBar(snackBarText);
                     } else {
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_update_field), Toast.LENGTH_SHORT).show();
                     }
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_update_field), Toast.LENGTH_SHORT).show();
                 }
+                progressBar.setVisibility(View.GONE);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_update_field), Toast.LENGTH_SHORT).show();
             }
         }
         );

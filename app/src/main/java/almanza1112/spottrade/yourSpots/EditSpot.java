@@ -92,7 +92,6 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         cbBids.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                progressBar.setVisibility(View.VISIBLE);
                 updateField("offerAllowed", String.valueOf(isChecked), null);
             }
         });
@@ -457,14 +456,16 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                         }
                     }
                 }
-                catch(JSONException e){e.printStackTrace();}
+                catch(JSONException e){
+                    Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                }
                 progressBar.setVisibility(View.GONE);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                error.printStackTrace();
+                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
             }
         }
         );

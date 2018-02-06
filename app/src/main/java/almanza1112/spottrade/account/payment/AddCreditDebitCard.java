@@ -328,23 +328,24 @@ public class AddCreditDebitCard extends Fragment {
                                     Card.tokenize(mBraintreeFragment, cardBuilder);
                                 }
                                 catch (InvalidArgumentException e) {
-                                    e.printStackTrace();
+                                    Toast.makeText(getActivity(), getResources().getString(R.string.Error_invalid_argument), Toast.LENGTH_SHORT).show();
                                 }
                             }
                             else {
-                                pd.dismiss();
-                                Toast.makeText(getActivity(), "Error: could not add card", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_add_card), Toast.LENGTH_SHORT).show();
                             }
                         }
                         catch (JSONException e){
-                            e.printStackTrace();
+                            Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_add_card), Toast.LENGTH_SHORT).show();
                         }
+                        pd.dismiss();
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
+                        pd.dismiss();
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -372,7 +373,6 @@ public class AddCreditDebitCard extends Fragment {
                     @Override
                     public void onResponse(JSONObject response) {
                         try{
-                            pd.dismiss();
                             if (response.getString("status").equals("success")){
                                 if (from.equals("MapsActivity")) {
                                     creditCardAddedListener.onCreditCardAdded("added");
@@ -384,19 +384,20 @@ public class AddCreditDebitCard extends Fragment {
                                 getFragmentManager().popBackStack();
                             }
                             else {
-                                Toast.makeText(getActivity(), "Error: could not add credit card", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_add_card), Toast.LENGTH_SHORT).show();
                             }
                         }
                         catch (JSONException e){
-                            e.printStackTrace();
+                            Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_add_card), Toast.LENGTH_SHORT).show();
                         }
+                        pd.dismiss();
                     }
                 }, new Response.ErrorListener() {
-
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         // TODO Auto-generated method stub
-                        error.printStackTrace();
+                        pd.dismiss();
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 }){
             @Override

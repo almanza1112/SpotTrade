@@ -196,24 +196,22 @@ public class History extends Fragment {
                         layoutManager = new LinearLayoutManager(getActivity());
                         rvHistory.setLayoutManager(layoutManager);
                         rvHistory.setAdapter(adapter);
-                        progressBar.setVisibility(View.GONE);
                     }
                     else if (response.getString("status").equals("fail")){
                         rvHistory.setAdapter(null);
                         tvNoHistory.setVisibility(View.VISIBLE);
-                        progressBar.setVisibility(View.GONE);
                     }
                 }
                 catch (JSONException e){
-                    e.printStackTrace();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                 }
+                progressBar.setVisibility(View.GONE);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
                 Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
-                error.printStackTrace();
             }
         }
         );

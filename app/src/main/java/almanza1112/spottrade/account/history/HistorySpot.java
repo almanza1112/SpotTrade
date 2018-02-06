@@ -167,22 +167,21 @@ public class HistorySpot extends Fragment {
                         tvPrice.setText("$" + price);
                         tvTotal.setText("$" + total);
                         tvDescription.setText(locationObj.getString("description"));
-                        progressBar.setVisibility(View.GONE);
                     }
                     else if (response.getString("status").equals("fail")){
                         Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
-                        progressBar.setVisibility(View.GONE);
                     }
                 }
                 catch (JSONException e){
-                    e.printStackTrace();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                 }
+                progressBar.setVisibility(View.GONE);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                progressBar.setVisibility(View.GONE);
                 Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
-                error.printStackTrace();
             }
         }
         );

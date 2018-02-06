@@ -85,9 +85,14 @@
     <string name="Edit_Type">Edit Type</string>
     <string name="Email">Email</string>
     <string name="Error">Error</string>
+    <string name="Error_invalid_argument">Error: invalid argument</string>
+    <string name="Error_unable_to_add_card">Error: unable to add card</string>
+    <string name="Error_unable_to_add_spot">Error: unable to add spot</string>
     <string name="Error_unable_to_delete_payment_method">Error: unable to delete payment method</string>
     <string name="Error_unable_to_change_photo">Error: unable to change photo</string>
     <string name="Error_unable_to_update_payment_method">Error: unable to update payment method</string>
+    <string name="Error_unable_to_update_field">Error: unable to update field</string>
+    <string name="Error_unable_to_change_password">Error: unable to change password</string>
     <string name="Error_some_features_may_be_unavailable">Error: some features may be unavailable</string>
     <string name="Error_signing_into_Firebase">Error signing into Firebase</string>
     <string name="Error_unable_to_upload_image">Error: unable to upload image</string>
