@@ -11,7 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
-import android.support.v4.app.Fragment;
+import android.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -50,7 +50,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import almanza1112.spottrade.MapsActivity;
 import almanza1112.spottrade.R;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.RegularExpression;
@@ -366,7 +365,8 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                                         }
                                         else{
                                             progressDialog.dismiss();
-                                            startActivity(new Intent(getActivity(), MapsActivity.class));
+                                            //TODO: implement interface to lead to MapsActivity
+                                            //startActivity(new Intent(getActivity(), MapsActivity.class));
                                         }
                                     }
                                 });
@@ -425,7 +425,9 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                 progressDialog.dismiss();
                 e.printStackTrace();
                 Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(getActivity(), MapsActivity.class));
+                // TODO: implement interface to lead to MapsActivity
+
+                //startActivity(new Intent(getActivity(), MapsActivity.class));
             }
         });
     }
@@ -444,9 +446,9 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Log.e("uploadDownloadUrl", response +  "");
                 progressDialog.dismiss();
-                startActivity(new Intent(getActivity(), MapsActivity.class));
+                // TODO: implement interface to lead to MapsActivity
+                //startActivity(new Intent(getActivity(), MapsActivity.class));
             }
         }, new Response.ErrorListener() {
             @Override

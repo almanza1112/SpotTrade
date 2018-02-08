@@ -1,14 +1,16 @@
 package almanza1112.spottrade.login;
 
-import android.content.Intent;
+import android.app.Fragment;
+
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
-import android.support.v4.app.FragmentTransaction;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,44 +43,30 @@ import almanza1112.spottrade.nonActivity.SharedPref;
  * Created by almanza1112 on 6/21/17.
  */
 
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
+public class Login extends Fragment implements View.OnClickListener{
     TextInputLayout tilEmail, tilPassword;
     TextInputEditText tietEmail, tietPassword;
 
     private FirebaseAuth firebaseAuth;
 
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)) != null){
-            startActivity(new Intent(LoginActivity.this, MapsActivity.class));
-            finish();
-        }
-        setContentView(R.layout.login_activity);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.login_activity, container, false);
+        tilEmail = (TextInputLayout) view.findViewById(R.id.tilEmail);
+        tietEmail = (TextInputEditText) view.findViewById(R.id.tietEmail);
 
-        tilEmail = (TextInputLayout) findViewById(R.id.tilEmail);
-        tietEmail = (TextInputEditText) findViewById(R.id.tietEmail);
+        tilPassword = (TextInputLayout) view.findViewById(R.id.tilPassword);
+        tietPassword = (TextInputEditText) view.findViewById(R.id.tietPassword);
 
-        tilPassword = (TextInputLayout) findViewById(R.id.tilPassword);
-        tietPassword = (TextInputEditText) findViewById(R.id.tietPassword);
-
-        final TextView tvSignUp = (TextView) findViewById(R.id.tvSignUp);
+        final TextView tvSignUp = (TextView) view.findViewById(R.id.tvSignUp);
         tvSignUp.setOnClickListener(this);
 
-        final Button bLogin = (Button) findViewById(R.id.bLogin);
+        final Button bLogin = (Button) view.findViewById(R.id.bLogin);
         bLogin.setOnClickListener(this);
 
         firebaseAuth = FirebaseAuth.getInstance();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
+        return view;
     }
 
     @Override
@@ -91,34 +79,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 break;
             case R.id.tvSignUp:
                 LoginSignUp loginSignUp = new LoginSignUp();
-                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.login_activity, loginSignUp);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
                 break;
             default:
-                Toast.makeText(this, "onClick not implemented for this", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "onClick not implemented for this", Toast.LENGTH_SHORT).show();
                 break;
-        }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case android.R.id.home:
-                onBackPressed();
-                break;
-        }
-        return true;
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (getFragmentManager().getBackStackEntryCount() > 0){
-            getFragmentManager().popBackStack();
-        }
-        else {
-            super.onBackPressed();
         }
     }
 
@@ -131,7 +99,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         catch (JSONException e) {
             e.printStackTrace();
         }
-        RequestQueue queue = Volley.newRequestQueue(this);
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
@@ -151,30 +119,32 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                                     if (response.has("phoneNumber")){
                                         String phoneNumber = response.getString("phoneNumber");
-                                        SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_phone_number), phoneNumber);
+                                        SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_phone_number), phoneNumber);
                                     }
                                     if (response.has("profilePhotoUrl")){
-                                        SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_photo_url), response.getString("profilePhotoUrl"));
+                                        SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), response.getString("profilePhotoUrl"));
                                     }
 
-                                    SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_id), id);
-                                    SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_email), email);
-                                    SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_first_name), firstName);
-                                    SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_last_name), lastName);
-                                    SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_password), password);
-                                    SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_total_ratings), totalRatings);
-                                    SharedPref.setSharedPreferences(LoginActivity.this, getResources().getString(R.string.logged_in_user_overall_rating), overallRating);
+                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id), id);
+                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email), email);
+                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_first_name), firstName);
+                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name), lastName);
+                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password), password);
+                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_total_ratings), totalRatings);
+                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_overall_rating), overallRating);
 
                                     firebaseAuth.signInWithEmailAndPassword(email, password).addOnFailureListener(new OnFailureListener() {
                                         @Override
                                         public void onFailure(@NonNull Exception e) {
-                                            Toast.makeText(LoginActivity.this, getResources().getString(R.string.Error_some_features_may_be_unavailable), Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getActivity(), getResources().getString(R.string.Error_some_features_may_be_unavailable), Toast.LENGTH_SHORT).show();
                                         }
                                     }).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                                         @Override
                                         public void onComplete(@NonNull Task<AuthResult> task) {
-                                            startActivity(new Intent(LoginActivity.this, MapsActivity.class));
-                                            finish();
+                                            //TODO: put interface here
+
+                                            //startActivity(new Intent(getActivity() MapsActivity.class));
+                                            //finish();
                                         }
                                     });
                                 }

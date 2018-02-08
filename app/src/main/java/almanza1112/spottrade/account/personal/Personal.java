@@ -90,7 +90,7 @@ public class Personal extends Fragment implements View.OnClickListener {
         ivProfilePhoto = (ImageView) view.findViewById(R.id.ivProfilePhoto);
         final ImageView ivEditProfilePhoto = (ImageView) view.findViewById(R.id.ivEditProfilePhoto);
         ivEditProfilePhoto.setOnClickListener(this);
-        if (!SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)).isEmpty()){
+        if (SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)) != null){
             Picasso.with(getActivity()).load(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url))).fit().centerCrop().into(ivProfilePhoto);
         }
 

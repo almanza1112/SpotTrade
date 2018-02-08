@@ -7,7 +7,7 @@
     android:id="@+id/login_activity"
     android:orientation="vertical"
     android:gravity="center"
-    tools:context=".login.LoginActivity"
+    tools:context=".login.Login"
     android:background="@color/colorPrimary">
     <android.support.design.widget.TextInputLayout
         android:id="@+id/tilEmail"

@@ -16,6 +16,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.app.Fragment;
@@ -71,9 +72,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -91,7 +94,7 @@ import almanza1112.spottrade.account.payment.AddPaymentMethod;
 import almanza1112.spottrade.account.payment.Payment;
 import almanza1112.spottrade.account.history.History;
 import almanza1112.spottrade.account.personal.Personal;
-import almanza1112.spottrade.login.LoginActivity;
+import almanza1112.spottrade.login.Login;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 import almanza1112.spottrade.nonActivity.tracking.TrackerService;
@@ -154,10 +157,26 @@ public class MapsActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         ImageView myLocationButton = (ImageView) mapFragment.getView().findViewById(2);
         myLocationButton.setPadding(0, 100, 0, 0);
-
         mapFragment.getMapAsync(this);
-
         setSupportActionBar(toolbar);
+
+        try {
+            String pendingData = getIntent().getExtras().getString("message");
+            JSONObject dataObj = new JSONObject(pendingData);
+            String type = dataObj.getString("type");
+            switch (type){
+                case "offer":
+                    goToViewOffers(dataObj.getString("lid"));
+                    break;
+
+                case "buy":
+
+                    break;
+            }
+        }
+        catch (JSONException | NullPointerException e ){
+            e.printStackTrace();
+        }
 
         bottomUp = AnimationUtils.loadAnimation(this, R.anim.bottom_up);
         bottomDown = AnimationUtils.loadAnimation(this, R.anim.bottom_down);
@@ -210,6 +229,12 @@ public class MapsActivity extends AppCompatActivity
         tvLoggedInFullName.setText(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_first_name)) + " " + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_last_name)));
         final TextView tvLoggedInEmail = (TextView) navHeaderView.findViewById(R.id.tvLoggedInEmail);
         tvLoggedInEmail.setText(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_email)));
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
     }
 
     @Override
@@ -340,29 +365,6 @@ public class MapsActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.search:
-
-                /* TODO: this is an example of how to retrieve data from database
-                databaseReference = FirebaseDatabase.getInstance().getReference().child("tracking").child("lidthatisbought");
-                databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for (DataSnapshot ds: dataSnapshot.getChildren()){
-                            BuyerTracker buyerTracker = new BuyerTracker();
-                            buyerTracker.setKey(ds.getKey());
-                            buyerTracker.setLat(ds.getValue(BuyerTracker.class).getLat());
-                            buyerTracker.setLng(ds.getValue(BuyerTracker.class).getLng());
-
-                            Log.e("k", "key: " +buyerTracker.getKey() + "\n"+buyerTracker.getLat() + " " + buyerTracker.getLng());
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-                */
-
                 try {
                     Intent intent =
                             new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
@@ -719,8 +721,24 @@ public class MapsActivity extends AppCompatActivity
     @Override
     public void onOfferAccepted(String lid, String id) {
         // Offer got accepted and now is going to redirect
-        Log.e("onOfferAccpted", lid + "\n" + id);
-        Toast.makeText(this, "OKAY THIS WORKS", Toast.LENGTH_SHORT).show();
+        Map<String, String> latLng = new HashMap<>();
+        latLng.put("lat", "null");
+        latLng.put("lng", "null");
+
+        databaseReference = FirebaseDatabase.getInstance().getReference("tracking");
+        databaseReference.child(lid).child(SharedPref.getSharedPreferences(MapsActivity.this, getResources().getString(R.string.logged_in_user_id))).setValue(latLng, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null){
+                    // There is no error
+                    startTrackingService();
+                }
+                else {
+                    // There is an error
+
+                }
+            }
+        });
     }
 
     private void getMyLocation() {
@@ -1082,7 +1100,7 @@ public class MapsActivity extends AppCompatActivity
             public void onClick(DialogInterface arg0, int arg1) {
                 FirebaseAuth.getInstance().signOut();
                 SharedPref.clearSharedPreferences(MapsActivity.this);
-                startActivity(new Intent(MapsActivity.this, LoginActivity.class));
+                startActivity(new Intent(MapsActivity.this, Login.class));
                 finish();
             }
         });
@@ -1502,14 +1520,9 @@ public class MapsActivity extends AppCompatActivity
             @Override
             public void onResponse(JSONObject response) {
                 try{
-                    Log.e("isOnGoingSpots", response + "");
                     if (response.getString("status").equals("success")){
-                        String locations = response.getString("location");
-                        JSONArray jsonArray = new JSONArray(locations);
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            JSONObject locationObj = jsonArray.getJSONObject(i);
-                        }
-
+                        String lidBought = response.getJSONArray("onGoingTransactions").getJSONObject(0).getString("lid");
+                        getFirebaseData(lidBought);
                         progressBar.setVisibility(View.GONE);
                     }
                     else if (response.getString("status").equals("fail")){
@@ -1518,6 +1531,8 @@ public class MapsActivity extends AppCompatActivity
                     }
                 }
                 catch (JSONException e){
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(MapsActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
                 }
             }
@@ -1525,12 +1540,44 @@ public class MapsActivity extends AppCompatActivity
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(MapsActivity.this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
-                error.printStackTrace();
+                Toast.makeText(MapsActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
             }
         }
         );
         queue.add(jsonObjectRequest);
+    }
+
+    private void getFirebaseData(String lidBought){
+        databaseReference = FirebaseDatabase.getInstance().getReference().child("tracking").child(lidBought);
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds: dataSnapshot.getChildren()){
+                    BuyerTracker buyerTracker = new BuyerTracker();
+                    buyerTracker.setKey(ds.getKey());
+                    buyerTracker.setLat(ds.getValue(BuyerTracker.class).getLat());
+                    buyerTracker.setLng(ds.getValue(BuyerTracker.class).getLng());
+
+                    Log.e("k", "key: " +buyerTracker.getKey() + "\n"+buyerTracker.getLat() + " " + buyerTracker.getLng());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void goToViewOffers(String lid){
+        Bundle bundle = new Bundle();
+        bundle.putString("lid", lid);
+        ViewOffers viewOffers = new ViewOffers();
+        viewOffers.setArguments(bundle);
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.drawer_layout, viewOffers);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
     }
 
     public void setSnackBar(String snackBarText){

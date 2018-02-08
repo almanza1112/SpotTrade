@@ -28,12 +28,12 @@ public class MyFirebaseMessageService extends FirebaseMessagingService {
         Log.e(TAG, "Data Message Body: " + remoteMessage.getData().get("message"));
         String notificationTitle = remoteMessage.getNotification().getTitle();
         String notificationText = remoteMessage.getNotification().getBody();
-        createNotification(notificationTitle, notificationText);
-    }
+        String notificationData = remoteMessage.getData().get("message");
+        //createNotification(notificationTitle, notificationText, notificationData);
 
-
-    public void createNotification( String notificationTitle, String notificationText) {
         Intent resultIntent = new Intent(this, MapsActivity.class);
+        resultIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        resultIntent.putExtra("message", notificationData);
         // Because clicking the notification opens a new ("special") activity, there's
         // no need to create an artificial back stack.
         PendingIntent resultPendingIntent =
@@ -41,7 +41,7 @@ public class MyFirebaseMessageService extends FirebaseMessagingService {
                         this,
                         0,
                         resultIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT
+                        PendingIntent.FLAG_ONE_SHOT
                 );
 
         //Get an instance of NotificationManager//
@@ -66,7 +66,7 @@ public class MyFirebaseMessageService extends FirebaseMessagingService {
         the system will update this existing notification, rather than create a new one.
         In this example, the notification’s ID is 001
         */
-        mNotificationManager.notify(001, mBuilder.build());
+        mNotificationManager.notify(0, mBuilder.build());
     }
 
 }
