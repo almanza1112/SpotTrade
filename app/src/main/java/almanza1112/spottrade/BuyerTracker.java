@@ -4,11 +4,12 @@ package almanza1112.spottrade;
  * Created by almanza1112 on 10/27/17.
  */
 
-public class BuyerTracker {
+class BuyerTracker {
 
-    private String lat, lng, key;
+    private String key;
+    private double lat, lng;
 
-    public BuyerTracker(){
+    BuyerTracker(){
 
     }
 
@@ -20,19 +21,19 @@ public class BuyerTracker {
         return key;
     }
 
-    public String getLat() {
+    double getLat() {
         return lat;
     }
 
-    public void setLat(String lat) {
+    void setLat(double lat) {
         this.lat = lat;
     }
 
-    public String getLng() {
+    double getLng() {
         return lng;
     }
 
-    public void setLng(String lng) {
+    void setLng(double lng) {
         this.lng = lng;
     }
 }

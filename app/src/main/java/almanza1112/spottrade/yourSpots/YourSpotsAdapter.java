@@ -34,8 +34,9 @@ class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerVie
     private List<String> description;
     YourSpotsAdapter(
             Activity activity, List<String> lid, List<String> locationName,
-            List<String> locationAddress, List<String> type, List<Integer> quantity, List<String> price,
-            List<Boolean> offerAllowed, List<Integer> offerTotal, List<String> offerTotalString, List<String> description){
+            List<String> locationAddress, List<String> type, List<Integer> quantity,
+            List<String> price, List<Boolean> offerAllowed, List<Integer> offerTotal,
+            List<String> offerTotalString, List<String> description){
         this.activity = activity;
         this.lid = lid;
         this.locationName = locationName;

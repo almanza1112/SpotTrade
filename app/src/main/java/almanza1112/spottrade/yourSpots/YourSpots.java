@@ -173,6 +173,7 @@ public class YourSpots extends Fragment {
                             price.add(locationObj.getString("price"));
                             offerAllowed.add(locationObj.getBoolean("offerAllowed"));
                             description.add(locationObj.getString("description"));
+
                             if (locationObj.getBoolean("offerAllowed")){
                                 int offersTotal = locationObj.getInt("offersTotal");
                                 offerTotal.add(offersTotal);
@@ -190,7 +191,9 @@ public class YourSpots extends Fragment {
                                 offerTotalString.add("0");
                             }
                         }
-                        adapter = new YourSpotsAdapter(getActivity(), lid, locationName, locationAddress, type, quantity, price, offerAllowed, offerTotal, offerTotalString, description);
+                        adapter = new YourSpotsAdapter(getActivity(), lid, locationName,
+                                locationAddress, type, quantity, price, offerAllowed, offerTotal,
+                                offerTotalString, description);
                         layoutManager = new LinearLayoutManager(getActivity());
                         rvYourSpots.setLayoutManager(layoutManager);
                         rvYourSpots.setAdapter(adapter);

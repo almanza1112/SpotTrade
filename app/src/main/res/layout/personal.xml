@@ -62,7 +62,7 @@
                 android:thicknessRatio="1.9">
                 <ImageView
                     android:id="@+id/ivProfilePhoto"
-                    android:layout_height="200dp"
+                    android:layout_height="180dp"
                     android:layout_width="match_parent"
                     android:layout_alignParentTop="true"
                     android:layout_centerHorizontal="true"
@@ -208,6 +208,7 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/rlPassword"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/rlEmail"
@@ -243,6 +244,51 @@
             android:textColor="@android:color/darker_gray"/>
         <ImageView
             android:id="@+id/ivEditPassword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:paddingLeft="@dimen/contentPadding"
+            android:src="@mipmap/ic_account_edit_grey600_24dp"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rlPhoneNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/rlPassword"
+        android:layout_margin="@dimen/contentPadding">
+        <ImageView
+            android:id="@+id/ivPhoneIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/contentPadding"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:src="@mipmap/ic_phone_grey600_24dp"/>
+        <TextView
+            android:id="@+id/tvPhoneNumberText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="@dimen/contentPadding"
+            android:layout_toRightOf="@+id/ivPhoneIcon"
+            android:layout_toLeftOf="@+id/ivEditPhoneNumber"
+            android:textAppearance="@android:style/TextAppearance.Small"
+            android:textColor="@android:color/black"
+            android:text="@string/Phone_Number"/>
+        <TextView
+            android:id="@+id/tvPhoneNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/contentPadding"
+            android:layout_below="@+id/tvPhoneNumberText"
+            android:layout_toRightOf="@+id/ivPhoneIcon"
+            android:layout_toLeftOf="@+id/ivEditPhoneNumber"
+            android:textAppearance="@android:style/TextAppearance.Small"
+            android:textColor="@android:color/darker_gray"/>
+        <ImageView
+            android:id="@+id/ivEditPhoneNumber"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"

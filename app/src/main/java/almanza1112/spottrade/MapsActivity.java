@@ -6,8 +6,11 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,7 +19,6 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.app.Fragment;
@@ -39,6 +41,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.Interpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -67,6 +71,7 @@ import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -94,7 +99,7 @@ import almanza1112.spottrade.account.payment.AddPaymentMethod;
 import almanza1112.spottrade.account.payment.Payment;
 import almanza1112.spottrade.account.history.History;
 import almanza1112.spottrade.account.personal.Personal;
-import almanza1112.spottrade.login.Login;
+import almanza1112.spottrade.login.LoginActivity;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 import almanza1112.spottrade.nonActivity.tracking.TrackerService;
@@ -145,6 +150,7 @@ public class MapsActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_activity);
+
         CardView cvToolbar = (CardView) findViewById(R.id.cvToolbar);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
@@ -153,6 +159,15 @@ public class MapsActivity extends AppCompatActivity
 
         pd = new ProgressDialog(this);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
+
+        if (SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)) == null){
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        }
+        else {
+            checkOnGoingTransactions();
+        }
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         ImageView myLocationButton = (ImageView) mapFragment.getView().findViewById(2);
@@ -164,9 +179,23 @@ public class MapsActivity extends AppCompatActivity
             String pendingData = getIntent().getExtras().getString("message");
             JSONObject dataObj = new JSONObject(pendingData);
             String type = dataObj.getString("type");
+            Log.e("message", pendingData);
             switch (type){
-                case "offer":
+                case "offerReceived":
                     goToViewOffers(dataObj.getString("lid"));
+                    break;
+
+                case "offerDeclined":
+                    LatLng locash = new LatLng(dataObj.getDouble("latitude"), dataObj.getDouble("longitude"));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(locash, 16));
+                    break;
+
+                case "offerAccepted":
+                    SharedPref.setSharedPreferences(this, getResources().getString(R.string.bought_lid), dataObj.getString("lid"));
+                    SharedPref.setSharedPreferences(this, getResources().getString(R.string.bought_lat), dataObj.getString("latitude"));
+                    SharedPref.setSharedPreferences(this, getResources().getString(R.string.bought_lng), dataObj.getString("longitude"));
+                    SharedPref.setSharedPreferences(this, getResources().getString(R.string.bought_seller_is_logged_in_user), String.valueOf(true));
+                    startTrackingService();
                     break;
 
                 case "buy":
@@ -229,12 +258,6 @@ public class MapsActivity extends AppCompatActivity
         tvLoggedInFullName.setText(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_first_name)) + " " + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_last_name)));
         final TextView tvLoggedInEmail = (TextView) navHeaderView.findViewById(R.id.tvLoggedInEmail);
         tvLoggedInEmail.setText(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_email)));
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-
     }
 
     @Override
@@ -555,12 +578,6 @@ public class MapsActivity extends AppCompatActivity
         mMap.getUiSettings().setMapToolbarEnabled(false); //disables the bottom right buttons that appear when you click on a marker
         mMap.getUiSettings().setRotateGesturesEnabled(false);
         mMap.setOnMarkerClickListener(this);
-
-        isOngoingSpots();
-        if (isServiceRunning(TrackerService.class)){
-            // If the service class is running, then set up the map so that you will see the current transaction
-
-        }
     }
 
     @Override
@@ -719,7 +736,7 @@ public class MapsActivity extends AppCompatActivity
     }
 
     @Override
-    public void onOfferAccepted(String lid, String id) {
+    public void onOfferAccepted(final String lid, String id, final String latitude, final String longitude, String profilePhotoUrl) {
         // Offer got accepted and now is going to redirect
         Map<String, String> latLng = new HashMap<>();
         latLng.put("lat", "null");
@@ -729,12 +746,13 @@ public class MapsActivity extends AppCompatActivity
         databaseReference.child(lid).child(SharedPref.getSharedPreferences(MapsActivity.this, getResources().getString(R.string.logged_in_user_id))).setValue(latLng, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                if (databaseError == null){
-                    // There is no error
+                if (databaseError == null){ // There is no error
+                    SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.bought_lid), lid);
+                    SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.bought_lat), latitude);
+                    SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.bought_lng), longitude);
                     startTrackingService();
                 }
-                else {
-                    // There is an error
+                else {// There is an error
 
                 }
             }
@@ -1100,7 +1118,7 @@ public class MapsActivity extends AppCompatActivity
             public void onClick(DialogInterface arg0, int arg1) {
                 FirebaseAuth.getInstance().signOut();
                 SharedPref.clearSharedPreferences(MapsActivity.this);
-                startActivity(new Intent(MapsActivity.this, Login.class));
+                startActivity(new Intent(MapsActivity.this, LoginActivity.class));
                 finish();
             }
         });
@@ -1511,7 +1529,7 @@ public class MapsActivity extends AppCompatActivity
         return false;
     }
 
-    private void isOngoingSpots(){
+    private void checkOnGoingTransactions(){
         progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);
 
@@ -1520,12 +1538,24 @@ public class MapsActivity extends AppCompatActivity
             @Override
             public void onResponse(JSONObject response) {
                 try{
+                    Log.e("onGoing", response + "");
                     if (response.getString("status").equals("success")){
-                        String lidBought = response.getJSONArray("onGoingTransactions").getJSONObject(0).getString("lid");
-                        getFirebaseData(lidBought);
+                        JSONArray jsonArray = new JSONArray(response.getString("onGoingTransactions"));
+                        String lidBought = jsonArray.getJSONObject(0).getString("lid");
+                        Map<String, String> userInfo = new HashMap<>();
+                        List<String> ids = new ArrayList<>();
+                        for (int i = 0; i < jsonArray.length(); i++){
+                            String buyerID = jsonArray.getJSONObject(i).getString("buyerID");
+                            String buyerProfilePhotoUrl = jsonArray.getJSONObject(i).getString("buyerProfilePhotoUrl");
+                            ids.add(buyerID);
+                            //marker = mMap.addMarker(new MarkerOptions().position(locash).title(locationObj.getString("name")));
+                            //marker.setTag(locationObj.getString("_id"));
+                        }
+                        getFirebaseData(lidBought, ids);
                         progressBar.setVisibility(View.GONE);
+                        startTrackingService();
                     }
-                    else if (response.getString("status").equals("fail")){
+                    else if (response.getString("status").equals("fail") && response.getString("reason").equals("no onGoingTransactions")){
                         getAvailableSpots(typeSelected);
                         progressBar.setVisibility(View.GONE);
                     }
@@ -1533,7 +1563,6 @@ public class MapsActivity extends AppCompatActivity
                 catch (JSONException e){
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(MapsActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
                 }
             }
         }, new Response.ErrorListener() {
@@ -1547,16 +1576,30 @@ public class MapsActivity extends AppCompatActivity
         queue.add(jsonObjectRequest);
     }
 
-    private void getFirebaseData(String lidBought){
+    boolean firstTime;
+    private void getFirebaseData(String lidBought, List<String> ids){
+        Log.e("lidBought", lidBought);
         databaseReference = FirebaseDatabase.getInstance().getReference().child("tracking").child(lidBought);
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.e("dataSnapshot", dataSnapshot.getChildrenCount() + "\n" + dataSnapshot);
                 for (DataSnapshot ds: dataSnapshot.getChildren()){
+
                     BuyerTracker buyerTracker = new BuyerTracker();
                     buyerTracker.setKey(ds.getKey());
                     buyerTracker.setLat(ds.getValue(BuyerTracker.class).getLat());
                     buyerTracker.setLng(ds.getValue(BuyerTracker.class).getLng());
+
+                    LatLng locash = new LatLng(buyerTracker.getLat(), buyerTracker.getLng());
+                    if (!firstTime){
+                        marker = mMap.addMarker(new MarkerOptions().position(locash).title("Something"));
+                        //marker.setTag(locationObj.getString("_id"));
+                        firstTime = true;
+                    }
+                    else {
+                        animateMarker(marker, locash, false);
+                    }
 
                     Log.e("k", "key: " +buyerTracker.getKey() + "\n"+buyerTracker.getLat() + " " + buyerTracker.getLng());
                 }
@@ -1583,5 +1626,42 @@ public class MapsActivity extends AppCompatActivity
     public void setSnackBar(String snackBarText){
         Snackbar snackbar = Snackbar.make(findViewById(R.id.coordinatorLayout), snackBarText, Snackbar.LENGTH_SHORT);
         snackbar.show();
+    }
+
+    public void animateMarker(final Marker marker, final LatLng toPosition,
+                              final boolean hideMarker) {
+        final Handler handler = new Handler();
+        final long start = SystemClock.uptimeMillis();
+        Projection proj = mMap.getProjection();
+        Point startPoint = proj.toScreenLocation(marker.getPosition());
+        final LatLng startLatLng = proj.fromScreenLocation(startPoint);
+        final long duration = 500;
+
+        final Interpolator interpolator = new LinearInterpolator();
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                long elapsed = SystemClock.uptimeMillis() - start;
+                float t = interpolator.getInterpolation((float) elapsed
+                        / duration);
+                double lng = t * toPosition.longitude + (1 - t)
+                        * startLatLng.longitude;
+                double lat = t * toPosition.latitude + (1 - t)
+                        * startLatLng.latitude;
+                marker.setPosition(new LatLng(lat, lng));
+
+                if (t < 1.0) {
+                    // Post again 16ms later.
+                    handler.postDelayed(this, 16);
+                } else {
+                    if (hideMarker) {
+                        marker.setVisible(false);
+                    } else {
+                        marker.setVisible(true);
+                    }
+                }
+            }
+        });
     }
 }

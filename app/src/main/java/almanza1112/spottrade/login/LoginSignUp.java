@@ -30,10 +30,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -50,6 +48,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import almanza1112.spottrade.MapsActivity;
 import almanza1112.spottrade.R;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.RegularExpression;
@@ -168,8 +167,8 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                                 Manifest.permission.READ_EXTERNAL_STORAGE)
                                 != PackageManager.PERMISSION_GRANTED){
 
-                        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                                READ_EXTERNAL_STORAGE_PERMISSION);
+                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            READ_EXTERNAL_STORAGE_PERMISSION);
                     /*
                     // Should we show an explanation?
                     if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
@@ -179,7 +178,6 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                         // sees the explanation, try again to request the permission.
                     } else {
                         // No explanation needed, we can request the permission.
-
                         // READ_EXTERNAL_STORAGE_PERMISSION is an
                         // app-defined int constant. The callback method gets the
                         // result of the request.
@@ -350,23 +348,25 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_total_ratings), totalRatings);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_overall_rating), overallRating);
 
-
                                 firebaseAuth.createUserWithEmailAndPassword(response.getString("email"), response.getString("password")).addOnFailureListener(new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
+                                        e.printStackTrace();
                                         Toast.makeText(getActivity(), getResources().getString(R.string.Error_some_features_may_be_unavailable), Toast.LENGTH_SHORT).show();
+                                        startActivity(new Intent(getActivity(), MapsActivity.class));
+                                        getActivity().finish();
                                     }
-                                }).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                }).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                                     @Override
-                                    public void onComplete(@NonNull Task<AuthResult> task) {
+                                    public void onSuccess(AuthResult authResult) {
                                         // If uri is not empty then that means that user wants to upload image
                                         if (uri != null) {
                                             uploadImageToFirebase(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)));
                                         }
                                         else{
                                             progressDialog.dismiss();
-                                            //TODO: implement interface to lead to MapsActivity
-                                            //startActivity(new Intent(getActivity(), MapsActivity.class));
+                                            startActivity(new Intent(getActivity(), MapsActivity.class));
+                                            getActivity().finish();
                                         }
                                     }
                                 });
@@ -380,7 +380,7 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                             }
                         }
                         catch (JSONException e) {
-                            e.printStackTrace();
+                            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                         }
                     }
                 }, new Response.ErrorListener() {
@@ -390,7 +390,7 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                         // TODO Auto-generated method stub
                         error.printStackTrace();
                         progressDialog.dismiss();
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 }){
             @Override
@@ -416,7 +416,7 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url));
+                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), downloadUrl.toString());
                 uploadDownloadUrl(downloadUrl.toString());
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -425,9 +425,7 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
                 progressDialog.dismiss();
                 e.printStackTrace();
                 Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
-                // TODO: implement interface to lead to MapsActivity
-
-                //startActivity(new Intent(getActivity(), MapsActivity.class));
+                startActivity(new Intent(getActivity(), MapsActivity.class));
             }
         });
     }
@@ -446,9 +444,9 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
+                Log.e("uploadDownloadUrl", response +  "");
                 progressDialog.dismiss();
-                // TODO: implement interface to lead to MapsActivity
-                //startActivity(new Intent(getActivity(), MapsActivity.class));
+                startActivity(new Intent(getActivity(), MapsActivity.class));
             }
         }, new Response.ErrorListener() {
             @Override

@@ -22,6 +22,7 @@
     <string name="bought_lng">bought_lng</string>
     <string name="bought_address">bought_address</string>
     <string name="bought_name">bought_name</string>
+    <string name="bought_seller_is_logged_in_user">bought_seller_is_logged_in_user</string>
 
     <string name="payment_method_added">payment_method_added</string>
 

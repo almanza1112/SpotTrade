@@ -52,6 +52,7 @@ public class ViewOffers extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.view_offers, container, false);
+
         lid = getArguments().getString("lid");
 
         final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
@@ -102,18 +103,18 @@ public class ViewOffers extends Fragment {
     OfferAcceptedListener offerAcceptedListener = onOfferAcceptedMethodCallback;
 
     public interface OfferAcceptedListener{
-        void onOfferAccepted(String lid, String id);
+        void onOfferAccepted(String lid, String id, String latitude, String longitude, String profilePhotoUrl);
     }
 
     public static OfferAcceptedListener onOfferAcceptedMethodCallback = new OfferAcceptedListener() {
         @Override
-        public void onOfferAccepted(String lid, String id) {
+        public void onOfferAccepted(String lid, String id, String latitude, String longitude, String profilePhotoUrl) {
 
         }
     };
 
-    public void offerAccepted(String lid, String id){
-        offerAcceptedListener.onOfferAccepted(lid, id);
+    public void offerAccepted(String lid, String id, String latitude, String longitude, String profilePhotoUrl){
+        offerAcceptedListener.onOfferAccepted(lid, id, latitude, longitude, profilePhotoUrl);
         getFragmentManager().popBackStack();
         getFragmentManager().popBackStack();
         getFragmentManager().popBackStack();
@@ -129,6 +130,8 @@ public class ViewOffers extends Fragment {
             public void onResponse(JSONObject response) {
                 try{
                     if (response.getString("status").equals("success")){
+                        String latitude = response.getString("latitude");
+                        String longitude = response.getString("longitude");
                         List<String> _id = new ArrayList<>();
                         List<String> userID = new ArrayList<>();
                         List<String> firstName = new ArrayList<>();
@@ -162,7 +165,7 @@ public class ViewOffers extends Fragment {
                             dateOffered.add(offersArr.getJSONObject(i).getLong("offerDate"));
                         }
 
-                        adapter = new OffersAdapter(    ViewOffers.this, getActivity(), lid, _id, userID, firstName, profilePhotoUrl,
+                        adapter = new OffersAdapter(    ViewOffers.this, getActivity(), lid, latitude, longitude, _id, userID, firstName, profilePhotoUrl,
                                                         priceOffered, quantityOffered, totalOfferPrice,
                                                         dateOffered);
                         layoutManager = new LinearLayoutManager(getActivity());

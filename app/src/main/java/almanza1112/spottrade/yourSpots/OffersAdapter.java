@@ -36,6 +36,8 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
     private ViewOffers viewOffers;
     private Activity activity;
     private String lid;
+    private String latitude;
+    private String longitude;
     private List<String> _id;
     private List<String> userID;
     private List<String> firstName;
@@ -45,13 +47,16 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
     private List<String> totalOfferPrice;
     private List<Long> dateOffered;
 
-    OffersAdapter(  ViewOffers viewOffers, Activity activity, String lid, List<String> _id,
-                    List<String> userID, List<String> firstName, List<String> profilePhotoUrl,
-                    List<String> priceOffered, List<Integer> quantityOffered,
-                    List<String> totalOfferPrice, List<Long> dateOffered){
+    OffersAdapter(  ViewOffers viewOffers, Activity activity, String lid, String latitude,
+                    String longitude, List<String> _id, List<String> userID, List<String> firstName,
+                    List<String> profilePhotoUrl, List<String> priceOffered,
+                    List<Integer> quantityOffered, List<String> totalOfferPrice,
+                    List<Long> dateOffered){
         this.viewOffers = viewOffers;
         this.activity = activity;
         this.lid = lid;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this._id = _id;
         this.userID = userID;
         this.firstName = firstName;
@@ -188,7 +193,7 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
                 try{
                     if (response.getString("status").equals("success")){
                         if (response.getBoolean("isComplete") || _id.size() == 1){
-                            viewOffers.offerAccepted(lid, id);
+                            viewOffers.offerAccepted(lid, id, latitude, longitude, profilePhotoUrl.get(position));
                         }
                         else{
                             viewOffers.setSnackbar(activity.getResources().getString(R.string.Offer_accepted));

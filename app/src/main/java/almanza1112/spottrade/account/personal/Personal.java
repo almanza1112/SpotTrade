@@ -63,7 +63,7 @@ import static android.app.Activity.RESULT_OK;
  */
 
 public class Personal extends Fragment implements View.OnClickListener {
-    private TextView tvFistName, tvLastName, tvEmail;
+    private TextView tvFistName, tvLastName, tvEmail, tvPhoneNumber;
     private ImageView ivProfilePhoto;
     private ProgressBar progressBar;
     private Pattern pattern = Pattern.compile(RegularExpression.EMAIL_PATTERN);
@@ -112,6 +112,10 @@ public class Personal extends Fragment implements View.OnClickListener {
         tvPassword.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password)));
         final ImageView ivEditPassword = (ImageView) view.findViewById(R.id.ivEditPassword);
         ivEditPassword.setOnClickListener(this);
+        tvPhoneNumber = (TextView) view.findViewById(R.id.tvPhoneNumber);
+        setPhoneNumber();
+        final ImageView ivEditPhoneNumber = (ImageView) view.findViewById(R.id.ivEditPhoneNumber);
+        ivEditPhoneNumber.setOnClickListener(this);
 
         AppCompatActivity actionBar = (AppCompatActivity) getActivity();
         actionBar.setSupportActionBar(toolbar);
@@ -168,6 +172,10 @@ public class Personal extends Fragment implements View.OnClickListener {
                 fragmentTransaction.replace(R.id.personal_activity, changePassword);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
+                break;
+
+            case R.id.tvPhoneNumber:
+                ADupdateField("phoneNumber");
                 break;
         }
     }
@@ -442,6 +450,14 @@ public class Personal extends Fragment implements View.OnClickListener {
                 tietUpdate.setInputType(InputType.TYPE_CLASS_TEXT |
                         InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
                 break;
+
+            case "phoneNumber":
+                ivIcon.setImageDrawable(getResources().getDrawable(R.mipmap.ic_phone_grey600_24dp));
+                title += " " + getResources().getString(R.string.Phone_Number);
+                tietUpdate.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email)));
+                tietUpdate.setInputType(InputType.TYPE_CLASS_PHONE |
+                        InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+                break;
         }
         tietUpdate.setSelection(tietUpdate.getText().length());
         alertDialogBuilder.setTitle(title);
@@ -491,6 +507,9 @@ public class Personal extends Fragment implements View.OnClickListener {
                             tilUpdate.setError(getResources().getString(R.string.Invalid_email_format));
                         }
                         break;
+                    case "phoneNumber":
+                        // TODO: need to verify phone number
+                        break;
                 }
                 if (wantToCloseDialog) {
                     alertDialog.dismiss();
@@ -536,6 +555,12 @@ public class Personal extends Fragment implements View.OnClickListener {
                                 snackBarText = getResources().getString(R.string.Email) + " " + getResources().getString(R.string.updated);
                                 tvEmail.setText(str);
                                 break;
+                            case "phoneNumber":
+                                SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_phone_number));
+                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_phone_number), str);
+                                snackBarText = getResources().getString(R.string.Email) + " " + getResources().getString(R.string.updated);
+                                tvPhoneNumber.setText(str);
+                                break;
                         }
                         setSnackBar(snackBarText);
                     } else {
@@ -555,6 +580,15 @@ public class Personal extends Fragment implements View.OnClickListener {
         }
         );
         queue.add(jsonObjectRequest);
+    }
+
+    private void setPhoneNumber(){
+        if (SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_phone_number)).isEmpty()){
+            tvPhoneNumber.setText("--------------");
+        }
+        else{
+            tvPhoneNumber.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_phone_number)));
+        }
     }
 
     private boolean validateEmail(String email) {
