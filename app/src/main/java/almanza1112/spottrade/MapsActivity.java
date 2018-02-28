@@ -59,6 +59,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.facebook.login.LoginManager;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -108,12 +111,12 @@ import almanza1112.spottrade.yourSpots.YourSpots;
 
 public class MapsActivity extends AppCompatActivity
         implements View.OnClickListener,
-            OnMapReadyCallback,
-            GoogleMap.OnMarkerClickListener,
-            NavigationView.OnNavigationItemSelectedListener,
-            AddPaymentMethod.PaymentMethodAddedListener,
-            AddCreditDebitCard.CreditCardAddedListener,
-            ViewOffers.OfferAcceptedListener{
+        OnMapReadyCallback,
+        GoogleMap.OnMarkerClickListener,
+        NavigationView.OnNavigationItemSelectedListener,
+        AddPaymentMethod.PaymentMethodAddedListener,
+        AddCreditDebitCard.CreditCardAddedListener,
+        ViewOffers.OfferAcceptedListener {
     private ProgressBar progressBar;
     private GoogleMap mMap;
     Location myLocation;
@@ -123,17 +126,17 @@ public class MapsActivity extends AppCompatActivity
     LatLng currentLocation, spotLocation;
     private ViewGroup hiddenPanel;
     private Animation bottomUp, bottomDown;
-    private TextView    tvFullName, tvUserRating, tvTotalRating,
-                        tvLocationName, tvLocationAddress, tvTransaction,
-                        tvDescription, tvQuantity;
+    private TextView tvFullName, tvUserRating, tvTotalRating,
+            tvLocationName, tvLocationAddress, tvTransaction,
+            tvDescription, tvQuantity;
     private ImageView ivSellerProfilePhoto;
     private Button bBuyNow, bMakeOffer, bCancelOffer, bDelete;
     private Marker marker;
     private GoogleApiClient mGoogleApiClient;
 
     private boolean isMarkerClicked;
-    private double latitude =0, longitude=0;
-    private String locationName="empty", locationAddress="empty";
+    private double latitude = 0, longitude = 0;
+    private String locationName = "empty", locationAddress = "empty";
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private int SPOT_CODE = 1;
     private int quantity;
@@ -159,19 +162,22 @@ public class MapsActivity extends AppCompatActivity
 
         pd = new ProgressDialog(this);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-
-        if (SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)) == null){
+        // Check for existing Google Sign In account, if the user is already signed in
+        // the GoogleSignInAccount will be non-null.
+        //GoogleSignInAccount googleSignInAccount = GoogleSignIn.getLastSignedInAccount(this);
+        if (SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)) == null) {
+            /* TODO: add google + facebook login check as well
+            */
             startActivity(new Intent(this, LoginActivity.class));
             finish();
-        }
-        else {
-            checkOnGoingTransactions();
+        } else {
+            //checkOnGoingTransactions();
         }
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        ImageView myLocationButton = (ImageView) mapFragment.getView().findViewById(2);
-        myLocationButton.setPadding(0, 100, 0, 0);
+        //ImageView myLocationButton = (ImageView) mapFragment.getView().findViewById(2);
+        //myLocationButton.setPadding(0, 100, 0, 0);
         mapFragment.getMapAsync(this);
         setSupportActionBar(toolbar);
 
@@ -180,7 +186,7 @@ public class MapsActivity extends AppCompatActivity
             JSONObject dataObj = new JSONObject(pendingData);
             String type = dataObj.getString("type");
             Log.e("message", pendingData);
-            switch (type){
+            switch (type) {
                 case "offerReceived":
                     goToViewOffers(dataObj.getString("lid"));
                     break;
@@ -203,13 +209,13 @@ public class MapsActivity extends AppCompatActivity
                     break;
             }
         }
-        catch (JSONException | NullPointerException e ){
+        catch (JSONException | NullPointerException e) {
             e.printStackTrace();
         }
 
         bottomUp = AnimationUtils.loadAnimation(this, R.anim.bottom_up);
         bottomDown = AnimationUtils.loadAnimation(this, R.anim.bottom_down);
-        hiddenPanel = (ViewGroup)findViewById(R.id.hidden_panel);
+        hiddenPanel = (ViewGroup) findViewById(R.id.hidden_panel);
 
         tvQuantity = (TextView) findViewById(R.id.tvQuantity);
         ivSellerProfilePhoto = (ImageView) findViewById(R.id.ivProfilePhoto);
@@ -236,7 +242,7 @@ public class MapsActivity extends AppCompatActivity
         fabSpot.setOnClickListener(this);
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close){
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
@@ -251,7 +257,7 @@ public class MapsActivity extends AppCompatActivity
 
         View navHeaderView = navigationView.getHeaderView(0);
         final ImageView ivProfilePhoto = (ImageView) navHeaderView.findViewById(R.id.ivProfilePhoto);
-        if (SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_photo_url)) != null){
+        if (SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_photo_url)) != null) {
             Picasso.with(this).load(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_photo_url))).fit().centerCrop().into(ivProfilePhoto);
         }
         final TextView tvLoggedInFullName = (TextView) navHeaderView.findViewById(R.id.tvLoggedInFullName);
@@ -262,7 +268,7 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.fabMyLocation:
                 getMyLocation();
                 break;
@@ -288,7 +294,7 @@ public class MapsActivity extends AppCompatActivity
                 card validation etc.
                  */
 
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
                         ContextCompat.checkSelfPermission(
                                 this,
                                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -297,12 +303,10 @@ public class MapsActivity extends AppCompatActivity
                     ActivityCompat.requestPermissions(this,
                             new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                             ACCESS_FINE_LOCATION_PERMISSION_TRACKING);
-                }
-                else {
-                    if (type.equals("Sell")){
+                } else {
+                    if (type.equals("Sell")) {
                         validatePaymentMethod();
-                    }
-                    else if (type.equals("Request")){
+                    } else if (type.equals("Request")) {
                         /*
                          * TODO
                          * need to validate received payment form, PAYPAL!
@@ -313,10 +317,9 @@ public class MapsActivity extends AppCompatActivity
                 break;
 
             case R.id.bMakeOffer:
-                if (quantity == 1){
+                if (quantity == 1) {
                     ADmakeOfferPrice(false, 1);
-                }
-                else {
+                } else {
                     ADmakeOfferQuantity();
                 }
                 break;
@@ -332,9 +335,9 @@ public class MapsActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         Fragment fragment = null;
 
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.nav_home:
-                if (getFragmentManager().getBackStackEntryCount() > 0){
+                if (getFragmentManager().getBackStackEntryCount() > 0) {
                     getFragmentManager().popBackStack();
                 }
                 refreshMap();
@@ -359,7 +362,7 @@ public class MapsActivity extends AppCompatActivity
                 break;
         }
 
-        if (fragment != null){
+        if (fragment != null) {
             FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.drawer_layout, fragment);
             fragmentTransaction.addToBackStack(null);
@@ -389,15 +392,13 @@ public class MapsActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case R.id.search:
                 try {
-                    Intent intent =
-                            new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
-                                    .build(this);
+                    Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN).build(this);
                     startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
-                } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
+                }
+                catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
                     e.printStackTrace();
                     Toast.makeText(this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
                 }
-
                 break;
 
             case android.R.id.home:
@@ -405,40 +406,7 @@ public class MapsActivity extends AppCompatActivity
                 break;
 
             case R.id.filterMaps:
-                final CharSequence[] items = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request), getResources().getString(R.string.All)};
-                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-                alertDialogBuilder.setTitle(getResources().getString(R.string.Filter) + " " + getResources().getString(R.string.Spots));
-                alertDialogBuilder.setSingleChoiceItems(items, pos[0], new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        pos[0] = which;
-                    }
-                });
-                alertDialogBuilder.setPositiveButton(R.string.Apply, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String type;
-                        if (pos[0] == 0){
-                            type = "Sell";
-                        }
-                        else if (pos[0] == 1){
-                            type = "Request";
-                        }
-                        else {
-                            type = "all";
-                        }
-                        typeSelected = type;
-                        getAvailableSpots(type);
-                    }
-                });
-                alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-                final AlertDialog alertDialog = alertDialogBuilder.create();
-                alertDialog.show();
+                ADfilterMaps();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -450,17 +418,14 @@ public class MapsActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        }
-        else {
-            if (count > 0){
+        } else {
+            if (count > 0) {
                 getFragmentManager().popBackStack();
-            }
-            else if (isMarkerClicked){
+            } else if (isMarkerClicked) {
                 isMarkerClicked = false;
                 hiddenPanel.startAnimation(bottomDown);
                 hiddenPanel.setVisibility(View.INVISIBLE);
-            }
-            else {
+            } else {
                 super.onBackPressed();
             }
         }
@@ -469,8 +434,8 @@ public class MapsActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == SPOT_CODE){
-            if (resultCode == RESULT_OK){
+        if (requestCode == SPOT_CODE) {
+            if (resultCode == RESULT_OK) {
                 latitude = Double.valueOf(data.getStringExtra("latitude"));
                 longitude = Double.valueOf(data.getStringExtra("longitude"));
                 String name = data.getStringExtra("name");
@@ -480,8 +445,7 @@ public class MapsActivity extends AppCompatActivity
                 marker = mMap.addMarker(new MarkerOptions().position(locash).title(name));
                 marker.setTag(id);
             }
-        }
-        else if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
+        } else if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 Place place = PlaceAutocomplete.getPlace(this, data);
                 latitude = place.getLatLng().latitude;
@@ -510,6 +474,7 @@ public class MapsActivity extends AppCompatActivity
 
     String provider;
     LocationManager locMan;
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -541,7 +506,7 @@ public class MapsActivity extends AppCompatActivity
 
         myLocation = null;
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
                 ContextCompat.checkSelfPermission(
                         this,
                         Manifest.permission.ACCESS_FINE_LOCATION)
@@ -550,8 +515,7 @@ public class MapsActivity extends AppCompatActivity
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     ACCESS_FINE_LOCATION_PERMISSION_MAP);
-        }
-        else {
+        } else {
             // Get Current Location
             myLocation = locationManager.getLastKnownLocation(provider);
             mMap.setMyLocationEnabled(true);
@@ -561,8 +525,7 @@ public class MapsActivity extends AppCompatActivity
             try {
                 latitude = myLocation.getLatitude();
                 longitude = myLocation.getLongitude();
-            }
-            catch (NullPointerException e){
+            } catch (NullPointerException e) {
                 e.printStackTrace();
             }
 
@@ -590,6 +553,16 @@ public class MapsActivity extends AppCompatActivity
                 LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 Criteria criteria = new Criteria();
                 String provider = locationManager.getBestProvider(criteria, true);
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
                 myLocation = locationManager.getLastKnownLocation(provider);
                 mMap.setMyLocationEnabled(true);
                 double latitude = 0;
@@ -597,29 +570,24 @@ public class MapsActivity extends AppCompatActivity
                 try {
                     latitude = myLocation.getLatitude();
                     longitude = myLocation.getLongitude();
-                }
-                catch (NullPointerException e){
+                } catch (NullPointerException e) {
                     e.printStackTrace();
                 }
                 currentLocation = new LatLng(latitude, longitude);
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
-            }
-            else {
+            } else {
                 // permission denied, boo! Disable the
                 // functionality that depends on this permission.
                 Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
             }
-        }
-        else if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_TRACKING){
+        } else if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_TRACKING) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (type.equals("Sell")){
+                if (type.equals("Sell")) {
                     validatePaymentMethod();
-                }
-                else if (type.equals("Request")){
+                } else if (type.equals("Request")) {
                     transactionBuyNow(1);
                 }
-            }
-            else {
+            } else {
                 Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
             }
         }
@@ -641,7 +609,7 @@ public class MapsActivity extends AppCompatActivity
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/" + marker.getTag() + "?user=" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                try{
+                try {
                     Log.e("onMarker", response + "");
                     lid = response.getString("_id");
                     tvLocationName.setText(response.getString("name"));
@@ -651,40 +619,36 @@ public class MapsActivity extends AppCompatActivity
                     tvLocationAddress.setText(response.getString("address"));
                     JSONObject sellerInfoObj = response.getJSONObject("sellerInfo");
                     tvFullName.setText(sellerInfoObj.getString("sellerFirstName") + " " + sellerInfoObj.getString("sellerLastName"));
-                    tvUserRating.setText(" - "+sellerInfoObj.getString("sellerOverallRating"));
-                    tvTotalRating.setText("("+sellerInfoObj.getString("sellerTotalRatings")+")");
+                    tvUserRating.setText(" - " + sellerInfoObj.getString("sellerOverallRating"));
+                    tvTotalRating.setText("(" + sellerInfoObj.getString("sellerTotalRatings") + ")");
                     tvQuantity.setText(quantity + " " + getResources().getString(R.string.available));
 
-                    if (sellerInfoObj.has("sellerProfilePhotoUrl")){
+                    if (sellerInfoObj.has("sellerProfilePhotoUrl")) {
                         Picasso.with(MapsActivity.this).load(sellerInfoObj.getString("sellerProfilePhotoUrl")).fit().centerCrop().into(ivSellerProfilePhoto);
                     }
                     type = response.getString("type");
                     if (type.equals("Sell")) {
                         tvTransaction.setText(getResources().getString(R.string.Selling) + " - $" + response.getString("price"));
                         bBuyNow.setText(getResources().getString(R.string.Buy_Now));
-                    }
-                    else if (type.equals("Request")) {
+                    } else if (type.equals("Request")) {
                         tvTransaction.setText(getResources().getString(R.string.Requesting) + " - $" + response.getString("price"));
                         bBuyNow.setText(getResources().getString(R.string.Accept));
                     }
 
-                    if (sellerInfoObj.getString("sellerID").equals(SharedPref.getSharedPreferences(MapsActivity.this, getResources().getString(R.string.logged_in_user_id)))){
+                    if (sellerInfoObj.getString("sellerID").equals(SharedPref.getSharedPreferences(MapsActivity.this, getResources().getString(R.string.logged_in_user_id)))) {
                         bMakeOffer.setVisibility(View.GONE);
                         bCancelOffer.setVisibility(View.GONE);
                         bBuyNow.setVisibility(View.GONE);
-                    }
-                    else {
+                    } else {
                         bDelete.setVisibility(View.GONE);
                         if (!response.getBoolean("offerAllowed")) {
                             bMakeOffer.setVisibility(View.GONE);
                             bCancelOffer.setVisibility(View.GONE);
-                        }
-                        else{
-                            if (response.getBoolean("offered")){
+                        } else {
+                            if (response.getBoolean("offered")) {
                                 bMakeOffer.setVisibility(View.GONE);
                                 bCancelOffer.setText(getResources().getString(R.string.Cancel) + " " + getResources().getString(R.string.Offer));
-                            }
-                            else {
+                            } else {
                                 bCancelOffer.setVisibility(View.GONE);
                             }
                         }
@@ -692,16 +656,14 @@ public class MapsActivity extends AppCompatActivity
 
                     if (!response.getString("description").isEmpty()) {
                         tvDescription.setText("\"" + response.getString("description") + "\"");
-                    }
-                    else {
+                    } else {
                         tvDescription.setVisibility(View.GONE);
                     }
 
                     double dLat = Double.valueOf(response.getString("latitude"));
                     double dLong = Double.valueOf(response.getString("longitude"));
                     spotLocation = new LatLng(dLat, dLong);
-                }
-                catch (JSONException e){
+                } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
@@ -723,14 +685,14 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     public void onCreditCardAdded(String result) {
-        if (result.equals("added")){
+        if (result.equals("added")) {
             validatePaymentMethod();
         }
     }
 
     @Override
     public void onPaymentMethodAdded(String result) {
-        if (result.equals("added")){
+        if (result.equals("added")) {
             validatePaymentMethod();
         }
     }
@@ -746,13 +708,12 @@ public class MapsActivity extends AppCompatActivity
         databaseReference.child(lid).child(SharedPref.getSharedPreferences(MapsActivity.this, getResources().getString(R.string.logged_in_user_id))).setValue(latLng, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                if (databaseError == null){ // There is no error
+                if (databaseError == null) { // There is no error
                     SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.bought_lid), lid);
                     SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.bought_lat), latitude);
                     SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.bought_lng), longitude);
                     startTrackingService();
-                }
-                else {// There is an error
+                } else {// There is an error
 
                 }
             }
@@ -774,6 +735,16 @@ public class MapsActivity extends AppCompatActivity
         public void onConnected(Bundle bundle) {
             LocationRequest request = new LocationRequest();
             request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, request, new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
@@ -1117,6 +1088,7 @@ public class MapsActivity extends AppCompatActivity
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
                 FirebaseAuth.getInstance().signOut();
+                LoginManager.getInstance().logOut();
                 SharedPref.clearSharedPreferences(MapsActivity.this);
                 startActivity(new Intent(MapsActivity.this, LoginActivity.class));
                 finish();
@@ -1492,6 +1464,43 @@ public class MapsActivity extends AppCompatActivity
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
                 arg0.dismiss();
+            }
+        });
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    private void ADfilterMaps(){
+        final CharSequence[] items = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request), getResources().getString(R.string.All)};
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(getResources().getString(R.string.Filter) + " " + getResources().getString(R.string.Spots));
+        alertDialogBuilder.setSingleChoiceItems(items, pos[0], new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                pos[0] = which;
+            }
+        });
+        alertDialogBuilder.setPositiveButton(R.string.Apply, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String type;
+                if (pos[0] == 0) {
+                    type = "Sell";
+                }
+                else if (pos[0] == 1) {
+                    type = "Request";
+                }
+                else {
+                    type = "all";
+                }
+                typeSelected = type;
+                getAvailableSpots(type);
+            }
+        });
+        alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
             }
         });
         final AlertDialog alertDialog = alertDialogBuilder.create();

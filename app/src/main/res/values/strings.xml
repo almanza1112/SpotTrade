@@ -5,6 +5,10 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+    <!-- String for Facebook Login -->
+    <string name="facebook_app_id">660255747499055</string>
+    <string name="fb_login_protocol_scheme">fb660255747499055</string>
+
     <!-- Strings for SharedPreferences -->
     <string name="logged_in_user_id">logged_in_user_id</string>
     <string name="logged_in_user_first_name">logged_in_user_first_name</string>
@@ -15,6 +19,10 @@
     <string name="logged_in_user_photo_url">logged_in_user_photo_url</string>
     <string name="logged_in_user_total_ratings">logged_in_user_total_ratings</string>
     <string name="logged_in_user_overall_rating">logged_in_user_overall_rating</string>
+    <string name="logged_in_user_facebookSignUp">logged_in_user_facebook</string>
+    <string name="logged_in_user_googleSignUp">logged_in_user_facebook</string>
+    <string name="logged_in_user_facebookUserID">logged_in_user_facebookUserID</string>
+    <string name="logged_in_user_googleUserID">logged_in_user_googleUserID</string>
 
     <string name="SpotTradePref">SpotTradePref</string>
     <string name="bought_lid">lidBought</string>
@@ -26,14 +34,19 @@
 
     <string name="payment_method_added">payment_method_added</string>
 
+    <string name="facebook_access_token">facebook access token</string>
+    <string name="facebook_user_id">facebook user id</string>
+
     <!-- End of strings for SharedPreferences -->
 
+    <!-- Strings for all the text in SpotTrade -->
     <string name="About">About</string>
     <string name="Accept">Accept</string>
     <string name="Account">Account</string>
     <string name="Active_Spots">Active Spots</string>
     <string name="Add_Card">Add Card</string>
     <string name="Add_Credit_or_Debit_Card">Add Credit or Debit Card</string>
+    <string name="Add_Email">Add Email</string>
     <string name="Add_Location">Add Location</string>
     <string name="Add_Payment_Method">Add Payment Method</string>
     <string name="Add_profile_photo">Add Profile Photo</string>
@@ -68,6 +81,9 @@
     <string name="Completing_transaction">Completing transaction&#8230;</string>
     <string name="Confirm_Password">Confirm Password</string>
     <string name="Confirm_New_Password">Confirm New Password</string>
+    <string name="Continue_with_Facebook">Continue with Facebook</string>
+    <string name="Continue_with_Google">Continue with Google</string>
+    <string name="Create_SpotTrade_Account">Create SpotTrade Account</string>
     <string name="Create_Spot">Create Spot</string>
     <string name="Creating_user">Creating user</string>
     <string name="Current_Password">Current Password</string>
@@ -104,6 +120,7 @@
     <string name="Filter">Filter</string>
     <string name="Filter_Star_Rating">Filter Star Rating</string>
     <string name="First_Name">First Name</string>
+    <string name="Forgot_Password"><u>Forgot Password?</u></string>
     <string name="got_spotted">got spotted</string>
     <string name="History">History</string>
     <string name="Home">Home</string>
@@ -149,6 +166,7 @@
     <string name="Personal">Personal</string>
     <string name="Phone_Number">Phone Number</string>
     <string name="Make_Offer">Make Offer</string>
+    <string name="Please_add_an_email_to_complete_registration">Please add an email to complete the sign up process</string>
     <string name="Please_set_up_Android_Pay">Please set up Android Pay</string>
     <string name="Price">Price</string>
     <string name="Profile_Photo">Profile Photo</string>
@@ -164,7 +182,8 @@
     <string name="Sell">Sell</string>
     <string name="Seller">Seller</string>
     <string name="Selling">Selling</string>
-    <string name="Server_error">Something went wrong: server error</string>
+    <string name="Server_error">An error occurred, unable to complete request at this time</string>
+    <string name="Sign_In">Sign In</string>
     <string name="Sign_Up">Sign Up</string>
     <string name="sold">sold</string>
     <string name="Sold_Spot">Sold Spot</string>
@@ -176,6 +195,7 @@
     <string name="Spotted">Spotted</string>
     <string name="spotted_you">spotted you</string>
     <string name="Type">Type</string>
+    <string name="Unable_to_connect_with_Facebook">Unable to connect with Facebook</string>
     <string name="Update">Update</string>
     <string name="updated">updated</string>
     <string name="Updating">Updating</string>

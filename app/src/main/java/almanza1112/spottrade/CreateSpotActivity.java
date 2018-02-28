@@ -71,7 +71,7 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
         latitude = intent.getDoubleExtra("latitude", 0);
         longitude = intent.getDoubleExtra("longitude", 0);
 
-        setContentView(R.layout.spot_actiivty);
+        setContentView(R.layout.create_spot_actiivty);
 
         pd = new ProgressDialog(this);
 

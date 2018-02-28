@@ -114,8 +114,7 @@ public class Personal extends Fragment implements View.OnClickListener {
         ivEditPassword.setOnClickListener(this);
         tvPhoneNumber = (TextView) view.findViewById(R.id.tvPhoneNumber);
         setPhoneNumber();
-        final ImageView ivEditPhoneNumber = (ImageView) view.findViewById(R.id.ivEditPhoneNumber);
-        ivEditPhoneNumber.setOnClickListener(this);
+        view.findViewById(R.id.ivEditPhoneNumber).setOnClickListener(this);
 
         AppCompatActivity actionBar = (AppCompatActivity) getActivity();
         actionBar.setSupportActionBar(toolbar);
@@ -174,7 +173,7 @@ public class Personal extends Fragment implements View.OnClickListener {
                 fragmentTransaction.commit();
                 break;
 
-            case R.id.tvPhoneNumber:
+            case R.id.ivEditPhoneNumber:
                 ADupdateField("phoneNumber");
                 break;
         }
@@ -454,7 +453,9 @@ public class Personal extends Fragment implements View.OnClickListener {
             case "phoneNumber":
                 ivIcon.setImageDrawable(getResources().getDrawable(R.mipmap.ic_phone_grey600_24dp));
                 title += " " + getResources().getString(R.string.Phone_Number);
-                tietUpdate.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email)));
+                if (SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_phone_number)) != null){
+                    tietUpdate.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email)));
+                }
                 tietUpdate.setInputType(InputType.TYPE_CLASS_PHONE |
                         InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
                 break;
@@ -465,20 +466,6 @@ public class Personal extends Fragment implements View.OnClickListener {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
                 // This is empty because onClickListener is implemented below
-            }
-        });
-        alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        final AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
-        //Overriding the handler immediately after show is probably a better approach than OnShowListener as described below
-        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
                 Boolean wantToCloseDialog = false;
                 //Do stuff, possibly set wantToCloseDialog to true then...
                 String str = tietUpdate.getText().toString();
@@ -508,15 +495,23 @@ public class Personal extends Fragment implements View.OnClickListener {
                         }
                         break;
                     case "phoneNumber":
-                        // TODO: need to verify phone number
+                        wantToCloseDialog = true;
+                        updateField(field, str);
                         break;
                 }
                 if (wantToCloseDialog) {
-                    alertDialog.dismiss();
+                    arg0.dismiss();
                 }
-                //else dialog stays open. Make sure you have an obvious way to close the dialog especially if you set cancellable to false.
             }
         });
+        alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 
     private void updateField(final String field, final String str) {
@@ -583,11 +578,11 @@ public class Personal extends Fragment implements View.OnClickListener {
     }
 
     private void setPhoneNumber(){
-        if (SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_phone_number)).isEmpty()){
-            tvPhoneNumber.setText("--------------");
+        if (SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_phone_number)) != null){
+            tvPhoneNumber.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_phone_number)));
         }
         else{
-            tvPhoneNumber.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_phone_number)));
+            tvPhoneNumber.setText("--------------");
         }
     }
 

@@ -306,11 +306,14 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
             jObject.put("lastName", lastName);
             jObject.put("email", email);
             jObject.put("password", password);
-            jObject.put("phoneNumber", phoneNumber);
             jObject.put("totalRatings", 0);
             jObject.put("overallRating", 0);
-            jObject.put("loggedIn", true);
+            jObject.put("facebookSignUp", false);
+            jObject.put("googleSignUp", false);
             jObject.put("firebaseTokenID", FirebaseInstanceId.getInstance().getToken());
+            if (!phoneNumber.isEmpty()){
+                jObject.put("phoneNumber", phoneNumber);
+            }
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -387,8 +390,6 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-                        error.printStackTrace();
                         progressDialog.dismiss();
                         Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
@@ -423,7 +424,6 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
             @Override
             public void onFailure(@NonNull Exception e) {
                 progressDialog.dismiss();
-                e.printStackTrace();
                 Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(getActivity(), MapsActivity.class));
             }
