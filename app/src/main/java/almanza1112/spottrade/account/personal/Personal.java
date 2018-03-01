@@ -63,7 +63,11 @@ import static android.app.Activity.RESULT_OK;
  */
 
 public class Personal extends Fragment implements View.OnClickListener {
-    private TextView tvFistName, tvLastName, tvEmail, tvPhoneNumber;
+    private TextView tvFistName;
+    private TextView tvLastName;
+    private TextView tvEmail;
+    private TextView tvPhoneNumber;
+    private TextInputLayout tilUpdate;
     private ImageView ivProfilePhoto;
     private ProgressBar progressBar;
     private Pattern pattern = Pattern.compile(RegularExpression.EMAIL_PATTERN);
@@ -80,46 +84,58 @@ public class Personal extends Fragment implements View.OnClickListener {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.personal, container, false);
-        Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        Toolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.Personal);
 
-        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
+        progressBar = view.findViewById(R.id.progressBar);
         storageReference = FirebaseStorage.getInstance().getReference();
         firebaseStorage = FirebaseStorage.getInstance();
 
-        ivProfilePhoto = (ImageView) view.findViewById(R.id.ivProfilePhoto);
-        final ImageView ivEditProfilePhoto = (ImageView) view.findViewById(R.id.ivEditProfilePhoto);
-        ivEditProfilePhoto.setOnClickListener(this);
+        ivProfilePhoto = view.findViewById(R.id.ivProfilePhoto);
+        view.findViewById(R.id.ivEditProfilePhoto).setOnClickListener(this);
         if (SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)) != null){
             Picasso.with(getActivity()).load(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url))).fit().centerCrop().into(ivProfilePhoto);
         }
 
-        tvFistName = (TextView) view.findViewById(R.id.tvFirstName);
+        tvFistName = view.findViewById(R.id.tvFirstName);
         tvFistName.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_first_name)));
-        final ImageView ivEditFirstName = (ImageView) view.findViewById(R.id.ivEditFirstName);
-        ivEditFirstName.setOnClickListener(this);
-        tvLastName = (TextView) view.findViewById(R.id.tvLastName);
-        tvLastName.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name)));
-        final ImageView ivEditLastName = (ImageView) view.findViewById(R.id.ivEditLastName);
-        ivEditLastName.setOnClickListener(this);
+        view.findViewById(R.id.ivEditFirstName).setOnClickListener(this);
 
-        tvEmail = (TextView) view.findViewById(R.id.tvEmail);
+        tvLastName = view.findViewById(R.id.tvLastName);
+        tvLastName.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name)));
+        view.findViewById(R.id.ivEditLastName).setOnClickListener(this);
+
+        tvEmail = view.findViewById(R.id.tvEmail);
+        tvEmail.setText(SharedPref.getSharedPreferences(getActivity(), getString(R.string.logged_in_user_email)));
+
         tvEmail.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email)));
-        final ImageView ivEditEmail = (ImageView) view.findViewById(R.id.ivEditEmail);
-        ivEditEmail.setOnClickListener(this);
-        final TextView tvPassword = (TextView) view.findViewById(R.id.tvPassword);
+        ImageView ivEditEmail = view.findViewById(R.id.ivEditEmail);
+        if (Boolean.valueOf(SharedPref.getSharedPreferences(getActivity(), getString(R.string.logged_in_user_googleSignUp)))
+                && SharedPref.getSharedPreferences(getActivity(), getString(R.string.logged_in_user_password)) == null){
+            ivEditEmail.setVisibility(View.GONE);
+        } else {
+            ivEditEmail.setOnClickListener(this);
+        }
+
+        TextView tvPassword = view.findViewById(R.id.tvPassword);
         tvPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        tvPassword.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password)));
-        final ImageView ivEditPassword = (ImageView) view.findViewById(R.id.ivEditPassword);
-        ivEditPassword.setOnClickListener(this);
-        tvPhoneNumber = (TextView) view.findViewById(R.id.tvPhoneNumber);
+        view.findViewById(R.id.ivEditPassword).setOnClickListener(this);
+        String password = SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password));
+        if (password != null){
+            tvPassword.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password)));
+        }
+        else {
+            view.findViewById(R.id.rlPassword).setVisibility(View.GONE);
+        }
+
+        tvPhoneNumber = view.findViewById(R.id.tvPhoneNumber);
         setPhoneNumber();
         view.findViewById(R.id.ivEditPhoneNumber).setOnClickListener(this);
 
         AppCompatActivity actionBar = (AppCompatActivity) getActivity();
         actionBar.setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) actionBar.findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = actionBar.findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 getActivity(),
                 drawer,
@@ -418,9 +434,9 @@ public class Personal extends Fragment implements View.OnClickListener {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.personal_activity_update_field_alertdialog, null);
 
-        final ImageView ivIcon = (ImageView) alertLayout.findViewById(R.id.ivIcon);
-        final TextInputLayout tilUpdate = (TextInputLayout) alertLayout.findViewById(R.id.tilUpdate);
-        final TextInputEditText tietUpdate = (TextInputEditText) alertLayout.findViewById(R.id.tietUpdate);
+        final ImageView ivIcon =  alertLayout.findViewById(R.id.ivIcon);
+        tilUpdate = alertLayout.findViewById(R.id.tilUpdate);
+        final TextInputEditText tietUpdate = alertLayout.findViewById(R.id.tietUpdate);
 
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
         alertDialogBuilder.setView(alertLayout);
@@ -465,7 +481,22 @@ public class Personal extends Fragment implements View.OnClickListener {
         alertDialogBuilder.setPositiveButton(R.string.Update, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
-                // This is empty because onClickListener is implemented below
+                // This is empty because onClickListener is implemented below so that alertDialog
+                // remains open if the new parameters fail
+            }
+        });
+        alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 Boolean wantToCloseDialog = false;
                 //Do stuff, possibly set wantToCloseDialog to true then...
                 String str = tietUpdate.getText().toString();
@@ -488,10 +519,9 @@ public class Personal extends Fragment implements View.OnClickListener {
                         break;
                     case "email":
                         if (validateEmail(str)) {
+                            tilUpdate.setErrorEnabled(false);
                             wantToCloseDialog = true;
                             updateField(field, str);
-                        } else {
-                            tilUpdate.setError(getResources().getString(R.string.Invalid_email_format));
                         }
                         break;
                     case "phoneNumber":
@@ -500,18 +530,10 @@ public class Personal extends Fragment implements View.OnClickListener {
                         break;
                 }
                 if (wantToCloseDialog) {
-                    arg0.dismiss();
+                    alertDialog.dismiss();
                 }
             }
         });
-        alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        final AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
     }
 
     private void updateField(final String field, final String str) {
@@ -587,8 +609,45 @@ public class Personal extends Fragment implements View.OnClickListener {
     }
 
     private boolean validateEmail(String email) {
+        final boolean[] sitch = new boolean[1];
         Matcher matcher = pattern.matcher(email);
-        return matcher.matches();
+        // If email matches the format required, check if the email exists already
+        if (matcher.matches()){
+            RequestQueue queue = Volley.newRequestQueue(getActivity());
+            HttpConnection httpConnection = new HttpConnection();
+            final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/user/check?email=" + email, null, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    try{
+                        if (response.getString("status").equals("success")){
+                            sitch[0] = true;
+                        } else if (response.getString("status").equals("fail")){
+                            sitch[0] = false;
+                            tilUpdate.setError(response.getString("reason"));
+                        }
+                        progressBar.setVisibility(View.GONE);
+                    }
+                    catch (JSONException e){
+                        sitch[0] = false;
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    sitch[0] = false;
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                }
+            }
+            );
+            queue.add(jsonObjectRequest);
+        }
+        else {
+            sitch[0] = false;
+        }
+        return sitch[0];
     }
 
     private void setSnackBar(String snackBarText){

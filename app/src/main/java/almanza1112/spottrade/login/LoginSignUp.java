@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.app.Fragment;
@@ -84,7 +83,7 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
     public View onCreateView(LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.login_sign_up, container, false);
 
-        final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        final Toolbar toolbar = view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
@@ -93,31 +92,30 @@ public class LoginSignUp extends Fragment implements View.OnClickListener{
 
         progressDialog = new ProgressDialog(getActivity());
 
-        tvAddProfilePhoto = (TextView) view.findViewById(R.id.tvAddProfilePhoto);
+        tvAddProfilePhoto = view.findViewById(R.id.tvAddProfilePhoto);
         tvAddProfilePhoto.setOnClickListener(this);
-        tvDeleteProfilePhoto = (TextView) view.findViewById(R.id.tvDeleteProfilePhoto);
+        tvDeleteProfilePhoto = view.findViewById(R.id.tvDeleteProfilePhoto);
         tvDeleteProfilePhoto.setOnClickListener(this);
 
-        ivProfilePhoto = (ImageView) view.findViewById(R.id.ivProfilePhoto);
+        ivProfilePhoto = view.findViewById(R.id.ivProfilePhoto);
 
-        tilFirstName = (TextInputLayout) view.findViewById(R.id.tilFirstName);
-        tietFirstName = (TextInputEditText) view.findViewById(R.id.tietFirstName);
-        tilLastName = (TextInputLayout) view.findViewById(R.id.tilLastName);
-        tietLastName = (TextInputEditText) view.findViewById(R.id.tietLastName);
+        tilFirstName = view.findViewById(R.id.tilFirstName);
+        tietFirstName = view.findViewById(R.id.tietFirstName);
+        tilLastName = view.findViewById(R.id.tilLastName);
+        tietLastName = view.findViewById(R.id.tietLastName);
 
-        tilEmail = (TextInputLayout) view.findViewById(R.id.tilEmail);
-        tietEmail = (TextInputEditText) view.findViewById(R.id.tietEmail);
+        tilEmail = view.findViewById(R.id.tilEmail);
+        tietEmail = view.findViewById(R.id.tietEmail);
 
-        tilPassword = (TextInputLayout) view.findViewById(R.id.tilPassword);
-        tietPassword = (TextInputEditText) view.findViewById(R.id.tietPassword);
-        tilConfirmPassword = (TextInputLayout) view.findViewById(R.id.tilConfirmPassword);
-        tietConfirmPassword = (TextInputEditText) view.findViewById(R.id.tietConfirmPassword);
+        tilPassword = view.findViewById(R.id.tilPassword);
+        tietPassword = view.findViewById(R.id.tietPassword);
+        tilConfirmPassword = view.findViewById(R.id.tilConfirmPassword);
+        tietConfirmPassword = view.findViewById(R.id.tietConfirmPassword);
 
-        tilPhoneNumber = (TextInputLayout) view.findViewById(R.id.tilPhoneNumber);
-        tietPhoneNumber = (TextInputEditText) view.findViewById(R.id.tietPhoneNumber);
+        tilPhoneNumber = view.findViewById(R.id.tilPhoneNumber);
+        tietPhoneNumber = view.findViewById(R.id.tietPhoneNumber);
 
-        FloatingActionButton fabDone = (FloatingActionButton) view.findViewById(R.id.fabDone);
-        fabDone.setOnClickListener(this);
+        view.findViewById(R.id.fabDone).setOnClickListener(this);
 
         storageReference = FirebaseStorage.getInstance().getReference();
 

@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -42,7 +41,6 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.iid.FirebaseInstanceId;
 
@@ -88,45 +86,19 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         // Build a GoogleSignInClient with the options specified by gso.
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-        /*
-        // This code is to print the hash key
-        try {
-            PackageInfo info = getPackageManager().getPackageInfo(
-                    "almanza1112.spottrade",
-                    PackageManager.GET_SIGNATURES);
-            for (Signature signature : info.signatures) {
-                MessageDigest md = MessageDigest.getInstance("SHA");
-                md.update(signature.toByteArray());
-                Log.e("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-
-        } catch (NoSuchAlgorithmException e) {
-
-        }
-        */
         setContentView(R.layout.login_activity);
 
-        tilEmail = (TextInputLayout) findViewById(R.id.tilEmail);
-        tietEmail = (TextInputEditText) findViewById(R.id.tietEmail);
+        tilEmail = findViewById(R.id.tilEmail);
+        tietEmail = findViewById(R.id.tietEmail);
 
-        tilPassword = (TextInputLayout) findViewById(R.id.tilPassword);
-        tietPassword = (TextInputEditText) findViewById(R.id.tietPassword);
+        tilPassword = findViewById(R.id.tilPassword);
+        tietPassword = findViewById(R.id.tietPassword);
 
-        final Button bSignIn = (Button) findViewById(R.id.bSignIn);
-        bSignIn.setOnClickListener(this);
-
-        final Button bForgotPassword = (Button) findViewById(R.id.bForgotPassword);
-        bForgotPassword.setOnClickListener(this);
-
-        final Button bFacebookLogin = (Button) findViewById(R.id.bFacebookLogin);
-        bFacebookLogin.setOnClickListener(this);
-
-        final Button bGoogleLogin = (Button) findViewById(R.id.bGoogleLogin);
-        bGoogleLogin.setOnClickListener(this);
-
-        final Button bCreateSpotTradeAccount = (Button) findViewById(R.id.bCreateSpotTradeAccount);
-        bCreateSpotTradeAccount.setOnClickListener(this);
+        findViewById(R.id.bSignIn).setOnClickListener(this);
+        findViewById(R.id.bForgotPassword).setOnClickListener(this);
+        findViewById(R.id.bFacebookLogin).setOnClickListener(this);
+        findViewById(R.id.bGoogleLogin).setOnClickListener(this);
+        findViewById(R.id.bCreateSpotTradeAccount).setOnClickListener(this);
 
         firebaseAuth = FirebaseAuth.getInstance();
     }
@@ -392,7 +364,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
-                            FirebaseUser user = firebaseAuth.getCurrentUser();
                             firstName = acct.getGivenName();
                             lastName = acct.getFamilyName();
                             email = acct.getEmail();
@@ -403,7 +374,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         }
                         else {
                             // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signInWithCredential:failure", task.getException());
                             Snackbar.make(findViewById(R.id.login_activity), "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
                         }
                     }
@@ -441,8 +411,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            Log.e(TAG, response + "");
-
                             if (response.getString("status").equals("success")) {
                                 String id = response.getString("_id");
                                 String firstName = response.getString("firstName");
@@ -486,7 +454,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                 finish();
                             }
                             else if (response.getString("status").equals("fail")){
-                                //progressDialog.dismiss();
                                 String reason = response.getString("reason");
                                 if (reason.equals("Email already in use")){
                                     tilEmail.setError(reason);
@@ -494,7 +461,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             }
                         }
                         catch (JSONException e) {
-                            e.printStackTrace();
                             Toast.makeText(LoginActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -502,7 +468,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        //progressDialog.dismiss();
                         Toast.makeText(LoginActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 }){
@@ -518,7 +483,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             }
         };
 
-        // Access the RequestQueue through your singleton class.
         queue.add(jsObjRequest);
     }
 }
