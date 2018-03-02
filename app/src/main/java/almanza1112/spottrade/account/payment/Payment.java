@@ -53,13 +53,13 @@ public class Payment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.payment, container, false);
-        Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        Toolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.Payment);
 
         AppCompatActivity actionBar = (AppCompatActivity) getActivity();
         actionBar.setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) actionBar.findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = actionBar.findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 getActivity(),
                 drawer,
@@ -75,10 +75,9 @@ public class Payment extends Fragment {
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
-        rvPaymentMethods = (RecyclerView) view.findViewById(R.id.rvPaymentMethods);
-        final Button bAddPaymentMethod = (Button) view.findViewById(R.id.bAddPaymentMethod);
-        bAddPaymentMethod.setOnClickListener(new View.OnClickListener() {
+        progressBar = view.findViewById(R.id.progressBar);
+        rvPaymentMethods = view.findViewById(R.id.rvPaymentMethods);
+        view.findViewById(R.id.bAddPaymentMethod).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Bundle bundle = new Bundle();
@@ -189,9 +188,12 @@ public class Payment extends Fragment {
                                 }
 
                             }
+                            /*
+                            // Returns fail if user was not found
                             else if (response.getString("status").equals("fail")) {
                                 Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                             }
+                            */
                         }
                         catch (JSONException e){
                             Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();

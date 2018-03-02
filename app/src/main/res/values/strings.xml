@@ -162,7 +162,7 @@
     <string name="Payment_method_deleted">Payment method deleted</string>
     <string name="Payment_Method_Options">Payment Method Options</string>
     <string name="Payment_method_added">Payment method added</string>
-    <string name="Payment_Methods">Payment Methods</string>
+    <string name="No_payment_methods">No payment methods</string>
     <string name="Personal">Personal</string>
     <string name="Phone_Number">Phone Number</string>
     <string name="Make_Offer">Make Offer</string>
