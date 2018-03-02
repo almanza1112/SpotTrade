@@ -17,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -45,6 +46,7 @@ import almanza1112.spottrade.nonActivity.SharedPref;
 public class Payment extends Fragment {
 
     private ProgressBar progressBar;
+    private TextView tvNoPaymentMethods;
     RecyclerView rvPaymentMethods;
     public Snackbar snackbar;
 
@@ -75,6 +77,7 @@ public class Payment extends Fragment {
         toggle.syncState();
 
         progressBar = view.findViewById(R.id.progressBar);
+        tvNoPaymentMethods = view.findViewById(R.id.tvNoPaymentMethods);
         rvPaymentMethods = view.findViewById(R.id.rvPaymentMethods);
         view.findViewById(R.id.bAddPaymentMethod).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -180,6 +183,7 @@ public class Payment extends Fragment {
                                     }
                                 }
                                 if (!isEmpty){
+                                    tvNoPaymentMethods.setVisibility(View.GONE);
                                     RecyclerView.Adapter  adapter = new PaymentAdapter(Payment.this ,getActivity(), paymentType, paymentTypeName, imageURL, credentials, expirationDate, token, isDefault);
                                     RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
                                     rvPaymentMethods.setLayoutManager(layoutManager);
