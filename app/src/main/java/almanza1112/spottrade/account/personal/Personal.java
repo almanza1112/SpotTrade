@@ -230,7 +230,7 @@ public class Personal extends Fragment implements View.OnClickListener {
         if (requestCode == GALLERY_CODE && resultCode == RESULT_OK){
             progressBar.setVisibility(View.VISIBLE);
             // Check if there is an image already
-            if (!SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)).isEmpty()){
+            if (SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)) != null){
                 // There is an image, proceed to delete it
                 StorageReference photoRef = firebaseStorage.getReferenceFromUrl(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)));
                 photoRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -315,7 +315,7 @@ public class Personal extends Fragment implements View.OnClickListener {
     private void ADupdateProfilePhoto(){
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
         final CharSequence[] items;
-        if (SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)).isEmpty()){
+        if (SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)) == null){
             items = new CharSequence[]{getResources().getString(R.string.Add_profile_photo)};
         }
         else {
