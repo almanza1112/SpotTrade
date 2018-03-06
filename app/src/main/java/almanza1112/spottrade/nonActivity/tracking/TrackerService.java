@@ -10,13 +10,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
         import com.google.android.gms.location.LocationListener;
         import com.google.android.gms.location.LocationRequest;
         import com.google.android.gms.location.LocationServices;
-        import com.google.android.gms.tasks.OnCompleteListener;
-        import com.google.android.gms.tasks.OnSuccessListener;
-        import com.google.android.gms.tasks.Task;
-        import com.google.firebase.analytics.FirebaseAnalytics;
-        import com.google.firebase.auth.AuthResult;
-        import com.google.firebase.auth.FirebaseAuth;
-        import com.google.firebase.database.DataSnapshot;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.database.DataSnapshot;
         import com.google.firebase.database.DatabaseError;
         import com.google.firebase.database.DatabaseReference;
         import com.google.firebase.database.FirebaseDatabase;
@@ -24,12 +20,14 @@ import com.google.android.gms.common.api.GoogleApiClient;
         import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
         import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
-        import android.app.NotificationManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
         import android.app.PendingIntent;
         import android.app.Service;
         import android.content.Intent;
         import android.content.IntentFilter;
-        import android.location.Location;
+import android.graphics.Color;
+import android.location.Location;
         import android.os.BatteryManager;
         import android.os.Bundle;
         import android.os.Environment;
@@ -67,15 +65,14 @@ public class TrackerService extends Service implements LocationListener {
     private NotificationCompat.Builder mNotificationBuilder;
     private PowerManager.WakeLock mWakelock;
 
-    String lidBought;
-    Map<String, Object> update = new HashMap<>();
-    Location locationPlaceBought;
-    int locationDistanceArrivedMin;
+    private String lid;
+    private Map<String, Object> update = new HashMap<>();
+    private Location locationPlaceBought;
+    private int locationDistanceArrivedMin;
+    private boolean isSeller;
 
 
-    public TrackerService() {
-        Log.e("TrackerService", "TrackerService started");
-    }
+    public TrackerService() {}
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -84,14 +81,11 @@ public class TrackerService extends Service implements LocationListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
-        lidBought = SharedPref.getSharedPreferences(this, getResources().getString(R.string.bought_lid));
-        String latBought = SharedPref.getSharedPreferences(this, getResources().getString(R.string.bought_lat));
-        String lngBought = SharedPref.getSharedPreferences(this, getResources().getString(R.string.bought_lng));
-
+        isSeller = intent.getBooleanExtra("isSeller", false);
+        lid = intent.getStringExtra("lid");
         locationPlaceBought = new Location("point A");
-        locationPlaceBought.setLatitude(Double.valueOf(latBought));
-        locationPlaceBought.setLongitude(Double.valueOf(lngBought));
+        locationPlaceBought.setLatitude(Double.valueOf(intent.getStringExtra("lat")));
+        locationPlaceBought.setLongitude(Double.valueOf(intent.getStringExtra("lng")));
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -300,14 +294,14 @@ public class TrackerService extends Service implements LocationListener {
 
         float result = location.distanceTo(locationPlaceBought);
         if (result <= locationDistanceArrivedMin){
-            Toast.makeText(this, "YOU ARRIVED WOOO", Toast.LENGTH_SHORT).show();
-            stopSelf();
+            Log.e(TAG, "HEREEEEEEEEEE");
+            //stopSelf();
         }
 
         update.put("lat", location.getLatitude());
         update.put("lng", location.getLongitude());
 
-        databaseReference.child(lidBought).child(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id))).updateChildren(update, new DatabaseReference.CompletionListener() {
+        databaseReference.child(lid).child(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id))).updateChildren(update, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 if (databaseError == null){
@@ -368,18 +362,40 @@ public class TrackerService extends Service implements LocationListener {
     }
 
     private void buildNotification() {
-        String inTransitTo = getResources().getString(R.string.In_transit_to) + " " + SharedPref.getSharedPreferences(this, getResources().getString(R.string.bought_name));
+        String inTransitTo = getResources().getString(R.string.In_transit_to) + " " + "DESTINATION";
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, MapsActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        String channelID = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            channelID = "my_channel_01";
+            CharSequence name = "SpotTrade";
+            String description = "SpotTrade's notification channel";
+            int importance = NotificationManager.IMPORTANCE_LOW;
+            NotificationChannel mChannel = new NotificationChannel(channelID, name, importance);
+            // Configure the notification channel.
+            mChannel.setDescription(description);
+            mChannel.enableLights(true);
+            // Sets the notification light color for notifications posted to this
+            // channel, if the device supports this feature.
+            mChannel.setLightColor(Color.RED);
+            mChannel.enableVibration(true);
+            mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+            mNotificationManager.createNotificationChannel(mChannel);
+        }
+
+        //PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, MapsActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
         mNotificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_bell_black_24dp)
                 .setColor(getColor(R.color.colorPrimary))
                 .setAutoCancel(true)
                 .setContentText(inTransitTo)
+                .setOngoing(true)
                 .setContentTitle(getString(R.string.app_name));
+        //.setContentIntent(resultPendingIntent);
 
-                //.setOngoing(true)
-                //.setContentIntent(resultPendingIntent);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
+            mNotificationBuilder.setChannelId(channelID);
+        }
+
         startForeground(FOREGROUND_SERVICE_ID, mNotificationBuilder.build());
     }
 

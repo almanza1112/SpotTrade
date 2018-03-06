@@ -36,6 +36,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -222,11 +223,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                     public void onFailure(@NonNull Exception e) {
                                         Toast.makeText(LoginActivity.this, getResources().getString(R.string.Error_some_features_may_be_unavailable), Toast.LENGTH_SHORT).show();
                                     }
-                                }).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                }).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                                     @Override
-                                    public void onComplete(@NonNull Task<AuthResult> task) {
-                                        startActivity(new Intent(LoginActivity.this, MapsActivity.class));
-                                        finish();
+                                    public void onSuccess(AuthResult authResult) {
+                                        updateFirebaseTokenID();
                                     }
                                 });
                             }
@@ -484,5 +484,39 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         };
 
         queue.add(jsObjRequest);
+    }
+
+    private void updateFirebaseTokenID(){
+        final JSONObject jObject = new JSONObject();
+        try {
+            jObject.put("firebaseTokenID", FirebaseInstanceId.getInstance().getToken());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        HttpConnection httpConnection = new HttpConnection();
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    if (response.getString("status").equals("success")) {
+                        startActivity(new Intent(LoginActivity.this, MapsActivity.class));
+                        finish();
+                    } else {
+                        Toast.makeText(LoginActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                    }
+                } catch (JSONException e) {
+                    Toast.makeText(LoginActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(LoginActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+            }
+        }
+        );
+        queue.add(jsonObjectRequest);
     }
 }

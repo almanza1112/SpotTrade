@@ -19,7 +19,6 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -60,8 +59,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.facebook.login.LoginManager;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -126,9 +123,8 @@ public class MapsActivity extends AppCompatActivity
     LatLng currentLocation, spotLocation;
     private ViewGroup hiddenPanel;
     private Animation bottomUp, bottomDown;
-    private TextView tvFullName, tvUserRating, tvTotalRating,
-            tvLocationName, tvLocationAddress, tvTransaction,
-            tvDescription, tvQuantity;
+    private TextView tvFullName, tvUserRating, tvTotalRating, tvLocationName, tvLocationAddress,
+            tvTransaction, tvDescription, tvQuantity;
     private ImageView ivSellerProfilePhoto;
     private Button bBuyNow, bMakeOffer, bCancelOffer, bDelete;
     private Marker marker;
@@ -154,20 +150,18 @@ public class MapsActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_activity);
 
-        CardView cvToolbar = (CardView) findViewById(R.id.cvToolbar);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        CardView cvToolbar = findViewById(R.id.cvToolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
 
         RelativeLayout.LayoutParams tb = (RelativeLayout.LayoutParams) cvToolbar.getLayoutParams();
         tb.setMargins(20, 20, 20, 0);
 
         pd = new ProgressDialog(this);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar = findViewById(R.id.progressBar);
         // Check for existing Google Sign In account, if the user is already signed in
         // the GoogleSignInAccount will be non-null.
-        //GoogleSignInAccount googleSignInAccount = GoogleSignIn.getLastSignedInAccount(this);
+        // GoogleSignInAccount googleSignInAccount = GoogleSignIn.getLastSignedInAccount(this);
         if (SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)) == null) {
-            /* TODO: add google + facebook login check as well
-            */
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         } else {
@@ -181,67 +175,66 @@ public class MapsActivity extends AppCompatActivity
         mapFragment.getMapAsync(this);
         setSupportActionBar(toolbar);
 
+        // For notifications
         try {
             String pendingData = getIntent().getExtras().getString("message");
             JSONObject dataObj = new JSONObject(pendingData);
             String type = dataObj.getString("type");
             Log.e("message", pendingData);
             switch (type) {
+                // Offer received for the logged in user's spot
                 case "offerReceived":
                     goToViewOffers(dataObj.getString("lid"));
                     break;
-
+                // Offer declined for a spot the logged in user made
                 case "offerDeclined":
                     LatLng locash = new LatLng(dataObj.getDouble("latitude"), dataObj.getDouble("longitude"));
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(locash, 16));
                     break;
-
+                // Offer accepted for a spot the logged in user made
                 case "offerAccepted":
-                    SharedPref.setSharedPreferences(this, getResources().getString(R.string.bought_lid), dataObj.getString("lid"));
-                    SharedPref.setSharedPreferences(this, getResources().getString(R.string.bought_lat), dataObj.getString("latitude"));
-                    SharedPref.setSharedPreferences(this, getResources().getString(R.string.bought_lng), dataObj.getString("longitude"));
-                    SharedPref.setSharedPreferences(this, getResources().getString(R.string.bought_seller_is_logged_in_user), String.valueOf(true));
-                    startTrackingService();
+                    startTrackingService(
+                            dataObj.getString("lid"),
+                            dataObj.getString("latitude"),
+                            dataObj.getString("longitude"),
+                            false);
+                    getFirebaseData(lid);
                     break;
-
+                // A spot the logged in user owns that is bought
                 case "buy":
 
                     break;
             }
-        }
-        catch (JSONException | NullPointerException e) {
+        } catch (JSONException | NullPointerException e) {
             e.printStackTrace();
         }
 
         bottomUp = AnimationUtils.loadAnimation(this, R.anim.bottom_up);
         bottomDown = AnimationUtils.loadAnimation(this, R.anim.bottom_down);
-        hiddenPanel = (ViewGroup) findViewById(R.id.hidden_panel);
+        hiddenPanel = findViewById(R.id.hidden_panel);
 
-        tvQuantity = (TextView) findViewById(R.id.tvQuantity);
-        ivSellerProfilePhoto = (ImageView) findViewById(R.id.ivProfilePhoto);
-        tvFullName = (TextView) findViewById(R.id.tvFullName);
-        tvUserRating = (TextView) findViewById(R.id.tvUserRating);
-        tvTotalRating = (TextView) findViewById(R.id.tvTotalRating);
-        tvTransaction = (TextView) findViewById(R.id.tvTransaction);
-        tvDescription = (TextView) findViewById(R.id.tvDescription);
-        tvLocationAddress = (TextView) findViewById(R.id.tvLocationAddress);
-        tvLocationName = (TextView) findViewById(R.id.tvLocationName);
-        bBuyNow = (Button) findViewById(R.id.bBuyNow);
+        tvQuantity = findViewById(R.id.tvQuantity);
+        ivSellerProfilePhoto = findViewById(R.id.ivProfilePhoto);
+        tvFullName = findViewById(R.id.tvFullName);
+        tvUserRating = findViewById(R.id.tvUserRating);
+        tvTotalRating = findViewById(R.id.tvTotalRating);
+        tvTransaction = findViewById(R.id.tvTransaction);
+        tvDescription = findViewById(R.id.tvDescription);
+        tvLocationAddress = findViewById(R.id.tvLocationAddress);
+        tvLocationName = findViewById(R.id.tvLocationName);
+        bBuyNow = findViewById(R.id.bBuyNow);
         bBuyNow.setOnClickListener(this);
-        bMakeOffer = (Button) findViewById(R.id.bMakeOffer);
+        bMakeOffer = findViewById(R.id.bMakeOffer);
         bMakeOffer.setOnClickListener(this);
-        bCancelOffer = (Button) findViewById(R.id.bCancelOffer);
+        bCancelOffer = findViewById(R.id.bCancelOffer);
         bCancelOffer.setOnClickListener(this);
-        bDelete = (Button) findViewById(R.id.bDelete);
+        bDelete = findViewById(R.id.bDelete);
         bDelete.setOnClickListener(this);
 
-        FloatingActionButton fabMyLocation = (FloatingActionButton) findViewById(R.id.fabMyLocation);
-        fabMyLocation.setOnClickListener(this);
+        findViewById(R.id.fabMyLocation).setOnClickListener(this);
+        findViewById(R.id.fabSpot).setOnClickListener(this);
 
-        FloatingActionButton fabSpot = (FloatingActionButton) findViewById(R.id.fabSpot);
-        fabSpot.setOnClickListener(this);
-
-        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
             @Override
             public void onDrawerOpened(View drawerView) {
@@ -252,17 +245,17 @@ public class MapsActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         View navHeaderView = navigationView.getHeaderView(0);
-        final ImageView ivProfilePhoto = (ImageView) navHeaderView.findViewById(R.id.ivProfilePhoto);
+        final ImageView ivProfilePhoto = navHeaderView.findViewById(R.id.ivProfilePhoto);
         if (SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_photo_url)) != null) {
             Picasso.with(this).load(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_photo_url))).fit().centerCrop().into(ivProfilePhoto);
         }
-        final TextView tvLoggedInFullName = (TextView) navHeaderView.findViewById(R.id.tvLoggedInFullName);
+        final TextView tvLoggedInFullName = navHeaderView.findViewById(R.id.tvLoggedInFullName);
         tvLoggedInFullName.setText(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_first_name)) + " " + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_last_name)));
-        final TextView tvLoggedInEmail = (TextView) navHeaderView.findViewById(R.id.tvLoggedInEmail);
+        final TextView tvLoggedInEmail = navHeaderView.findViewById(R.id.tvLoggedInEmail);
         tvLoggedInEmail.setText(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_email)));
     }
 
@@ -369,7 +362,7 @@ public class MapsActivity extends AppCompatActivity
             fragmentTransaction.commit();
         }
 
-        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -394,8 +387,7 @@ public class MapsActivity extends AppCompatActivity
                 try {
                     Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN).build(this);
                     startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
-                }
-                catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
+                } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
                     e.printStackTrace();
                     Toast.makeText(this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
                 }
@@ -415,7 +407,7 @@ public class MapsActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         int count = getFragmentManager().getBackStackEntryCount();
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -697,27 +689,22 @@ public class MapsActivity extends AppCompatActivity
         }
     }
 
+    boolean isOfferAccepted;
+    String lidBought, idBought, latBought, lngBought, profilePhotoUrlBought;
     @Override
     public void onOfferAccepted(final String lid, String id, final String latitude, final String longitude, String profilePhotoUrl) {
-        // Offer got accepted and now is going to redirect
-        Map<String, String> latLng = new HashMap<>();
-        latLng.put("lat", "null");
-        latLng.put("lng", "null");
-
-        databaseReference = FirebaseDatabase.getInstance().getReference("tracking");
-        databaseReference.child(lid).child(SharedPref.getSharedPreferences(MapsActivity.this, getResources().getString(R.string.logged_in_user_id))).setValue(latLng, new DatabaseReference.CompletionListener() {
-            @Override
-            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                if (databaseError == null) { // There is no error
-                    SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.bought_lid), lid);
-                    SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.bought_lat), latitude);
-                    SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.bought_lng), longitude);
-                    startTrackingService();
-                } else {// There is an error
-
-                }
-            }
-        });
+        // You accepted an offer and now it's going to redirect
+        isOfferAccepted = true;
+        lidBought = lid;
+        idBought = id;
+        latBought = latitude;
+        lngBought = longitude;
+        profilePhotoUrlBought = profilePhotoUrl;
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(mLocationRequestCallback)
+                .addApi(LocationServices.API)
+                .build();
+        mGoogleApiClient.connect();
     }
 
     private void getMyLocation() {
@@ -736,20 +723,33 @@ public class MapsActivity extends AppCompatActivity
             LocationRequest request = new LocationRequest();
             request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
             if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
                 return;
             }
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, request, new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
-                    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+                    if (isOfferAccepted){
+                        Map<String, Object> latLng = new HashMap<>();
+                        latLng.put("lat", location.getLatitude());
+                        latLng.put("lng", location.getLongitude());
+
+                        databaseReference = FirebaseDatabase.getInstance().getReference("tracking");
+                        databaseReference.child(lidBought).child(SharedPref.getSharedPreferences(MapsActivity.this, getResources().getString(R.string.logged_in_user_id))).setValue(latLng, new DatabaseReference.CompletionListener() {
+                            @Override
+                            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                if (databaseError == null) {
+                                    startTrackingService(lidBought, latBought, lngBought, true);
+                                    getFirebaseData(lidBought);
+                                } else {
+                                    setSnackBar(getString(R.string.Server_error));
+                                }
+                            }
+                        });
+                        isOfferAccepted = false;
+                    } else {
+                        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+                    }
                     mGoogleApiClient.disconnect();
                 }
             });
@@ -757,8 +757,6 @@ public class MapsActivity extends AppCompatActivity
 
         @Override
         public void onConnectionSuspended(int reason) {
-            Log.e("googleAPIClient", "suspended because: " + reason);
-            // TODO: Handle gracefully
         }
     };
 
@@ -848,9 +846,9 @@ public class MapsActivity extends AppCompatActivity
                 pd.dismiss();
                 try{
                     if (response.getString("status").equals("success")){
-                        String lidBought = response.getString("_id");
-                        String latBought = response.getString("latitude");
-                        String lngBought = response.getString("longitude");
+                        final String lidBought = response.getString("_id");
+                        final String latBought = response.getString("latitude");
+                        final String lngBought = response.getString("longitude");
                         String addressBought = response.getString("address");
                         String nameBought = response.getString("name");
 
@@ -870,11 +868,11 @@ public class MapsActivity extends AppCompatActivity
                             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                                 if (databaseError == null){
                                     // There is no error
-                                    startTrackingService();
+                                    startTrackingService(lidBought, latBought, lngBought, false);
                                 }
                                 else {
                                     // There is an error
-
+                                    setSnackBar(getString(R.string.Server_error));
                                 }
                             }
                         });
@@ -972,7 +970,7 @@ public class MapsActivity extends AppCompatActivity
         LayoutInflater inflater = getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.number_picker, null);
 
-        final NumberPicker numberPicker = (NumberPicker) alertLayout.findViewById(R.id.npQuantity);
+        final NumberPicker numberPicker = alertLayout.findViewById(R.id.npQuantity);
         numberPicker.setMinValue(1);
         numberPicker.setMaxValue(this.quantity);
         numberPicker.setValue(1);
@@ -1005,7 +1003,7 @@ public class MapsActivity extends AppCompatActivity
         LayoutInflater inflater = getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.maps_activity_make_offer_alertdialog, null);
 
-        final EditText etOfferPrice = (EditText) alertLayout.findViewById(R.id.etOfferPrice);
+        final EditText etOfferPrice = alertLayout.findViewById(R.id.etOfferPrice);
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 
         alertDialogBuilder.setView(alertLayout);
@@ -1201,7 +1199,7 @@ public class MapsActivity extends AppCompatActivity
         LayoutInflater inflater = getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.number_picker, null);
 
-        final NumberPicker npQuantity = (NumberPicker) alertLayout.findViewById(R.id.npQuantity);
+        final NumberPicker npQuantity = alertLayout.findViewById(R.id.npQuantity);
         npQuantity.setMinValue(1);
         npQuantity.setMaxValue(quantity);
 
@@ -1236,7 +1234,7 @@ public class MapsActivity extends AppCompatActivity
 
 
         final float totalPrice = Float.valueOf(price) * quantity;
-        TextView tvCompleteTransactionDialog = (TextView) alertLayout.findViewById(R.id.tvCompleteTransactionDialog);
+        TextView tvCompleteTransactionDialog = alertLayout.findViewById(R.id.tvCompleteTransactionDialog);
         String completeTransactionText;
         if (quantity > 1){
             completeTransactionText = getResources().getString(R.string.You_will_be_charged) + " $" + totalPrice + " ($" + price + " x " + quantity + ") " + getResources().getString(R.string.with_the_following_payment_method);
@@ -1245,9 +1243,9 @@ public class MapsActivity extends AppCompatActivity
             completeTransactionText = getResources().getString(R.string.You_will_be_charged) + " $" + totalPrice + " " + getResources().getString(R.string.with_the_following_payment_method);
         }
         tvCompleteTransactionDialog.setText(completeTransactionText);
-        ImageView ivPaymentImage = (ImageView) alertLayout.findViewById(R.id.ivPaymentImage);
-        TextView tvPaymentName = (TextView) alertLayout.findViewById(R.id.tvPaymentName);
-        TextView tvPaymentCredentials = (TextView) alertLayout.findViewById(R.id.tvPaymentCredentials);
+        ImageView ivPaymentImage = alertLayout.findViewById(R.id.ivPaymentImage);
+        TextView tvPaymentName = alertLayout.findViewById(R.id.tvPaymentName);
+        TextView tvPaymentCredentials = alertLayout.findViewById(R.id.tvPaymentCredentials);
 
         Picasso.with(this).load(paymentImageUrl).into(ivPaymentImage);
         tvPaymentName.setText(paymentType);
@@ -1436,7 +1434,6 @@ public class MapsActivity extends AppCompatActivity
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
                         error.printStackTrace();
                     }
                 }){
@@ -1452,7 +1449,6 @@ public class MapsActivity extends AppCompatActivity
             }
         };
 
-        // Access the RequestQueue through your singleton class.
         queue.add(jsObjRequest);
     }
 
@@ -1514,11 +1510,16 @@ public class MapsActivity extends AppCompatActivity
         }
     }
 
-    private void startTrackingService(){
+    private void startTrackingService(String lid, String lat, String lng, boolean isSeller){
         PackageManager pm = getPackageManager();
         ComponentName componentName = new ComponentName("almanza1112.spottrade", "almanza1112.spottrade.nonActivity.tracking.TrackerService");
         pm.setComponentEnabledSetting(componentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-        startService(new Intent(this, TrackerService.class));
+        Intent serviceIntent = new Intent(this, TrackerService.class);
+        serviceIntent.putExtra("lid", lid);
+        serviceIntent.putExtra("lat", lat);
+        serviceIntent.putExtra("lng", lng);
+        serviceIntent.putExtra("isSeller", isSeller);
+        this.startService(serviceIntent);
     }
 
     private void startNavigationApp(String lat, String lng, String label){
@@ -1560,9 +1561,9 @@ public class MapsActivity extends AppCompatActivity
                             //marker = mMap.addMarker(new MarkerOptions().position(locash).title(locationObj.getString("name")));
                             //marker.setTag(locationObj.getString("_id"));
                         }
-                        getFirebaseData(lidBought, ids);
+                        //getFirebaseData(lidBought);
                         progressBar.setVisibility(View.GONE);
-                        startTrackingService();
+                        //startTrackingService();
                     }
                     else if (response.getString("status").equals("fail") && response.getString("reason").equals("no onGoingTransactions")){
                         getAvailableSpots(typeSelected);
@@ -1586,31 +1587,25 @@ public class MapsActivity extends AppCompatActivity
     }
 
     boolean firstTime;
-    private void getFirebaseData(String lidBought, List<String> ids){
-        Log.e("lidBought", lidBought);
+    private void getFirebaseData(String lidBought){
         databaseReference = FirebaseDatabase.getInstance().getReference().child("tracking").child(lidBought);
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.e("dataSnapshot", dataSnapshot.getChildrenCount() + "\n" + dataSnapshot);
                 for (DataSnapshot ds: dataSnapshot.getChildren()){
-
                     BuyerTracker buyerTracker = new BuyerTracker();
                     buyerTracker.setKey(ds.getKey());
                     buyerTracker.setLat(ds.getValue(BuyerTracker.class).getLat());
                     buyerTracker.setLng(ds.getValue(BuyerTracker.class).getLng());
-
-                    LatLng locash = new LatLng(buyerTracker.getLat(), buyerTracker.getLng());
-                    if (!firstTime){
-                        marker = mMap.addMarker(new MarkerOptions().position(locash).title("Something"));
-                        //marker.setTag(locationObj.getString("_id"));
-                        firstTime = true;
+                    if (!buyerTracker.getKey().equals(SharedPref.getSharedPreferences(MapsActivity.this, getString(R.string.logged_in_user_id)))){
+                        LatLng locash = new LatLng(buyerTracker.getLat(), buyerTracker.getLng());
+                        if (!firstTime){
+                            marker = mMap.addMarker(new MarkerOptions().position(locash).title("Something"));
+                            firstTime = true;
+                        } else {
+                            animateMarker(marker, locash, false);
+                        }
                     }
-                    else {
-                        animateMarker(marker, locash, false);
-                    }
-
-                    Log.e("k", "key: " +buyerTracker.getKey() + "\n"+buyerTracker.getLat() + " " + buyerTracker.getLng());
                 }
             }
 

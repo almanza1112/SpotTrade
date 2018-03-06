@@ -1,9 +1,11 @@
 package almanza1112.spottrade.nonActivity.firebase;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -27,13 +29,44 @@ public class MyFirebaseMessageService extends FirebaseMessagingService {
         String notificationTitle = remoteMessage.getNotification().getTitle();
         String notificationText = remoteMessage.getNotification().getBody();
         String notificationData = remoteMessage.getData().get("message");
-        //createNotification(notificationTitle, notificationText, notificationData);
 
         Intent resultIntent = new Intent(this, MapsActivity.class);
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         resultIntent.putExtra("message", notificationData);
         // Because clicking the notification opens a new ("special") activity, there's
         // no need to create an artificial back stack.
+
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // The id of the channel.
+        String channelID = "my_channel_01";
+
+        // The user-visible name of the channel.
+        CharSequence name = "SpotTrade";
+
+        // The user-visible description of the channel.
+        String description = "SpotTrade's notification channel";
+
+        int importance = 0;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            importance = NotificationManager.IMPORTANCE_LOW;
+        }
+
+        NotificationChannel mChannel = new NotificationChannel(channelID, name, importance);
+
+        // Configure the notification channel.
+        mChannel.setDescription(description);
+
+        mChannel.enableLights(true);
+        // Sets the notification light color for notifications posted to this
+        // channel, if the device supports this feature.
+        mChannel.setLightColor(Color.RED);
+
+        mChannel.enableVibration(true);
+        mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+
+        mNotificationManager.createNotificationChannel(mChannel);
+
         PendingIntent resultPendingIntent =
                 PendingIntent.getActivity(
                         this,
@@ -42,17 +75,16 @@ public class MyFirebaseMessageService extends FirebaseMessagingService {
                         PendingIntent.FLAG_UPDATE_CURRENT
                 );
 
-        //Get an instance of NotificationManager//
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.mipmap.ic_account_circle_black_24dp)
                         .setContentTitle(notificationTitle)
                         .setContentText(notificationText)
                         .setAutoCancel(true)
+                        .setChannelId(channelID)
                         .setContentIntent(resultPendingIntent);
 
-        //Gets an instance of the NotificationManager service
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        //NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         /*
         When you issue multiple notifications about the same type of event,

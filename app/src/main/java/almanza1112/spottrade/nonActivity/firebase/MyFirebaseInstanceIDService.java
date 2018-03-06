@@ -30,7 +30,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         Log.e("onTokenRefresh", "called");
         //Get hold of the registration token
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
-        sendRegistrationToServer(refreshedToken);
+        //sendRegistrationToServer(refreshedToken);
     }
 
     //Implement this method if you want to store the token on your server
