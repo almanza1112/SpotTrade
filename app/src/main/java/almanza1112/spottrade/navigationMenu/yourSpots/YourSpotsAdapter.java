@@ -1,4 +1,4 @@
-package almanza1112.spottrade.yourSpots;
+package almanza1112.spottrade.navigationMenu.yourSpots;
 
 import android.app.Activity;
 import android.app.FragmentTransaction;
@@ -60,20 +60,21 @@ class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerVie
     public void onBindViewHolder(RecyclerViewHolder holder, int position) {
         if (type.get(position).equals("Sell")){
             holder.ivTypeIcon.setImageResource(R.mipmap.ic_currency_usd_grey600_24dp);
-        }
-        else {
+        } else {
             holder.ivTypeIcon.setImageResource(R.mipmap.ic_human_handsup_grey600_24dp);
         }
+
         holder.tvLocationName.setText(locationName.get(position));
         holder.tvLocationAddress.setText(locationAddress.get(position));
+
         if (quantity.get(position) > 1){
             holder.tvQuantity.setText(quantity.get(position) + " " + activity.getResources().getString(R.string.available));
             holder.tvQuantity.setVisibility(View.VISIBLE);
         }
+
         if (offerAllowed.get(position)){
             holder.tvOfferAmount.setText(offerTotalString.get(position));
-        }
-        else{
+        } else{
             holder.tvOfferAmount.setVisibility(View.GONE);
         }
     }
@@ -89,12 +90,12 @@ class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerVie
         CardView cardView;
         RecyclerViewHolder(View view){
             super(view);
-            ivTypeIcon = (ImageView) view.findViewById(R.id.ivTypeIcon);
-            tvLocationName = (TextView) view.findViewById(R.id.tvLocationName);
-            tvLocationAddress = (TextView) view.findViewById(R.id.tvLocationAddress);
-            tvQuantity = (TextView) view.findViewById(R.id.tvQuantity);
-            tvOfferAmount = (TextView) view.findViewById(R.id.tvOfferAmount);
-            cardView = (CardView) view.findViewById(R.id.cardView);
+            ivTypeIcon = view.findViewById(R.id.ivTypeIcon);
+            tvLocationName = view.findViewById(R.id.tvLocationName);
+            tvLocationAddress = view.findViewById(R.id.tvLocationAddress);
+            tvQuantity = view.findViewById(R.id.tvQuantity);
+            tvOfferAmount = view.findViewById(R.id.tvOfferAmount);
+            cardView = view.findViewById(R.id.cardView);
             cardView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

@@ -93,18 +93,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import almanza1112.spottrade.account.feedback.Feedback;
-import almanza1112.spottrade.account.payment.AddCreditDebitCard;
-import almanza1112.spottrade.account.payment.AddPaymentMethod;
-import almanza1112.spottrade.account.payment.Payment;
-import almanza1112.spottrade.account.history.History;
-import almanza1112.spottrade.account.personal.Personal;
+import almanza1112.spottrade.navigationMenu.About;
+import almanza1112.spottrade.navigationMenu.account.feedback.Feedback;
+import almanza1112.spottrade.navigationMenu.account.payment.AddCreditDebitCard;
+import almanza1112.spottrade.navigationMenu.account.payment.AddPaymentMethod;
+import almanza1112.spottrade.navigationMenu.account.payment.Payment;
+import almanza1112.spottrade.navigationMenu.account.history.History;
+import almanza1112.spottrade.navigationMenu.account.personal.Personal;
 import almanza1112.spottrade.login.LoginActivity;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 import almanza1112.spottrade.nonActivity.tracking.TrackerService;
-import almanza1112.spottrade.yourSpots.ViewOffers;
-import almanza1112.spottrade.yourSpots.YourSpots;
+import almanza1112.spottrade.navigationMenu.yourSpots.ViewOffers;
+import almanza1112.spottrade.navigationMenu.yourSpots.YourSpots;
 
 public class MapsActivity extends AppCompatActivity
         implements View.OnClickListener,
@@ -349,6 +350,9 @@ public class MapsActivity extends AppCompatActivity
                 break;
             case R.id.nav_payment:
                 fragment = new Payment();
+                break;
+            case R.id.nav_about:
+                fragment = new About();
                 break;
             case R.id.nav_log_out:
                 ADlogOut();

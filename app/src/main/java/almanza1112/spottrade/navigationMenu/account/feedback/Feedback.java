@@ -1,4 +1,4 @@
-package almanza1112.spottrade.account.feedback;
+package almanza1112.spottrade.navigationMenu.account.feedback;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -33,13 +33,13 @@ public class Feedback extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.feedback, container, false);
-        final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        final Toolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.Feedback);
 
         AppCompatActivity actionBar = (AppCompatActivity) getActivity();
         actionBar.setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) actionBar.findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = actionBar.findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 getActivity(),
                 drawer,
@@ -55,7 +55,7 @@ public class Feedback extends Fragment {
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
+        progressBar = view.findViewById(R.id.progressBar);
 
         getFeedback("all");
         return view;
@@ -79,6 +79,7 @@ public class Feedback extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.feedback_menu, menu);
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.filterFeedback){

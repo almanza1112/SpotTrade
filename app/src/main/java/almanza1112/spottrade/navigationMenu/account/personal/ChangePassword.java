@@ -1,4 +1,4 @@
-package almanza1112.spottrade.account.personal;
+package almanza1112.spottrade.navigationMenu.account.personal;
 
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -41,25 +41,25 @@ public class ChangePassword extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.change_password, container, false);
-        final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        final Toolbar toolbar = view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setTitle(R.string.Change_Password);
 
-        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
+        progressBar = view.findViewById(R.id.progressBar);
 
-        tilCurrentPassword = (TextInputLayout) view.findViewById(R.id.tilCurrentPassword);
-        tietCurrentPassword = (TextInputEditText) view.findViewById(R.id.tietCurrentPassword);
+        tilCurrentPassword = view.findViewById(R.id.tilCurrentPassword);
+        tietCurrentPassword = view.findViewById(R.id.tietCurrentPassword);
 
-        tilNewPassword = (TextInputLayout) view.findViewById(R.id.tilNewPassword);
-        tietNewPassword = (TextInputEditText) view.findViewById(R.id.tietNewPassword);
+        tilNewPassword = view.findViewById(R.id.tilNewPassword);
+        tietNewPassword = view.findViewById(R.id.tietNewPassword);
 
-        tilConfirmNewPassword = (TextInputLayout) view.findViewById(R.id.tilConfirmNewPassword);
-        tietConfirmNewPassword = (TextInputEditText) view.findViewById(R.id.tietConfirmNewPassword);
+        tilConfirmNewPassword = view.findViewById(R.id.tilConfirmNewPassword);
+        tietConfirmNewPassword = view.findViewById(R.id.tietConfirmNewPassword);
 
-        final Button bChangePassword = (Button) view.findViewById(R.id.bChangePassword);
+        final Button bChangePassword = view.findViewById(R.id.bChangePassword);
         bChangePassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

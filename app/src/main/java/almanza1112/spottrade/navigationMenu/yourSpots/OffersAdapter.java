@@ -1,4 +1,4 @@
-package almanza1112.spottrade.yourSpots;
+package almanza1112.spottrade.navigationMenu.yourSpots;
 
 import android.app.Activity;
 import android.support.v7.widget.RecyclerView;
@@ -93,13 +93,13 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
         Button bDeclineOffer, bAcceptOffer;
         RecyclerViewHolder(View view){
             super(view);
-            tvOffererName = (TextView) view.findViewById(R.id.tvOffererName);
-            ivOffererProfilePhoto = (ImageView) view.findViewById(R.id.ivOffererProfilePhoto);
-            tvPriceOffered = (TextView) view.findViewById(R.id.tvPriceOffered);
-            tvQuantityOffered = (TextView) view.findViewById(R.id.tvQuantityOffered);
-            tvTotalOffered = (TextView) view.findViewById(R.id.tvTotalOffered);
-            bDeclineOffer = (Button) view.findViewById(R.id.bDeclineOffer);
-            bAcceptOffer = (Button) view.findViewById(R.id.bAcceptOffer);
+            tvOffererName = view.findViewById(R.id.tvOffererName);
+            ivOffererProfilePhoto = view.findViewById(R.id.ivOffererProfilePhoto);
+            tvPriceOffered = view.findViewById(R.id.tvPriceOffered);
+            tvQuantityOffered = view.findViewById(R.id.tvQuantityOffered);
+            tvTotalOffered = view.findViewById(R.id.tvTotalOffered);
+            bDeclineOffer = view.findViewById(R.id.bDeclineOffer);
+            bAcceptOffer = view.findViewById(R.id.bAcceptOffer);
             bDeclineOffer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

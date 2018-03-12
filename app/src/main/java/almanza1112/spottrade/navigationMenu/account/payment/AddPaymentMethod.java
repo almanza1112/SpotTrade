@@ -1,4 +1,4 @@
-package almanza1112.spottrade.account.payment;
+package almanza1112.spottrade.navigationMenu.account.payment;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -100,17 +100,17 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
 
         pd = new ProgressDialog(getActivity());
 
-        final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        final Toolbar toolbar = view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setTitle(R.string.Add_Payment_Method);
 
-        final LinearLayout llCreditDebitCard = (LinearLayout) view.findViewById(R.id.llCreditDebitCard);
-        final TextView tvPayPal = (TextView) view.findViewById(R.id.tvPayPal);
-        final TextView tvVenmo = (TextView) view.findViewById(R.id.tvVenmo);
-        final TextView tvAndroidPay = (TextView) view.findViewById(R.id.tvAndroidPay);
+        final LinearLayout llCreditDebitCard = view.findViewById(R.id.llCreditDebitCard);
+        final TextView tvPayPal = view.findViewById(R.id.tvPayPal);
+        final TextView tvVenmo = view.findViewById(R.id.tvVenmo);
+        final TextView tvAndroidPay = view.findViewById(R.id.tvAndroidPay);
 
         llCreditDebitCard.setOnClickListener(this);
         tvPayPal.setOnClickListener(this);

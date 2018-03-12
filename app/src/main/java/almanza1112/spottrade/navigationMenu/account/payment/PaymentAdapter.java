@@ -1,4 +1,4 @@
-package almanza1112.spottrade.account.payment;
+package almanza1112.spottrade.navigationMenu.account.payment;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -94,11 +94,11 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
         TextView tvPaymentTypeName, tvCredentials, tvDefault;
         RecyclerViewHolder(View view){
             super(view);
-            ivImage = (ImageView) view.findViewById(R.id.ivImage);
-            tvPaymentTypeName = (TextView) view.findViewById(R.id.tvPaymentTypeName);
-            tvCredentials = (TextView) view.findViewById(R.id.tvCredentials);
-            tvDefault = (TextView) view.findViewById(R.id.tvDefault);
-            ivEdit = (ImageView) view.findViewById(R.id.ivEdit);
+            ivImage = view.findViewById(R.id.ivImage);
+            tvPaymentTypeName = view.findViewById(R.id.tvPaymentTypeName);
+            tvCredentials = view.findViewById(R.id.tvCredentials);
+            tvDefault = view.findViewById(R.id.tvDefault);
+            ivEdit = view.findViewById(R.id.ivEdit);
             ivEdit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -185,9 +185,9 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
         LayoutInflater inflater = activity.getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.payment_delete_alertdialog, null);
 
-        ImageView ivPaymentImage = (ImageView) alertLayout.findViewById(R.id.ivPaymentImage);
-        TextView tvPaymentName = (TextView) alertLayout.findViewById(R.id.tvPaymentName);
-        TextView tvPaymentCredentials = (TextView) alertLayout.findViewById(R.id.tvPaymentCredentials);
+        ImageView ivPaymentImage = alertLayout.findViewById(R.id.ivPaymentImage);
+        TextView tvPaymentName = alertLayout.findViewById(R.id.tvPaymentName);
+        TextView tvPaymentCredentials = alertLayout.findViewById(R.id.tvPaymentCredentials);
 
         Picasso.with(activity).load(imageURL.get(position)).into(ivPaymentImage);
         tvPaymentName.setText(paymentTypeName.get(position));

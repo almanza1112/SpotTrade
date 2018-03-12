@@ -1,4 +1,4 @@
-package almanza1112.spottrade.account.history;
+package almanza1112.spottrade.navigationMenu.account.history;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -55,31 +55,31 @@ public class HistorySpot extends Fragment {
         String id = getArguments().getString("id");
         String locationName = getArguments().getString("locationName");
 
-        final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        final Toolbar toolbar = view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setTitle(locationName);
 
-        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
-        tvLocationName = (TextView) view.findViewById(R.id.tvLocationName);
-        tvLocationAddress = (TextView) view.findViewById(R.id.tvLocationAddress);
-        ivStaticMap = (ImageView) view.findViewById(R.id.ivStaticMap);
-        tvDate = (TextView) view.findViewById(R.id.tvDate);
-        tvSellerText = (TextView) view.findViewById(R.id.tvSellerText);
-        tvSellerName = (TextView) view.findViewById(R.id.tvSellerName);
-        tvBuyerText = (TextView) view.findViewById(R.id.tvBuyerText);
-        tvBuyerName = (TextView) view.findViewById(R.id.tvBuyerName);
-        cvSellerProfilePhoto = (CardView) view.findViewById(R.id.cvSellerProfilePhoto);
-        ivSellerProfilePhoto = (ImageView) view.findViewById(R.id.ivSellerProfilePhoto);
-        cvBuyerProfilePhoto = (CardView) view.findViewById(R.id.cvBuyerProfilePhoto);
-        ivBuyerProfilePhoto = (ImageView) view.findViewById(R.id.ivBuyerProfilePhoto);
-        tvQuantity = (TextView) view.findViewById(R.id.tvQuantity);
-        tvPrice = (TextView) view.findViewById(R.id.tvPrice);
-        tvTotal = (TextView) view.findViewById(R.id.tvTotal);
-        tvDescription = (TextView) view.findViewById(R.id.tvDescription);
-        tvFeedback = (TextView) view.findViewById(R.id.tvFeedback);
+        progressBar = view.findViewById(R.id.progressBar);
+        tvLocationName = view.findViewById(R.id.tvLocationName);
+        tvLocationAddress = view.findViewById(R.id.tvLocationAddress);
+        ivStaticMap = view.findViewById(R.id.ivStaticMap);
+        tvDate = view.findViewById(R.id.tvDate);
+        tvSellerText = view.findViewById(R.id.tvSellerText);
+        tvSellerName = view.findViewById(R.id.tvSellerName);
+        tvBuyerText = view.findViewById(R.id.tvBuyerText);
+        tvBuyerName = view.findViewById(R.id.tvBuyerName);
+        cvSellerProfilePhoto = view.findViewById(R.id.cvSellerProfilePhoto);
+        ivSellerProfilePhoto = view.findViewById(R.id.ivSellerProfilePhoto);
+        cvBuyerProfilePhoto = view.findViewById(R.id.cvBuyerProfilePhoto);
+        ivBuyerProfilePhoto = view.findViewById(R.id.ivBuyerProfilePhoto);
+        tvQuantity = view.findViewById(R.id.tvQuantity);
+        tvPrice = view.findViewById(R.id.tvPrice);
+        tvTotal = view.findViewById(R.id.tvTotal);
+        tvDescription = view.findViewById(R.id.tvDescription);
+        tvFeedback = view.findViewById(R.id.tvFeedback);
 
         getInformation(id);
         return view;
@@ -144,8 +144,7 @@ public class HistorySpot extends Fragment {
                                     locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerLastName") + " " +
                                             locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerOverallRating") + " (" +
                                             locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerTotalRatings") + ")");
-                        }
-                        else if (type.equals("Sell") && !sellerID.equals(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)))){
+                        } else if (type.equals("Sell") && !sellerID.equals(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)))){
                             cvSellerProfilePhoto.setVisibility(View.VISIBLE);
                             Picasso.
                                     with(getActivity()).
@@ -167,12 +166,10 @@ public class HistorySpot extends Fragment {
                         tvPrice.setText("$" + price);
                         tvTotal.setText("$" + total);
                         tvDescription.setText(locationObj.getString("description"));
-                    }
-                    else if (response.getString("status").equals("fail")){
+                    } else if (response.getString("status").equals("fail")){
                         Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
-                }
-                catch (JSONException e){
+                } catch (JSONException e){
                     Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                 }
                 progressBar.setVisibility(View.GONE);

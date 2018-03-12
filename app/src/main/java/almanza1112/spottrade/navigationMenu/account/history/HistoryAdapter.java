@@ -1,4 +1,4 @@
-package almanza1112.spottrade.account.history;
+package almanza1112.spottrade.navigationMenu.account.history;
 
 import android.app.Activity;
 import android.app.FragmentTransaction;
@@ -53,8 +53,7 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
     public void onBindViewHolder(RecyclerViewHolder holder, int position) {
         if (type.get(position).equals("Sell")){
             holder.ivTypeIcon.setImageResource(R.mipmap.ic_currency_usd_grey600_24dp);
-        }
-        else {
+        } else {
             holder.ivTypeIcon.setImageResource(R.mipmap.ic_human_handsup_grey600_24dp);
         }
         Picasso.with(activity).load(locationStaticMapUrl.get(position)).fit().into(holder.ivStaticMap);
@@ -75,7 +74,7 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
                     tvDateCompleted;
         RecyclerViewHolder(View view){
             super(view);
-            cvHistory = (CardView) view.findViewById(R.id.cvHistory);
+            cvHistory = view.findViewById(R.id.cvHistory);
             cvHistory.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -90,11 +89,11 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
                     fragmentTransaction.commit();
                 }
             });
-            ivTypeIcon = (ImageView) view.findViewById(R.id.ivTypeIcon);
-            ivStaticMap = (ImageView) view.findViewById(R.id.ivStaticMap);
-            tvLocationName = (TextView) view.findViewById(R.id.tvLocationName);
-            tvLocationAddress = (TextView) view.findViewById(R.id.tvLocationAddress);
-            tvDateCompleted = (TextView) view.findViewById(R.id.tvDateCompleted);
+            ivTypeIcon = view.findViewById(R.id.ivTypeIcon);
+            ivStaticMap = view.findViewById(R.id.ivStaticMap);
+            tvLocationName = view.findViewById(R.id.tvLocationName);
+            tvLocationAddress = view.findViewById(R.id.tvLocationAddress);
+            tvDateCompleted = view.findViewById(R.id.tvDateCompleted);
         }
     }
 }

@@ -1,4 +1,4 @@
-package almanza1112.spottrade.account.payment;
+package almanza1112.spottrade.navigationMenu.account.payment;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;

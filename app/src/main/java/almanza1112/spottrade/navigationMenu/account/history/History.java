@@ -1,9 +1,9 @@
-package almanza1112.spottrade.yourSpots;
-
+package almanza1112.spottrade.navigationMenu.account.history;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -31,36 +32,40 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import almanza1112.spottrade.R;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
 /**
- * Created by almanza1112 on 8/10/17.
+ * Created by almanza1112 on 7/25/17.
  */
 
-public class YourSpots extends Fragment {
+public class History extends Fragment {
 
-    RecyclerView rvYourSpots;
+    RecyclerView rvHistory;
     RecyclerView.Adapter adapter;
     RecyclerView.LayoutManager layoutManager;
     private ProgressBar progressBar;
     final int[] pos = {2};
+    private TextView tvNoHistory;
 
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.your_spots, container, false);
-
-        final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
-        toolbar.setTitle(R.string.Your_Spots);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.history, container, false);
+        final Toolbar toolbar = view.findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.History);
 
         AppCompatActivity actionBar = (AppCompatActivity) getActivity();
         actionBar.setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) actionBar.findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = actionBar.findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 getActivity(),
                 drawer,
@@ -76,9 +81,10 @@ public class YourSpots extends Fragment {
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
-        rvYourSpots = (RecyclerView) view.findViewById(R.id.rvYourSpots);
-        getYourSpots("all");
+        progressBar = view.findViewById(R.id.progressBar);
+        rvHistory = view.findViewById(R.id.rvHistory);
+        tvNoHistory = view.findViewById(R.id.tvNoHistory);
+        getHistory("all");
         return view;
     }
 
@@ -98,15 +104,15 @@ public class YourSpots extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.your_spots_menu, menu);
+        inflater.inflate(R.menu.history_menu, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.filterYourSpots){
+        if (item.getItemId() == R.id.filterHistory){
             final CharSequence[] items = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request), getResources().getString(R.string.All)};
             final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
-            alertDialogBuilder.setTitle(getResources().getString(R.string.Filter) + " " + getResources().getString(R.string.Your_Spots));
+            alertDialogBuilder.setTitle(getResources().getString(R.string.Filter) + " " + getResources().getString(R.string.History));
             alertDialogBuilder.setSingleChoiceItems(items, pos[0], new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -119,14 +125,12 @@ public class YourSpots extends Fragment {
                     String type;
                     if (pos[0] == 0){
                         type = "Sell";
-                    }
-                    else if (pos[0] == 1){
+                    } else if (pos[0] == 1){
                         type = "Request";
-                    }
-                    else {
+                    } else {
                         type = "all";
                     }
-                    getYourSpots(type);
+                    getHistory(type);
                 }
             });
             alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
@@ -141,70 +145,61 @@ public class YourSpots extends Fragment {
         return true;
     }
 
-    private void getYourSpots(String type){
+    private void getHistory(String type){
         progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/yourspots?id="+ SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)) + "&transaction=available&type=" + type, null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/history?sellerID="+ SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)) + "&type=" + type, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
                     if (response.getString("status").equals("success")){
-                        List<String> lid = new ArrayList<>();
+                        tvNoHistory.setVisibility(View.GONE);
+                        List<String> id = new ArrayList<>();
+                        List<String> type = new ArrayList<>();
+                        List<String> dateCompleted = new ArrayList<>();
                         List<String> locationName = new ArrayList<>();
                         List<String> locationAddress = new ArrayList<>();
-                        List<String> type = new ArrayList<>();
-                        List<String> price = new ArrayList<>();
-                        List<Integer> quantity = new ArrayList<>();
-                        List<Boolean> offerAllowed = new ArrayList<>();
-                        List<Integer> offerTotal = new ArrayList<>();
-                        List<String> offerTotalString = new ArrayList<>();
-                        List<String> description = new ArrayList<>();
+                        List<String> locationStaticMapUrl = new ArrayList<>();
 
-                        JSONArray locationArray = new JSONArray(response.getString("location"));
-                        for (int i = 0; i < locationArray.length(); i++){
-                            JSONObject locationObj = locationArray.getJSONObject(i);
-                            lid.add(locationObj.getString("_id"));
+                        String locations = response.getString("location");
+                        JSONArray jsonArray = new JSONArray(locations);
+
+                        String lat, lng;
+                        for (int i = 0; i < jsonArray.length(); i++){
+                            JSONObject locationObj = jsonArray.getJSONObject(i);
+                            id.add(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("_id"));
+                            type.add(locationObj.getString("type"));
+                            String convertedDate = epochToDateString(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getLong("dateTransactionCompleted"));
+                            dateCompleted.add(convertedDate);
                             locationName.add(locationObj.getString("name"));
                             locationAddress.add(locationObj.getString("address"));
-                            type.add(locationObj.getString("type"));
-                            quantity.add(locationObj.getInt("quantity"));
-                            price.add(locationObj.getString("price"));
-                            offerAllowed.add(locationObj.getBoolean("offerAllowed"));
-                            description.add(locationObj.getString("description"));
-
-                            if (locationObj.getBoolean("offerAllowed")){
-                                int offersTotal = locationObj.getInt("offersTotal");
-                                offerTotal.add(offersTotal);
-                                String offersTotalString;
-                                if (offersTotal == 1){
-                                    offersTotalString = offersTotal + " " + getResources().getString(R.string.offer);
-                                }
-                                else {
-                                    offersTotalString = offersTotal + " " + getResources().getString(R.string.offers);
-                                }
-                                offerTotalString.add(offersTotalString);
-                            }
-                            else{
-                                offerTotal.add(0);
-                                offerTotalString.add("0");
-                            }
+                            lat = locationObj.getString("latitude");
+                            lng = locationObj.getString("longitude");
+                            String url = "http://maps.google.com/maps/api/staticmap?center=" +
+                                    lat +
+                                    "," +
+                                    lng +
+                                    "&zoom=15&" +
+                                    "markers=color:0xFFC107|" + lat + "," + lng +
+                                    "&size=1000x150&scale=2&" +
+                                    "key=" + getResources().getString(R.string.google_maps_key);
+                            locationStaticMapUrl.add(url);
                         }
-                        adapter = new YourSpotsAdapter(getActivity(), lid, locationName,
-                                locationAddress, type, quantity, price, offerAllowed, offerTotal,
-                                offerTotalString, description);
-                        layoutManager = new LinearLayoutManager(getActivity());
-                        rvYourSpots.setLayoutManager(layoutManager);
-                        rvYourSpots.setAdapter(adapter);
-                    }
-                    else {
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
-                    }
-                }
-                catch (JSONException e){
-                    Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
 
+                        adapter = new HistoryAdapter(   getActivity(), id, type, dateCompleted,
+                                                        locationName, locationAddress,
+                                                        locationStaticMapUrl);
+                        layoutManager = new LinearLayoutManager(getActivity());
+                        rvHistory.setLayoutManager(layoutManager);
+                        rvHistory.setAdapter(adapter);
+                    } else if (response.getString("status").equals("fail")){
+                        rvHistory.setAdapter(null);
+                        tvNoHistory.setVisibility(View.VISIBLE);
+                    }
+                } catch (JSONException e){
+                    Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                 }
                 progressBar.setVisibility(View.GONE);
             }
@@ -217,5 +212,11 @@ public class YourSpots extends Fragment {
         }
         );
         queue.add(jsonObjectRequest);
+    }
+
+    private String epochToDateString(long epochSeconds) {
+        Date updatedate = new Date(epochSeconds * 1000);
+        SimpleDateFormat format = new SimpleDateFormat("EEE, d MMM yyyy 'at' H:mm a", Locale.getDefault());
+        return format.format(updatedate);
     }
 }

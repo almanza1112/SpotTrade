@@ -1,4 +1,4 @@
-package almanza1112.spottrade.yourSpots;
+package almanza1112.spottrade.navigationMenu.yourSpots;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -55,15 +55,15 @@ public class ViewOffers extends Fragment {
 
         lid = getArguments().getString("lid");
 
-        final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        final Toolbar toolbar = view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setTitle(getResources().getString(R.string._Offers));
 
-        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
-        rvOffers = (RecyclerView) view.findViewById(R.id.rvOffers);
+        progressBar = view.findViewById(R.id.progressBar);
+        rvOffers = view.findViewById(R.id.rvOffers);
         getOffers();
         return view;
     }
@@ -152,8 +152,7 @@ public class ViewOffers extends Fragment {
                             );
                             if (offersArr.getJSONObject(i).has("offererProfilePhotoUrl")){
                                 profilePhotoUrl.add(offersArr.getJSONObject(i).getString("offererProfilePhotoUrl"));
-                            }
-                            else {
+                            } else {
                                 profilePhotoUrl.add("empty");
                             }
                             String price = offersArr.getJSONObject(i).getString("offerPrice");
@@ -172,12 +171,10 @@ public class ViewOffers extends Fragment {
                         rvOffers.setLayoutManager(layoutManager);
                         rvOffers.setAdapter(adapter);
 
-                    }
-                    else {
+                    } else {
                         Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
-                }
-                catch (JSONException e){
+                } catch (JSONException e){
                     Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                 }
                 progressBar.setVisibility(View.GONE);

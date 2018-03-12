@@ -1,4 +1,4 @@
-package almanza1112.spottrade.yourSpots;
+package almanza1112.spottrade.navigationMenu.yourSpots;
 
 import android.app.AlertDialog;
 import android.app.FragmentTransaction;
@@ -14,11 +14,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.ProgressBar;
@@ -73,21 +71,21 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         boolean bidAllowed = getArguments().getBoolean("offerAllowed");
         int offerTotal = getArguments().getInt("offerTotal");
 
-        toolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        toolbar = view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setTitle(name);
 
-        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
+        progressBar = view.findViewById(R.id.progressBar);
 
-        tvLocationName = (TextView) view.findViewById(R.id.tvLocationName);
-        tvLocationAddress = (TextView) view.findViewById(R.id.tvLocationAddress);
-        tvType = (TextView) view.findViewById(R.id.tvType);
-        tvPrice = (TextView) view.findViewById(R.id.tvPrice);
-        tvQuantity = (TextView) view.findViewById(R.id.tvQuantity);
-        CheckBox cbBids = (CheckBox) view.findViewById(R.id.cbOffers);
+        tvLocationName = view.findViewById(R.id.tvLocationName);
+        tvLocationAddress = view.findViewById(R.id.tvLocationAddress);
+        tvType = view.findViewById(R.id.tvType);
+        tvPrice = view.findViewById(R.id.tvPrice);
+        tvQuantity = view.findViewById(R.id.tvQuantity);
+        CheckBox cbBids = view.findViewById(R.id.cbOffers);
         cbBids.setChecked(bidAllowed);
         cbBids.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -95,22 +93,16 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                 updateField("offerAllowed", String.valueOf(isChecked), null);
             }
         });
-        tvDescription = (TextView) view.findViewById(R.id.tvDescription);
-        tvViewOffers = (TextView) view.findViewById(R.id.tvViewOffers);
-        LinearLayout llViewOffers = (LinearLayout) view.findViewById(R.id.llViewOffers);
+        tvDescription = view.findViewById(R.id.tvDescription);
+        tvViewOffers = view.findViewById(R.id.tvViewOffers);
+        LinearLayout llViewOffers = view.findViewById(R.id.llViewOffers);
 
-        final ImageView ivEditLocation = (ImageView) view.findViewById(R.id.ivEditLocation);
-        ivEditLocation.setOnClickListener(this);
-        final ImageView ivEditType = (ImageView) view.findViewById(R.id.ivEditType);
-        ivEditType.setOnClickListener(this);
-        final ImageView ivEditPrice = (ImageView) view.findViewById(R.id.ivEditPrice);
-        ivEditPrice.setOnClickListener(this);
-        final ImageView ivEditQuantity = (ImageView) view.findViewById(R.id.ivEditQuantity);
-        ivEditQuantity.setOnClickListener(this);
-        final ImageView ivEditDescription = (ImageView) view.findViewById(R.id.ivEditDescription);
-        ivEditDescription.setOnClickListener(this);
-        final Button bDelete = (Button) view.findViewById(R.id.bDelete);
-        bDelete.setOnClickListener(this);
+        view.findViewById(R.id.ivEditLocation).setOnClickListener(this);
+        view.findViewById(R.id.ivEditType).setOnClickListener(this);
+        view.findViewById(R.id.ivEditPrice).setOnClickListener(this);
+        view.findViewById(R.id.ivEditQuantity).setOnClickListener(this);
+        view.findViewById(R.id.ivEditDescription).setOnClickListener(this);
+        view.findViewById(R.id.bDelete).setOnClickListener(this);
 
         tvLocationName.setText(name);
         tvLocationAddress.setText(address);
@@ -123,16 +115,13 @@ public class EditSpot extends Fragment implements View.OnClickListener{
             if (offerTotal == 1){
                 tvViewOffers.setText(getResources().getString(R.string.View_1_offer));
                 tvViewOffers.setOnClickListener(this);
-            }
-            else if (offerTotal > 1){
+            } else if (offerTotal > 1){
                 tvViewOffers.setText(getResources().getString(R.string.View_all) + " " + offerTotal + " " + getResources().getString(R.string.offers));
                 tvViewOffers.setOnClickListener(this);
-            }
-            else { // offerTotal == 0
+            } else { // offerTotal == 0
                 tvViewOffers.setText(getResources().getString(R.string.No_offers));
             }
-        }
-        else {
+        } else {
             llViewOffers.setVisibility(View.GONE);
         }
         return view;
@@ -198,11 +187,9 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                     jsonObject.put("address", place.getAddress().toString());
                     jsonObject.put("latitude", String.valueOf(place.getLatLng().latitude));
                     jsonObject.put("longitude", String.valueOf(place.getLatLng().longitude));
-                }
-                catch (JSONException e){e.printStackTrace();}
+                } catch (JSONException e){e.printStackTrace();}
                 updateField("location", null, jsonObject);
-            }
-            else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
+            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(getActivity(), data);
                 Toast.makeText(getActivity(), status.getStatusMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -237,8 +224,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         final int[] newI = new int[1];
         if (tvType.getText().toString().equals("Sell")){
             i = 0;
-        }
-        else {
+        } else {
             i = 1;
         }
         newI[0] = i;
@@ -256,8 +242,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                 String str;
                 if (newI[0] == 0){
                     str = "Sell";
-                }
-                else {
+                } else {
                     str = "Request";
                 }
                 updateField("type", str, null);
@@ -277,7 +262,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.edit_spot_price_alertdialog, null);
 
-        final EditText etPrice = (EditText) alertLayout.findViewById(R.id.etPrice);
+        final EditText etPrice = alertLayout.findViewById(R.id.etPrice);
         etPrice.setText(tvPrice.getText().toString());
         etPrice.setSelection(etPrice.getText().length());
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
@@ -303,7 +288,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.number_picker, null);
 
-        final NumberPicker npQuantity = (NumberPicker) alertLayout.findViewById(R.id.npQuantity);
+        final NumberPicker npQuantity = alertLayout.findViewById(R.id.npQuantity);
         npQuantity.setMinValue(1);
         npQuantity.setMaxValue(100);
         npQuantity.setValue(quantity);
@@ -332,7 +317,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.edit_spot_description_alertdialog, null);
 
-        final EditText etDescription = (EditText) alertLayout.findViewById(R.id.etDescription);
+        final EditText etDescription = alertLayout.findViewById(R.id.etDescription);
         etDescription.setText(tvDescription.getText().toString());
         etDescription.setSelection(tvDescription.getText().length());
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
@@ -389,8 +374,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                         getActivity().getFragmentManager().popBackStack();
                         Toast.makeText(getActivity(), R.string.Spot_successfully_deleted, Toast.LENGTH_SHORT).show();
                     }
-                }
-                catch (JSONException e){
+                } catch (JSONException e){
                     e.printStackTrace();
                 }
             }
@@ -410,12 +394,10 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         try {
             if (location == null){
                 jObject.put(field, str);
-            }
-            else {
+            } else {
                 jObject = location;
             }
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         RequestQueue queue = Volley.newRequestQueue(getActivity());
@@ -455,8 +437,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                                 break;
                         }
                     }
-                }
-                catch(JSONException e){
+                } catch(JSONException e){
                     Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                 }
                 progressBar.setVisibility(View.GONE);

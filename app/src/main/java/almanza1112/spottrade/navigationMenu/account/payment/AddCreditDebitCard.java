@@ -1,4 +1,4 @@
-package almanza1112.spottrade.account.payment;
+package almanza1112.spottrade.navigationMenu.account.payment;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -103,21 +103,21 @@ public class AddCreditDebitCard extends Fragment {
 
         pd = new ProgressDialog(getActivity());
 
-        final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        final Toolbar toolbar = view.findViewById(R.id.toolbar);
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
         ((AppCompatActivity) getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
         ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setTitle(R.string.Add_Credit_or_Debit_Card);
 
-        tilCardNumber = (TextInputLayout) view.findViewById(R.id.tilCardNumber);
-        tietCardNumber = (TextInputEditText) view.findViewById(R.id.tietCardNumber);
-        tilExpirationDate = (TextInputLayout) view.findViewById(R.id.tilExpirationDate);
-        tietExpirationDate = (TextInputEditText) view.findViewById(R.id.tietExpirationDate);
-        tilCVV = (TextInputLayout) view.findViewById(R.id.tilCVV);
-        tietCVV = (TextInputEditText) view.findViewById(R.id.tietCVV);
-        tilZipCode = (TextInputLayout) view.findViewById(R.id.tilZipCode);
-        tietZipCode = (TextInputEditText) view.findViewById(R.id.tietZipCode);
+        tilCardNumber = view.findViewById(R.id.tilCardNumber);
+        tietCardNumber = view.findViewById(R.id.tietCardNumber);
+        tilExpirationDate = view.findViewById(R.id.tilExpirationDate);
+        tietExpirationDate = view.findViewById(R.id.tietExpirationDate);
+        tilCVV = view.findViewById(R.id.tilCVV);
+        tietCVV = view.findViewById(R.id.tietCVV);
+        tilZipCode = view.findViewById(R.id.tilZipCode);
+        tietZipCode = view.findViewById(R.id.tietZipCode);
 
         tietCardNumber.addTextChangedListener(new TextWatcher() {
 
@@ -214,7 +214,7 @@ public class AddCreditDebitCard extends Fragment {
             }
         });
 
-        final Button bAddCard = (Button) view.findViewById(R.id.bAddCard);
+        final Button bAddCard = view.findViewById(R.id.bAddCard);
         bAddCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -39,7 +39,7 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-import almanza1112.spottrade.account.payment.AddPaymentMethod;
+import almanza1112.spottrade.navigationMenu.account.payment.AddPaymentMethod;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
@@ -75,7 +75,7 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
 
         pd = new ProgressDialog(this);
 
-        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        final Toolbar toolbar = findViewById(R.id.toolbar);
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
@@ -83,15 +83,15 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         toolbar.setTitle(R.string.Create_Spot);
 
-        tvType = (TextView) findViewById(R.id.tvType);
+        tvType = findViewById(R.id.tvType);
         tvType.setOnClickListener(this);
-        tvLocationName = (TextView) findViewById(R.id.tvLocationName);
+        tvLocationName = findViewById(R.id.tvLocationName);
         tvLocationName.setOnClickListener(this);
-        tvLocationAddress = (TextView) findViewById(R.id.tvLocationAddress);
+        tvLocationAddress = findViewById(R.id.tvLocationAddress);
         tvLocationAddress.setOnClickListener(this);
-        tvAddLocation = (TextView) findViewById(R.id.tvAddLocation);
+        tvAddLocation = findViewById(R.id.tvAddLocation);
         tvAddLocation.setOnClickListener(this);
-        tvQuantity = (TextView) findViewById(R.id.tvQuantity);
+        tvQuantity = findViewById(R.id.tvQuantity);
         tvQuantity.setText("1 " + getResources().getString(R.string.available));
         tvQuantity.setOnClickListener(this);
 
@@ -105,12 +105,12 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
             tvLocationAddress.setText(locationAddress);
         }
 
-        tietDescription = (TextInputEditText) findViewById(R.id.tietDescription);
-        tilPrice = (TextInputLayout) findViewById(R.id.tilPrice);
-        tietPrice = (TextInputEditText) findViewById(R.id.tietPrice);
-        cbOffers = (CheckBox) findViewById(R.id.cbOffers);
+        tietDescription = findViewById(R.id.tietDescription);
+        tilPrice = findViewById(R.id.tilPrice);
+        tietPrice = findViewById(R.id.tietPrice);
+        cbOffers = findViewById(R.id.cbOffers);
 
-        final Button bCreateSpot = (Button) findViewById(R.id.bCreateSpot);
+        final Button bCreateSpot = findViewById(R.id.bCreateSpot);
         bCreateSpot.setOnClickListener(this);
     }
 
@@ -139,8 +139,7 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
                         if (pos[0] == 0){
                             type = "Sell";
                             tvType.setText(R.string.Sell);
-                        }
-                        else {
+                        } else {
                             type = "Request";
                             tvType.setText(R.string.Request);
                         }
@@ -158,8 +157,7 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
                     pd.show();
                     if (type.equals("Request")){
                         validatePaymentMethod();
-                    }
-                    else {
+                    } else {
                         postRequest();
                     }
                 }
@@ -168,7 +166,7 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
                 LayoutInflater inflater = getLayoutInflater();
                 View alertLayout = inflater.inflate(R.layout.number_picker, null);
 
-                final NumberPicker npQuantity = (NumberPicker) alertLayout.findViewById(R.id.npQuantity);
+                final NumberPicker npQuantity = alertLayout.findViewById(R.id.npQuantity);
                 npQuantity.setMinValue(1);
                 npQuantity.setMaxValue(100);
                 npQuantity.setValue(quantity);
@@ -222,8 +220,7 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
                 tvAddLocation.setVisibility(View.GONE);
                 tvLocationName.setVisibility(View.VISIBLE);
                 tvLocationAddress.setVisibility(View.VISIBLE);
-            }
-            else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
+            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(this, data);
                 Toast.makeText(this, status.getStatusMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -245,8 +242,7 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
         if (tietPrice.getText().toString().isEmpty()){
             sitch = false;
             tilPrice.setError(getResources().getString(R.string.Must_have_price));
-        }
-        else {
+        } else {
             tilPrice.setErrorEnabled(false);
             sitch = true;
         }
@@ -269,18 +265,15 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
                             if (response.getString("status").equals("success")) {
                                 if (new JSONArray(response.getJSONObject("customer").getString("paymentMethods")).length() != 0){
                                     postRequest();
-                                }
-                                else {
+                                } else {
                                     pd.dismiss();
                                     ADnoPaymentMethod();
                                 }
-                            }
-                            else if (response.getString("status").equals("fail")) {
+                            } else if (response.getString("status").equals("fail")) {
                                 pd.dismiss();
                                 ADnoPaymentMethod();
                             }
-                        }
-                        catch (JSONException e){
+                        } catch (JSONException e){
                             pd.dismiss();
                             Toast.makeText(CreateSpotActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                         }
@@ -346,8 +339,7 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
 
             sellerInfoObj.put("sellerID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
             jsonObject.put("sellerInfo", sellerInfoObj);
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
@@ -368,13 +360,11 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
                                 intent.putExtra("name", response.getString("name"));
                                 setResult(RESULT_OK, intent);
                                 finish();
-                            }
-                            else {
+                            } else {
                                 pd.dismiss();
                                 Toast.makeText(CreateSpotActivity.this, getResources().getString(R.string.Error_unable_to_add_spot), Toast.LENGTH_SHORT).show();
                             }
-                        }
-                        catch (JSONException e){
+                        } catch (JSONException e){
                             pd.dismiss();
                             Toast.makeText(CreateSpotActivity.this, getResources().getString(R.string.Error_unable_to_add_spot), Toast.LENGTH_SHORT).show();
                         }
@@ -399,8 +389,6 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
             }
         };
 
-        // Access the RequestQueue through your singleton class.
         queue.add(jsObjRequest);
-
     }
 }
