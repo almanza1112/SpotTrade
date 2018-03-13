@@ -9,7 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +27,7 @@ public class About extends Fragment {
         View view = inflater.inflate(R.layout.about, container, false);
 
         final Toolbar toolbar = view.findViewById(R.id.toolbar);
-        toolbar.setTitle(R.string.Feedback);
+        toolbar.setTitle(R.string.About);
 
         AppCompatActivity actionBar = (AppCompatActivity) getActivity();
         actionBar.setSupportActionBar(toolbar);
@@ -64,10 +63,5 @@ public class About extends Fragment {
         searchItem.setVisible(false);
         MenuItem filterItem = menu.findItem(R.id.filterMaps);
         filterItem.setVisible(false);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.feedback_menu, menu);
     }
 }
