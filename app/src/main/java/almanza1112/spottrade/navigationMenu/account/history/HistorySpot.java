@@ -121,7 +121,7 @@ public class HistorySpot extends Fragment {
                                 "markers=color:0xFFC107|" + lat + "," + lng +
                                 "&size=1000x150&scale=2&" +
                                 "key=" + getResources().getString(R.string.google_maps_key);
-                        Picasso.with(getActivity()).load(url).fit().into(ivStaticMap);
+                        Picasso.get().load(url).fit().into(ivStaticMap);
                         String dateTime = epochToDateString(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getLong("datePurchased")); // TODO: change "datePurchased" to "dateTransactionCompleted"
                         tvDate.setText(dateTime);
                         String type = locationObj.getString("type");
@@ -132,7 +132,7 @@ public class HistorySpot extends Fragment {
                             // "You" and then add the name of the other user as the buyer
                             cvBuyerProfilePhoto.setVisibility(View.VISIBLE);
                             Picasso.
-                                    with(getActivity()).
+                                    get().
                                     load(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerProfilePhotoUrl")).
                                     fit().
                                     into(ivBuyerProfilePhoto);
@@ -147,7 +147,7 @@ public class HistorySpot extends Fragment {
                         } else if (type.equals("Sell") && !sellerID.equals(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)))){
                             cvSellerProfilePhoto.setVisibility(View.VISIBLE);
                             Picasso.
-                                    with(getActivity()).
+                                    get().
                                     load(locationObj.getJSONObject("sellerInfo").getString("sellerProfilePhotoUrl")).
                                     into(ivSellerProfilePhoto);
                             tvSellerText.setText(getResources().getString(R.string.Seller));

@@ -6,7 +6,12 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -73,6 +78,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -101,6 +107,7 @@ import almanza1112.spottrade.navigationMenu.account.payment.Payment;
 import almanza1112.spottrade.navigationMenu.account.history.History;
 import almanza1112.spottrade.navigationMenu.account.personal.Personal;
 import almanza1112.spottrade.login.LoginActivity;
+import almanza1112.spottrade.nonActivity.CircleTransform;
 import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 import almanza1112.spottrade.nonActivity.tracking.TrackerService;
@@ -252,7 +259,7 @@ public class MapsActivity extends AppCompatActivity
         View navHeaderView = navigationView.getHeaderView(0);
         final ImageView ivProfilePhoto = navHeaderView.findViewById(R.id.ivProfilePhoto);
         if (SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_photo_url)) != null) {
-            Picasso.with(this).load(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_photo_url))).fit().centerCrop().into(ivProfilePhoto);
+            Picasso.get().load(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_photo_url))).fit().centerCrop().into(ivProfilePhoto);
         }
         final TextView tvLoggedInFullName = navHeaderView.findViewById(R.id.tvLoggedInFullName);
         tvLoggedInFullName.setText(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_first_name)) + " " + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_last_name)));
@@ -620,7 +627,7 @@ public class MapsActivity extends AppCompatActivity
                     tvQuantity.setText(quantity + " " + getResources().getString(R.string.available));
 
                     if (sellerInfoObj.has("sellerProfilePhotoUrl")) {
-                        Picasso.with(MapsActivity.this).load(sellerInfoObj.getString("sellerProfilePhotoUrl")).fit().centerCrop().into(ivSellerProfilePhoto);
+                        Picasso.get().load(sellerInfoObj.getString("sellerProfilePhotoUrl")).fit().centerCrop().into(ivSellerProfilePhoto);
                     }
                     type = response.getString("type");
                     if (type.equals("Sell")) {
@@ -719,8 +726,7 @@ public class MapsActivity extends AppCompatActivity
         mGoogleApiClient.connect();
     }
 
-    private GoogleApiClient.ConnectionCallbacks mLocationRequestCallback = new GoogleApiClient
-            .ConnectionCallbacks() {
+    private GoogleApiClient.ConnectionCallbacks mLocationRequestCallback = new GoogleApiClient.ConnectionCallbacks() {
 
         @Override
         public void onConnected(Bundle bundle) {
@@ -782,7 +788,10 @@ public class MapsActivity extends AppCompatActivity
                             Double lat = Double.valueOf(locationObj.getString("latitude"));
                             Double lng = Double.valueOf(locationObj.getString("longitude"));
                             LatLng locash = new LatLng(lat, lng);
-                            marker = mMap.addMarker(new MarkerOptions().position(locash).title(locationObj.getString("name")));
+                            marker = mMap.addMarker(new MarkerOptions()
+                                    .position(locash)
+                                    .icon(BitmapDescriptorFactory.fromBitmap(customMarkerPrice("$"+locationObj.getString("price"), locationObj.getString("type"))))
+                                    .title(locationObj.getString("name")));
                             marker.setTag(locationObj.getString("_id"));
                         }
                         progressBar.setVisibility(View.GONE);
@@ -799,8 +808,7 @@ public class MapsActivity extends AppCompatActivity
             public void onErrorResponse(VolleyError error) {
                 error.printStackTrace();
             }
-        }
-        );
+        });
         queue.add(jsonObjectRequest);
     }
 
@@ -1251,7 +1259,7 @@ public class MapsActivity extends AppCompatActivity
         TextView tvPaymentName = alertLayout.findViewById(R.id.tvPaymentName);
         TextView tvPaymentCredentials = alertLayout.findViewById(R.id.tvPaymentCredentials);
 
-        Picasso.with(this).load(paymentImageUrl).into(ivPaymentImage);
+        Picasso.get().load(paymentImageUrl).into(ivPaymentImage);
         tvPaymentName.setText(paymentType);
         tvPaymentCredentials.setText(paymentCredentials);
 
@@ -1604,7 +1612,9 @@ public class MapsActivity extends AppCompatActivity
                     if (!buyerTracker.getKey().equals(SharedPref.getSharedPreferences(MapsActivity.this, getString(R.string.logged_in_user_id)))){
                         LatLng locash = new LatLng(buyerTracker.getLat(), buyerTracker.getLng());
                         if (!firstTime){
-                            marker = mMap.addMarker(new MarkerOptions().position(locash).title("Something"));
+                            marker = mMap.addMarker(new MarkerOptions()
+                                    .position(locash)
+                                    .icon(BitmapDescriptorFactory.fromBitmap(customMarkerProfilePhoto(SharedPref.getSharedPreferences(MapsActivity.this, getString(R.string.logged_in_user_photo_url))))));
                             firstTime = true;
                         } else {
                             animateMarker(marker, locash, false);
@@ -1618,6 +1628,52 @@ public class MapsActivity extends AppCompatActivity
 
             }
         });
+    }
+
+    private Bitmap customMarkerProfilePhoto(String profilePhotoUrl) {
+        View customMarkerView = ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker_user, null);
+        ImageView markerImageView = customMarkerView.findViewById(R.id.ivProfilePhoto);
+        Picasso.get().load(profilePhotoUrl).transform(new CircleTransform()).into(markerImageView);
+        customMarkerView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        customMarkerView.layout(0, 0, customMarkerView.getMeasuredWidth(), customMarkerView.getMeasuredHeight());
+        customMarkerView.buildDrawingCache();
+        Bitmap returnedBitmap = Bitmap.createBitmap(customMarkerView.getMeasuredWidth(), customMarkerView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(returnedBitmap);
+        canvas.drawColor(Color.WHITE, PorterDuff.Mode.SRC_IN);
+        Drawable drawable = customMarkerView.getBackground();
+        if (drawable != null)
+            drawable.draw(canvas);
+        customMarkerView.draw(canvas);
+        return returnedBitmap;
+    }
+
+    private Bitmap customMarkerPrice(String price, String type) {
+        View customMarkerView = ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker_price, null);
+
+        ImageView ivMarker = customMarkerView.findViewById(R.id.ivMarker);
+        TextView tvPrice = customMarkerView.findViewById(R.id.tvPrice);
+
+        if (type.equals("Sell")){
+            ivMarker.setImageResource(R.drawable.spottrade_marker_primary);
+            tvPrice.setTextColor(getResources().getColor(R.color.colorAccent));
+        } else {
+            ivMarker.setImageResource(R.drawable.spottrade_marker_accent);
+            tvPrice.setTextColor(getResources().getColor(R.color.colorPrimary));
+        }
+
+        tvPrice.setText(price);
+
+        customMarkerView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        customMarkerView.layout(0, 0, customMarkerView.getMeasuredWidth(), customMarkerView.getMeasuredHeight());
+        customMarkerView.buildDrawingCache();
+        Bitmap returnedBitmap = Bitmap.createBitmap(customMarkerView.getMeasuredWidth(), customMarkerView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(returnedBitmap);
+        canvas.drawColor(Color.WHITE, PorterDuff.Mode.SRC_IN);
+        Drawable drawable = customMarkerView.getBackground();
+        if (drawable != null)
+            drawable.draw(canvas);
+        customMarkerView.draw(canvas);
+        return returnedBitmap;
     }
 
     private void goToViewOffers(String lid){

@@ -72,7 +72,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
 
     @Override
     public void onBindViewHolder(PaymentAdapter.RecyclerViewHolder holder, int position) {
-        Picasso.with(activity).load(imageURL.get(position)).into(holder.ivImage);
+        Picasso.get().load(imageURL.get(position)).into(holder.ivImage);
         holder.tvPaymentTypeName.setText(paymentTypeName.get(position));
         holder.tvCredentials.setText(credentials.get(position));
         if (isDefault.get(position)){
@@ -189,7 +189,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
         TextView tvPaymentName = alertLayout.findViewById(R.id.tvPaymentName);
         TextView tvPaymentCredentials = alertLayout.findViewById(R.id.tvPaymentCredentials);
 
-        Picasso.with(activity).load(imageURL.get(position)).into(ivPaymentImage);
+        Picasso.get().load(imageURL.get(position)).into(ivPaymentImage);
         tvPaymentName.setText(paymentTypeName.get(position));
         tvPaymentCredentials.setText(credentials.get(position));
 

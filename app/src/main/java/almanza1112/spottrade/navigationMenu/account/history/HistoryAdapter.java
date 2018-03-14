@@ -56,7 +56,7 @@ class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.RecyclerViewHol
         } else {
             holder.ivTypeIcon.setImageResource(R.mipmap.ic_human_handsup_grey600_24dp);
         }
-        Picasso.with(activity).load(locationStaticMapUrl.get(position)).fit().into(holder.ivStaticMap);
+        Picasso.get().load(locationStaticMapUrl.get(position)).fit().into(holder.ivStaticMap);
         holder.tvLocationName.setText(locationName.get(position));
         holder.tvLocationAddress.setText(locationAddress.get(position));
         holder.tvDateCompleted.setText(dateCompleted.get(position));

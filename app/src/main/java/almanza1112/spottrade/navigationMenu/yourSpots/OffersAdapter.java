@@ -76,7 +76,7 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
     @Override
     public void onBindViewHolder(RecyclerViewHolder holder, int position) {
         holder.tvOffererName.setText(firstName.get(position));
-        Picasso.with(activity).load(profilePhotoUrl.get(position)).fit().centerCrop().into(holder.ivOffererProfilePhoto);
+        Picasso.get().load(profilePhotoUrl.get(position)).fit().centerCrop().into(holder.ivOffererProfilePhoto);
         holder.tvPriceOffered.setText("$"+priceOffered.get(position));
         holder.tvQuantityOffered.setText(quantityOffered.get(position) + "");
         holder.tvTotalOffered.setText(totalOfferPrice.get(position));
