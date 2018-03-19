@@ -1,7 +1,9 @@
 package almanza1112.spottrade;
 
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
+import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,8 +17,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.DatePicker;
 import android.widget.NumberPicker;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -36,7 +41,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import almanza1112.spottrade.navigationMenu.account.payment.AddPaymentMethod;
@@ -48,18 +57,21 @@ import almanza1112.spottrade.nonActivity.SharedPref;
  */
 
 public class CreateSpotActivity extends AppCompatActivity implements View.OnClickListener{
-    private TextView tvType, tvLocationName, tvLocationAddress, tvAddLocation, tvQuantity;
+    private TextView tvType, tvCategory, tvLocationName, tvLocationAddress, tvAddLocation,
+            tvDate, tvTime, tvQuantity;
     private TextInputLayout tilPrice;
     private TextInputEditText tietDescription, tietPrice;
-    private CheckBox cbOffers;
+    private CheckBox cbOffers, cbNow;
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private double latitude, longitude;
-    private String locationName, locationAddress, type;
+    private String locationName, locationAddress, type, category;
     private int quantity = 1;
+    int year, month, day, hour, minute;
 
     private ProgressDialog pd = null;
-    final int[] pos = {0};
-
+    final int[] posType = {0};
+    final int[] posCategory = {0};
+    private Calendar calendar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,12 +97,32 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
 
         tvType = findViewById(R.id.tvType);
         tvType.setOnClickListener(this);
+        tvCategory = findViewById(R.id.tvCategory);
+        tvCategory.setOnClickListener(this);
         tvLocationName = findViewById(R.id.tvLocationName);
         tvLocationName.setOnClickListener(this);
         tvLocationAddress = findViewById(R.id.tvLocationAddress);
         tvLocationAddress.setOnClickListener(this);
         tvAddLocation = findViewById(R.id.tvAddLocation);
         tvAddLocation.setOnClickListener(this);
+        tvDate = findViewById(R.id.tvDate);
+        tvDate.setOnClickListener(this);
+        tvTime = findViewById(R.id.tvTime);
+        tvTime.setOnClickListener(this);
+        cbNow = findViewById(R.id.cbNow);
+        cbNow.setChecked(true);
+        cbNow.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    tvDate.setTextColor(getColor(R.color.grey600));
+                    tvTime.setTextColor(getColor(R.color.grey600));
+                } else {
+                    tvDate.setTextColor(getColor(R.color.colorAccent));
+                    tvTime.setTextColor(getColor(R.color.colorAccent));
+                }
+            }
+        });
         tvQuantity = findViewById(R.id.tvQuantity);
         tvQuantity.setText("1 " + getResources().getString(R.string.available));
         tvQuantity.setOnClickListener(this);
@@ -99,8 +131,7 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
             tvLocationName.setVisibility(View.GONE);
             tvLocationAddress.setVisibility(View.GONE);
             tvAddLocation.setVisibility(View.VISIBLE);
-        }
-        else{
+        } else{
             tvLocationName.setText(locationName);
             tvLocationAddress.setText(locationAddress);
         }
@@ -112,19 +143,57 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
 
         final Button bCreateSpot = findViewById(R.id.bCreateSpot);
         bCreateSpot.setOnClickListener(this);
+
+        calendar = Calendar.getInstance();
+        day = calendar.get(Calendar.DAY_OF_MONTH);
+        month = calendar.get(Calendar.MONTH);
+        year = calendar.get(Calendar.YEAR);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.tvType:
-                final CharSequence[] items = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request)};
-                final AlertDialog.Builder alertDB = new AlertDialog.Builder(this);
-                alertDB.setTitle(R.string.Type);
-                alertDB.setSingleChoiceItems(items, pos[0], new DialogInterface.OnClickListener() {
+                final CharSequence[] itemsType = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request)};
+                final AlertDialog.Builder alertDBType = new AlertDialog.Builder(this);
+                alertDBType.setTitle(R.string.Type);
+                alertDBType.setSingleChoiceItems(itemsType, posType[0], new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        pos[0] = which;
+                        posType[0] = which;
+                    }
+                });
+                alertDBType.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                alertDBType.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        tvType.setError(null);
+                        if (posType[0] == 0){
+                            type = "Sell";
+                            tvType.setText(R.string.Sell);
+                        } else {
+                            type = "Request";
+                            tvType.setText(R.string.Request);
+                        }
+                    }
+                });
+                final AlertDialog adType = alertDBType.create();
+                adType.show();
+                break;
+
+            case R.id.tvCategory:
+                final CharSequence[] itemsCategory = {getString(R.string.Regular), getString(R.string.Line), getString(R.string.Parking)};
+                final AlertDialog.Builder alertDB = new AlertDialog.Builder(this);
+                alertDB.setTitle(R.string.Category);
+                alertDB.setSingleChoiceItems(itemsCategory, posCategory[0], new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        posCategory[0] = which;
                     }
                 });
                 alertDB.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
@@ -136,22 +205,30 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
                 alertDB.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (pos[0] == 0){
-                            type = "Sell";
-                            tvType.setText(R.string.Sell);
-                        } else {
-                            type = "Request";
-                            tvType.setText(R.string.Request);
+                        tvCategory.setError(null);
+                        if (posCategory[0] == 0){
+                            category = "Regular";
+                            tvCategory.setText(R.string.Regular);
+                        } else if (posCategory[0] == 1){
+                            category = "Line";
+                            tvCategory.setText(R.string.Line);
+                        } else if (posCategory[0] == 2){
+                            category = "Parking";
+                            tvCategory.setText(R.string.Parking);
                         }
                     }
                 });
-
-                final AlertDialog ad = alertDB.create();
-                ad.show();
-
+                final AlertDialog adCategory = alertDB.create();
+                adCategory.show();
                 break;
+
             case R.id.bCreateSpot:
-                if (validatePrice()) {
+                boolean price = validatePrice();
+                boolean cat = validateCategory();
+                boolean loc = validateLocation();
+                boolean ty = validateType();
+                boolean dateTime = validateDateTime();
+                if (price && cat && loc && ty && dateTime){
                     pd.setTitle(R.string.Adding_Spot);
                     pd.setCancelable(false);
                     pd.show();
@@ -162,6 +239,7 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
                     }
                 }
                 break;
+
             case R.id.tvQuantity:
                 LayoutInflater inflater = getLayoutInflater();
                 View alertLayout = inflater.inflate(R.layout.number_picker, null);
@@ -191,6 +269,48 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
                 final AlertDialog alertDialog = alertDialogBuilder.create();
                 alertDialog.show();
                 break;
+
+            case R.id.tvDate:
+                DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                        setDate(year, month, dayOfMonth);
+                        Calendar cDate = Calendar.getInstance();
+                        cDate.set(Calendar.YEAR, year);
+                        cDate.set(Calendar.MONTH, month);
+                        cDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                        tvDate.setText(epochToDateString(cDate.getTimeInMillis()));
+
+                        cbNow.setChecked(false);
+                        tvTime.setTextColor(getColor(R.color.colorAccent));
+                        tvDate.setTextColor(getColor(R.color.colorAccent));
+                    }
+                }, year, month , day);
+                datePickerDialog.getDatePicker().setMinDate(calendar.getTimeInMillis());
+                datePickerDialog.show();
+                break;
+
+            case R.id.tvTime:
+                Calendar c = Calendar.getInstance();
+                int hour = c.get(Calendar.HOUR_OF_DAY);
+                int minute = c.get(Calendar.MINUTE);
+                TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        setTime(hourOfDay, minute);
+                        Calendar calendarTime = Calendar.getInstance();
+                        calendarTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                        calendarTime.set(Calendar.MINUTE, minute);
+                        tvTime.setText(epochToTimeString(calendarTime.getTimeInMillis()));
+
+                        cbNow.setChecked(false);
+                        tvTime.setTextColor(getColor(R.color.colorAccent));
+                        tvDate.setTextColor(getColor(R.color.colorAccent));
+                    }
+                }, hour, minute, false);
+                timePickerDialog.show();
+                break;
+
             default:
                 try {
                     Intent intent =
@@ -217,6 +337,7 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
 
                 tvLocationName.setText(locationName);
                 tvLocationAddress.setText(locationAddress);
+                tvAddLocation.setError(null);
                 tvAddLocation.setVisibility(View.GONE);
                 tvLocationName.setVisibility(View.VISIBLE);
                 tvLocationAddress.setVisibility(View.VISIBLE);
@@ -238,15 +359,65 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
     }
 
     private boolean validatePrice(){
-        boolean sitch;
         if (tietPrice.getText().toString().isEmpty()){
-            sitch = false;
             tilPrice.setError(getResources().getString(R.string.Must_have_price));
+            return false;
         } else {
             tilPrice.setErrorEnabled(false);
-            sitch = true;
+            return true;
         }
-        return sitch;
+    }
+
+    private boolean validateType(){
+        if (type == null){
+            tvType.setError(getString(R.string.No_Type_selected));
+            return false;
+        } else {
+            tvType.setError(null);
+            return true;
+        }
+    }
+
+    private boolean validateCategory(){
+        if (category == null){
+            tvCategory.setError(getString(R.string.No_Category_selected));
+            return false;
+        } else {
+            tvCategory.setError(null);
+            return true;
+        }
+    }
+
+    private boolean validateLocation(){
+        if (tvLocationName.getText().toString().isEmpty()){
+            tvAddLocation.setError(getString(R.string.No_Location_added));
+            return false;
+        } else {
+            tvAddLocation.setError(null);
+            return true;
+        }
+    }
+
+    private boolean validateDateTime(){
+        if (cbNow.isChecked()){
+            return true;
+        } else {
+            tvDate.setError(null);
+            tvTime.setError(null);
+            boolean bDate = tvDate.getText().toString().equals(getString(R.string.Date));
+            boolean bTime = tvTime.getText().toString().equals(getString(R.string.Time));
+            if (bDate || bTime){
+                if (bDate){
+                    tvDate.setError(getString(R.string.No_date_selected));
+                }
+                if (bTime){
+                    tvTime.setError(getString(R.string.No_time_selected));
+                }
+                return false;
+            } else{
+                return true;
+            }
+        }
     }
 
     private void validatePaymentMethod(){
@@ -326,6 +497,7 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
         final JSONObject sellerInfoObj = new JSONObject();
         try {
             jsonObject.put("type", type);
+            jsonObject.put("category", category);
             jsonObject.put("transaction", "available");
             jsonObject.put("name", locationName);
             jsonObject.put("price", tietPrice.getText().toString());
@@ -339,6 +511,16 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
 
             sellerInfoObj.put("sellerID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
             jsonObject.put("sellerInfo", sellerInfoObj);
+
+            Calendar calendar = Calendar.getInstance();
+            if (!cbNow.isChecked()){
+                calendar.set(Calendar.YEAR, year);
+                calendar.set(Calendar.MONTH, month);
+                calendar.set(Calendar.DAY_OF_MONTH, day);
+                calendar.set(Calendar.HOUR_OF_DAY, hour);
+                calendar.set(Calendar.MINUTE, minute);
+            }
+            jsonObject.put("dateTimeStart", calendar.getTimeInMillis());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -372,7 +554,6 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
                         pd.dismiss();
                         Toast.makeText(CreateSpotActivity.this, getResources().getString(R.string.Error_unable_to_add_spot), Toast.LENGTH_SHORT).show();
                     }
@@ -390,5 +571,28 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
         };
 
         queue.add(jsObjRequest);
+    }
+
+    private String epochToDateString(long epochSeconds) {
+        Date updatedate = new Date(epochSeconds);
+        SimpleDateFormat format = new SimpleDateFormat("EEE, d MMM yyyy", Locale.getDefault());
+        return format.format(updatedate);
+    }
+
+    private String epochToTimeString(long epochSeconds) {
+        Date updatedate = new Date(epochSeconds);
+        SimpleDateFormat format = new SimpleDateFormat("h:mm a", Locale.getDefault());
+        return format.format(updatedate);
+    }
+
+    private void setDate(int year, int month, int day){
+        this.year = year;
+        this.month = month;
+        this.day = day;
+    }
+
+    private void setTime(int hour, int minute){
+        this.hour = hour;
+        this.minute = minute;
     }
 }

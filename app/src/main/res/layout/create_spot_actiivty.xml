@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     android:clickable="true"
     android:background="@android:color/white"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:focusable="true">
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -15,32 +16,12 @@
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         android:elevation="@dimen/toolbarElevation"
         android:background="@color/colorPrimary"/>
-    <LinearLayout
-        android:id="@+id/llType"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/contentPadding"
-        android:layout_below="@+id/toolbar"
-        android:orientation="horizontal">
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/contentPadding"
-            android:src="@mipmap/ic_star_grey600_24dp"/>
-        <TextView
-            android:id="@+id/tvType"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/contentPadding"
-            android:text="@string/Choose_Type"
-            android:textColor="@color/colorAccent"
-            android:textAppearance="@android:style/TextAppearance.Medium"/>
-    </LinearLayout>
+
     <RelativeLayout
         android:id="@+id/rlLocation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/llType"
+        android:layout_below="@+id/toolbar"
         android:layout_margin="@dimen/contentPadding">
         <ImageView
             android:id="@+id/ivMapMarker"
@@ -74,6 +55,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/contentPadding"
             android:layout_marginLeft="@dimen/contentPadding"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:layout_toRightOf="@+id/ivMapMarker"
             android:text="@string/Add_Location"
             android:textAppearance="@android:style/TextAppearance.Medium"
@@ -82,11 +65,52 @@
     </RelativeLayout>
 
     <LinearLayout
-        android:id="@+id/llCurrency"
+        android:id="@+id/llType"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/contentPadding"
         android:layout_below="@+id/rlLocation"
+        android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/ivTypeIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/contentPadding"
+            android:src="@mipmap/ic_star_grey600_24dp"/>
+        <TextView
+            android:id="@+id/tvType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/contentPadding"
+            android:layout_marginRight="@dimen/halfContentPadding"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:text="@string/Type"
+            android:textColor="@color/colorAccent"
+            android:textAppearance="@android:style/TextAppearance.Medium"/>
+        <TextView
+            android:id="@+id/tvSeparator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="-" />
+        <TextView
+            android:id="@+id/tvCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/halfContentPadding"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:text="@string/Category"
+            android:textColor="@color/colorAccent"
+            android:textAppearance="@android:style/TextAppearance.Medium"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llCurrency"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/contentPadding"
+        android:layout_below="@+id/llType"
         android:orientation="horizontal">
         <ImageView
             android:layout_width="wrap_content"
@@ -134,7 +158,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/contentPadding"
             android:layout_marginRight="@dimen/contentPadding"
-            android:src="@mipmap/ic_plus_circle_grey600_24dp"
+            android:src="@mipmap/ic_cart_plus_grey600_24dp"
             android:tint="@color/grey600"/>
         <TextView
             android:id="@+id/tvQuantity"
@@ -146,19 +170,69 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/llDateTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/llQuantity"
+        android:layout_margin="@dimen/contentPadding">
+        <ImageView
+            android:id="@+id/ivDateTimeIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginRight="@dimen/contentPadding"
+            android:src="@mipmap/ic_calendar_clock_grey600_24dp"/>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/quarterContentPadding"
+                android:layout_marginLeft="@dimen/contentPadding"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:text="@string/Date"
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                android:textColor="@color/grey600"/>
+            <TextView
+                android:id="@+id/tvTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/contentPadding"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:text="@string/Time"
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                android:textColor="@color/grey600" />
+        </LinearLayout>
+        <CheckBox
+            android:id="@+id/cbNow"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/contentPadding"
+            android:layout_marginStart="@dimen/contentPadding"
+            android:text="@string/Now"
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:button="@null"
+            android:drawableRight="?android:attr/listChoiceIndicatorMultiple"/>
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/llDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_below="@+id/llQuantity"
+        android:layout_below="@+id/llDateTime"
         android:layout_margin="@dimen/contentPadding">
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginEnd="@dimen/contentPadding"
             android:layout_marginRight="@dimen/contentPadding"
-            android:src="@mipmap/ic_create_black_24dp"
-            android:tint="@color/grey600"/>
+            android:src="@mipmap/ic_format_title_grey600_24dp"/>
         <android.support.design.widget.TextInputLayout
             android:id="@+id/tilDescription"
             android:layout_width="match_parent"

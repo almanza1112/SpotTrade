@@ -153,6 +153,13 @@ public class MapsActivity extends AppCompatActivity
 
     private DatabaseReference databaseReference;
 
+    // For onOfferAccepted
+    boolean isOfferAccepted;
+    String lidBought, idBought, latBought, lngBought, profilePhotoUrlBought;
+
+    // For the inflated menu in toolbar
+    private MenuItem searchMenuItem, filterMenuItem;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -178,8 +185,6 @@ public class MapsActivity extends AppCompatActivity
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        //ImageView myLocationButton = (ImageView) mapFragment.getView().findViewById(2);
-        //myLocationButton.setPadding(0, 100, 0, 0);
         mapFragment.getMapAsync(this);
         setSupportActionBar(toolbar);
 
@@ -388,6 +393,10 @@ public class MapsActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.maps_activity_menu, menu);
+
+        searchMenuItem = menu.findItem(R.id.search);
+        filterMenuItem = menu.findItem(R.id.filterMaps);
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -700,8 +709,6 @@ public class MapsActivity extends AppCompatActivity
         }
     }
 
-    boolean isOfferAccepted;
-    String lidBought, idBought, latBought, lngBought, profilePhotoUrlBought;
     @Override
     public void onOfferAccepted(final String lid, String id, final String latitude, final String longitude, String profilePhotoUrl) {
         // You accepted an offer and now it's going to redirect
@@ -1600,6 +1607,8 @@ public class MapsActivity extends AppCompatActivity
 
     boolean firstTime;
     private void getFirebaseData(String lidBought){
+        searchMenuItem.setVisible(false);
+        filterMenuItem.setVisible(false);
         databaseReference = FirebaseDatabase.getInstance().getReference().child("tracking").child(lidBought);
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -1625,7 +1634,7 @@ public class MapsActivity extends AppCompatActivity
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                setSnackBar(getString(R.string.Server_error));
             }
         });
     }

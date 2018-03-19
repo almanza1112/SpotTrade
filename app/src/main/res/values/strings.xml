@@ -69,10 +69,12 @@
     <string name="Cancel">Cancel</string>
     <string name="Cancel_Offer">Cancel Offer</string>
     <string name="Card_Number">Card Number</string>
+    <string name="Category">Category</string>
     <string name="Change_Password">Change Password</string>
     <string name="Change_Profile_Photo">Change Profile Photo</string>
     <string name="Checking_for_payment_methods">Checking for payment methods</string>
     <string name="Choose_Payment_Method">Choose Payment Method</string>
+    <string name="Choose_Category">Choose Category</string>
     <string name="Choose_Type">Choose Type</string>
     <string name="Confirm">Confirm</string>
     <string name="Complete">Complete</string>
@@ -88,6 +90,7 @@
     <string name="Creating_user">Creating user</string>
     <string name="Current_Password">Current Password</string>
     <string name="CVV">CVV</string>
+    <string name="Date">Date</string>
     <string name="Date_Time_Purchased">Date &amp; Time Purchased</string>
     <string name="Decline">Decline</string>
     <string name="Default">Default</string>
@@ -127,8 +130,10 @@
     <string name="In_transit_to">In transit to</string>
     <string name="Incorrect_Password">Incorrect Password</string>
     <string name="Invalid_email_format">Invalid email format</string>
+    <string name="Labor">Labor</string>
     <string name="Last_Name">Last Name</string>
     <string name="Later">Later</string>
+    <string name="Line">Line</string>
     <string name="Loading">Loading</string>
     <string name="Loading_payment_methods">Loading payment methods</string>
     <string name="Location">Location</string>
@@ -140,12 +145,18 @@
     <string name="Must_have_price">Must have a price</string>
     <string name="New_Password">New Password</string>
     <string name="No">No</string>
+    <string name="No_date_selected">No date selected</string>
+    <string name="No_time_selected">No time selected</string>
+    <string name="No_Category_selected">No Category selected</string>
+    <string name="No_Type_selected">No Type selected</string>
+    <string name="No_Location_added">No Location added</string>
     <string name="No_feedback">No feedback</string>
     <string name="No_history">No history</string>
     <string name="No_offers">No offers</string>
     <string name="No_Payment_Method">No Payment Method</string>
     <string name="Not_Now">Not Now</string>
     <string name="Notifications">Notifications</string>
+    <string name="Now">Now</string>
     <string name="Obtaining_credentials">Obtaining credentials</string>
     <string name="Offer">Offer</string>
     <string name="Offer_accepted">Offer accepted</string>
@@ -156,6 +167,7 @@
     <string name="offers">offers</string>
     <string name="OK">OK</string>
     <string name="Other_Method">Other Method</string>
+    <string name="Parking">Parking</string>
     <string name="Password">Password</string>
     <string name="Password_doesnt_match">Password doesn\'t match</string>
     <string name="Payment">Payment</string>
@@ -174,6 +186,7 @@
     <string name="Profile_photo_deleted">Profile photo deleted</string>
     <string name="Quantity">Quantity</string>
     <string name="Registering">Registering</string>
+    <string name="Regular">Regular</string>
     <string name="Request">Request</string>
     <string name="Requested">Requested</string>
     <string name="Requested_Spotter">Requested Spotter</string>
@@ -194,6 +207,7 @@
     <string name="Spot_successfully_deleted">Spot successfully deleted</string>
     <string name="Spotted">Spotted</string>
     <string name="spotted_you">spotted you</string>
+    <string name="Time">Time</string>
     <string name="Type">Type</string>
     <string name="Unable_to_connect_with_Facebook">Unable to connect with Facebook</string>
     <string name="Update">Update</string>
