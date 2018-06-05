@@ -3,6 +3,7 @@ package almanza1112.spottrade.navigationMenu.yourSpots;
 import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -22,42 +23,40 @@ import almanza1112.spottrade.R;
 class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerViewHolder>{
 
     private Activity activity;
-    private List<String> lid;
-    private List<String> locationName;
-    private List<String> locationAddress;
-    private List<String> type;
-    private List<Integer> quantity;
-    private List<String> price;
+    private List<String> lid, locationName, locationAddress, type, category, price, offerTotalString, description;
+    private List<Long> dateTimeStart;
+    private List<Integer> quantity, offerTotal;
     private List<Boolean> offerAllowed;
-    private List<Integer> offerTotal;
-    private List<String> offerTotalString;
-    private List<String> description;
     YourSpotsAdapter(
             Activity activity, List<String> lid, List<String> locationName,
-            List<String> locationAddress, List<String> type, List<Integer> quantity,
-            List<String> price, List<Boolean> offerAllowed, List<Integer> offerTotal,
-            List<String> offerTotalString, List<String> description){
+            List<String> locationAddress, List<String> type, List<String> category,
+            List<Integer> quantity, List<String> price, List<Long> dateTimeStart,
+            List<Boolean> offerAllowed, List<Integer> offerTotal, List<String> offerTotalString,
+            List<String> description){
         this.activity = activity;
         this.lid = lid;
         this.locationName = locationName;
         this.locationAddress = locationAddress;
         this.type = type;
+        this.category = category;
         this.quantity = quantity;
         this.price = price;
+        this.dateTimeStart = dateTimeStart;
         this.offerAllowed = offerAllowed;
         this.offerTotal = offerTotal;
         this.offerTotalString = offerTotalString;
         this.description = description;
     }
 
+    @NonNull
     @Override
-    public YourSpotsAdapter.RecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public YourSpotsAdapter.RecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.your_spots_recyclerview_row, parent, false);
         return new RecyclerViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(RecyclerViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position) {
         if (type.get(position).equals("Sell")){
             holder.ivTypeIcon.setImageResource(R.mipmap.ic_currency_usd_grey600_24dp);
         } else {
@@ -104,8 +103,10 @@ class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerVie
                     bundle.putString("locationName", locationName.get(getAdapterPosition()));
                     bundle.putString("locationAddress", locationAddress.get(getAdapterPosition()));
                     bundle.putString("type", type.get(getAdapterPosition()));
+                    bundle.putString("category", category.get(getAdapterPosition()));
                     bundle.putString("price", price.get(getAdapterPosition()));
                     bundle.putInt("quantity", quantity.get(getAdapterPosition()));
+                    bundle.putLong("dateTimeStart", dateTimeStart.get(getAdapterPosition()));
                     bundle.putBoolean("offerAllowed", offerAllowed.get(getAdapterPosition()));
                     bundle.putString("description", description.get(getAdapterPosition()));
                     bundle.putInt("offerTotal", offerTotal.get(getAdapterPosition()));

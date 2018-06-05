@@ -91,6 +91,7 @@
     <string name="Current_Password">Current Password</string>
     <string name="CVV">CVV</string>
     <string name="Date">Date</string>
+    <string name="Date_and_Time">Date and Time</string>
     <string name="Date_Time_Purchased">Date &amp; Time Purchased</string>
     <string name="Decline">Decline</string>
     <string name="Default">Default</string>
@@ -99,6 +100,7 @@
     <string name="Deleting_payment_method">Deleting payment method</string>
     <string name="Description">Description</string>
     <string name="Done">Done</string>
+    <string name="Edit_Category">Edit Category</string>
     <string name="Edit_Description">Edit Description</string>
     <string name="Edit_Price">Edit Price</string>
     <string name="Edit_Spot">Edit Spot</string>

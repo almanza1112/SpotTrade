@@ -155,7 +155,9 @@ public class YourSpots extends Fragment {
                         List<String> locationName = new ArrayList<>();
                         List<String> locationAddress = new ArrayList<>();
                         List<String> type = new ArrayList<>();
+                        List<String> category = new ArrayList<>();
                         List<String> price = new ArrayList<>();
+                        List<Long> dateTimeStart = new ArrayList<>();
                         List<Integer> quantity = new ArrayList<>();
                         List<Boolean> offerAllowed = new ArrayList<>();
                         List<Integer> offerTotal = new ArrayList<>();
@@ -169,8 +171,10 @@ public class YourSpots extends Fragment {
                             locationName.add(locationObj.getString("name"));
                             locationAddress.add(locationObj.getString("address"));
                             type.add(locationObj.getString("type"));
+                            category.add(locationObj.getString("category"));
                             quantity.add(locationObj.getInt("quantity"));
                             price.add(locationObj.getString("price"));
+                            dateTimeStart.add(locationObj.getLong("dateTimeStart"));
                             offerAllowed.add(locationObj.getBoolean("offerAllowed"));
                             description.add(locationObj.getString("description"));
 
@@ -190,7 +194,7 @@ public class YourSpots extends Fragment {
                             }
                         }
                         adapter = new YourSpotsAdapter(getActivity(), lid, locationName,
-                                locationAddress, type, quantity, price, offerAllowed, offerTotal,
+                                locationAddress, type, category, quantity, price, dateTimeStart, offerAllowed, offerTotal,
                                 offerTotalString, description);
                         layoutManager = new LinearLayoutManager(getActivity());
                         rvYourSpots.setLayoutManager(layoutManager);
@@ -199,8 +203,8 @@ public class YourSpots extends Fragment {
                         Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 } catch (JSONException e){
+                    e.printStackTrace();
                     Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
-
                 }
                 progressBar.setVisibility(View.GONE);
             }

@@ -1,7 +1,9 @@
 package almanza1112.spottrade.navigationMenu.yourSpots;
 
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.app.FragmentTransaction;
+import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,11 +18,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -37,6 +41,11 @@ import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 import almanza1112.spottrade.R;
 import almanza1112.spottrade.nonActivity.HttpConnection;
@@ -55,7 +64,10 @@ public class EditSpot extends Fragment implements View.OnClickListener{
     private int quantity;
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private Snackbar snackbar;
-    TextView tvLocationName, tvLocationAddress, tvType, tvPrice, tvQuantity, tvDescription, tvViewOffers;
+    TextView tvLocationName, tvLocationAddress, tvType, tvCategory, tvPrice, tvQuantity, tvDescription,
+            tvViewOffers, tvDate, tvTime;
+    private int year, month, day, hour, minute, epochTime;
+    private Calendar calendar;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -65,8 +77,10 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         String name = getArguments().getString("locationName");
         String address = getArguments().getString("locationAddress");
         String type = getArguments().getString("type");
+        String category = getArguments().getString("category");
         String price = getArguments().getString("price");
         quantity = getArguments().getInt("quantity");
+        long dateTimeStart = getArguments().getLong("dateTimeStart");
         String description = getArguments().getString("description");
         boolean bidAllowed = getArguments().getBoolean("offerAllowed");
         int offerTotal = getArguments().getInt("offerTotal");
@@ -83,8 +97,11 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         tvLocationName = view.findViewById(R.id.tvLocationName);
         tvLocationAddress = view.findViewById(R.id.tvLocationAddress);
         tvType = view.findViewById(R.id.tvType);
+        tvCategory = view.findViewById(R.id.tvCategory);
         tvPrice = view.findViewById(R.id.tvPrice);
         tvQuantity = view.findViewById(R.id.tvQuantity);
+        tvDate = view.findViewById(R.id.tvDate);
+        tvTime = view.findViewById(R.id.tvTime);
         CheckBox cbBids = view.findViewById(R.id.cbOffers);
         cbBids.setChecked(bidAllowed);
         cbBids.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -99,17 +116,22 @@ public class EditSpot extends Fragment implements View.OnClickListener{
 
         view.findViewById(R.id.ivEditLocation).setOnClickListener(this);
         view.findViewById(R.id.ivEditType).setOnClickListener(this);
+        view.findViewById(R.id.ivEditCategory).setOnClickListener(this);
         view.findViewById(R.id.ivEditPrice).setOnClickListener(this);
         view.findViewById(R.id.ivEditQuantity).setOnClickListener(this);
+        view.findViewById(R.id.ivEditDate).setOnClickListener(this);
+        view.findViewById(R.id.ivEditTime).setOnClickListener(this);
         view.findViewById(R.id.ivEditDescription).setOnClickListener(this);
         view.findViewById(R.id.bDelete).setOnClickListener(this);
 
         tvLocationName.setText(name);
         tvLocationAddress.setText(address);
         tvType.setText(type);
+        tvCategory.setText(category);
         tvPrice.setText(price);
         tvQuantity.setText(String.valueOf(quantity));
         tvDescription.setText(description);
+        setDateTimeText(dateTimeStart);
 
         if (bidAllowed){
             if (offerTotal == 1){
@@ -146,12 +168,24 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                 ADeditType();
                 break;
 
+            case R.id.ivEditCategory:
+                ADeditCategory();
+                break;
+
             case R.id.ivEditPrice:
                 ADeditPrice();
                 break;
 
             case R.id.ivEditQuantity:
                 ADeditQuantity();
+                break;
+
+            case R.id.ivEditDate:
+                ADeditDate();
+                break;
+
+            case R.id.ivEditTime:
+                ADeditTime();
                 break;
 
             case R.id.ivEditDescription:
@@ -258,6 +292,49 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         alertDialog.show();
     }
 
+    private void ADeditCategory(){
+        final CharSequence[] items = {getResources().getString(R.string.Regular), getResources().getString(R.string.Line), getResources().getString(R.string.Parking)};
+        final int i;
+        final int[] newI = new int[1];
+        if (tvCategory.getText().toString().equals(getResources().getString(R.string.Regular))){
+            i = 0;
+        } else if (tvCategory.getText().toString().equals(getResources().getString(R.string.Line))){
+            i = 1;
+        } else{
+            i = 2;
+        }
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+        alertDialogBuilder.setTitle(R.string.Edit_Type);
+        alertDialogBuilder.setSingleChoiceItems(items, i, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                newI[0] = which;
+            }
+        });
+        alertDialogBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String str;
+                if (newI[0] == 0){
+                    str = "Regular";
+                } else if (newI[0] == 1){
+                    str = "Line";
+                } else {
+                    str = "Parking";
+                }
+                updateField("category", str, null);
+            }
+        });
+        alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
     private void ADeditPrice(){
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.edit_spot_price_alertdialog, null);
@@ -311,6 +388,36 @@ public class EditSpot extends Fragment implements View.OnClickListener{
 
         final AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+    }
+
+    private void ADeditDate(){
+        DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                setDate(year, month, dayOfMonth);
+                Calendar cDate = Calendar.getInstance();
+                cDate.set(Calendar.YEAR, year);
+                cDate.set(Calendar.MONTH, month);
+                cDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                tvDate.setText(epochToDateString(cDate.getTimeInMillis()));
+            }
+        }, year, month , day);
+        datePickerDialog.getDatePicker().setMinDate(calendar.getTimeInMillis());
+        datePickerDialog.show();
+    }
+
+    private void ADeditTime(){
+        TimePickerDialog timePickerDialog = new TimePickerDialog(getActivity(), new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                setTime(hourOfDay, minute);
+                Calendar calendarTime = Calendar.getInstance();
+                calendarTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                calendarTime.set(Calendar.MINUTE, minute);
+                tvTime.setText(epochToTimeString(calendarTime.getTimeInMillis()));
+            }
+        }, hour, minute, false);
+        timePickerDialog.show();
     }
 
     private void ADeditDescription(){
@@ -413,6 +520,10 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                                 setSnackbar(getResources().getString(R.string.Type) + " " + getResources().getString(R.string.updated));
                                 tvType.setText(str);
                                 break;
+                            case "category":
+                                setSnackbar(getResources().getString(R.string.Category) + " " + getResources().getString(R.string.updated));
+                                tvCategory.setText(str);
+                                break;
                             case "price":
                                 setSnackbar(getResources().getString(R.string.Price) + " " + getResources().getString(R.string.updated));
                                 tvPrice.setText(str);
@@ -421,6 +532,10 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                                 setSnackbar(getResources().getString(R.string.Quantity) + " " + getResources().getString(R.string.updated));
                                 quantity = Integer.valueOf(str);
                                 tvQuantity.setText(String.valueOf(quantity));
+                                break;
+                            case "dateTimeStart":
+                                setSnackbar(getActivity().getString(R.string.Date_and_Time) + " " + getActivity().getString(R.string.updated));
+
                                 break;
                             case "description":
                                 setSnackbar(getActivity().getString(R.string.Description) + " " + getResources().getString(R.string.updated));
@@ -453,7 +568,41 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         queue.add(jsonObjectRequest);
     }
 
-    public void setSnackbar(String snackbarText) {
+    private String epochToDateString(long epochSeconds) {
+        Date updatedate = new Date(epochSeconds);
+        SimpleDateFormat format = new SimpleDateFormat("EEE, d MMM yyyy", Locale.getDefault());
+        return format.format(updatedate);
+    }
+
+    private String epochToTimeString(long epochSeconds) {
+        Date updatedate = new Date(epochSeconds);
+        SimpleDateFormat format = new SimpleDateFormat("h:mm a", Locale.getDefault());
+        return format.format(updatedate);
+    }
+
+    private void setDateTimeText(long epochSeconds) {
+        Date updatedate = new Date(epochSeconds);
+        SimpleDateFormat formatReg = new SimpleDateFormat("EEE, d MMM yyyy 'at' h:mm a", Locale.getDefault());
+        String[] s = formatReg.format(updatedate).split("at");
+        tvDate.setText(s[0]);
+        tvTime.setText(s[1]);
+
+        SimpleDateFormat format = new SimpleDateFormat("EEE, d MM yyyy 'at' h:mm a", Locale.getDefault());
+
+    }
+
+    private void setDate(int year, int month, int day){
+        this.year = year;
+        this.month = month;
+        this.day = day;
+    }
+
+    private void setTime(int hour, int minute){
+        this.hour = hour;
+        this.minute = minute;
+    }
+
+    private void setSnackbar(String snackbarText) {
         snackbar = Snackbar.make(getActivity().findViewById(R.id.edit_spot), snackbarText, Snackbar.LENGTH_SHORT);
         snackbar.show();
     }
