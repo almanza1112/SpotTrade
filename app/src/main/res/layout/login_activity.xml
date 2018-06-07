@@ -2,7 +2,6 @@
 <RelativeLayout
     android:id="@+id/login_activity"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
@@ -12,92 +11,16 @@
         android:id="@+id/ivSpotTrade"
         android:layout_width="300dp"
         android:layout_height="100dp"
-        android:layout_alignParentTop="true"
-        android:src="@drawable/spottrade_text"
-        android:layout_marginTop="48dp"
-        android:layout_marginBottom="48dp"/>
+        android:layout_centerVertical="true"
+        android:src="@drawable/spottrade_text"/>
 
-    <LinearLayout
-        android:id="@+id/llLogIn"
+    <Button
+        android:id="@+id/bGetStarted"
+        style="?android:attr/borderlessButtonStyle"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/ivSpotTrade"
-        android:orientation="vertical">
-
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/tilEmail"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content">
-            <android.support.design.widget.TextInputEditText
-                android:id="@+id/tietEmail"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/Email"
-                android:textColor="@android:color/white"
-                android:inputType="textEmailAddress"
-                android:maxLines="1"/>
-        </android.support.design.widget.TextInputLayout>
-
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/tilPassword"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            app:passwordToggleEnabled="true">
-            <android.support.design.widget.TextInputEditText
-                android:id="@+id/tietPassword"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/Password"
-                android:textColor="@android:color/white"
-                android:inputType="textPassword"/>
-        </android.support.design.widget.TextInputLayout>
-
-        <Button
-            android:id="@+id/bSignIn"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/colorAccent"
-            android:text="@string/Sign_In"
-            android:textColor="@android:color/white" />
-    </LinearLayout>
-
-
-    <Button
-        android:id="@+id/bForgotPassword"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/llLogIn"
-        android:text="@string/Forgot_Password"
-        android:textColor="@color/colorAccent" />
-
-    <Button
-        android:id="@+id/bFacebookLogin"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/bGoogleLogin"
-        android:backgroundTint="@color/com_facebook_blue"
-        android:text="@string/Continue_with_Facebook"
-        android:textColor="@android:color/white"
-        android:drawableLeft="@drawable/com_facebook_button_icon" />
-
-    <Button
-        android:id="@+id/bGoogleLogin"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/bCreateSpotTradeAccount"
-        android:backgroundTint="@color/common_google_signin_btn_text_dark"
-        android:text="@string/Continue_with_Google"
-        android:drawableLeft="@drawable/googleg_standard_color_18"/>
-
-    <Button
-        android:id="@+id/bCreateSpotTradeAccount"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="@dimen/contentPadding"
-        android:text="@string/Create_SpotTrade_Account"
+        android:text="Get Started"
         android:textColor="@color/colorAccent"/>
 
 </RelativeLayout>

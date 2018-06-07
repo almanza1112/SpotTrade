@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:background="@android:color/white"
+    android:focusable="true">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentTop="true"
+        android:elevation="@dimen/toolbarElevation"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:background="@color/colorPrimary"/>
+
+    <LinearLayout
+        android:id="@+id/llConfirmationCode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/contentPadding"
+        android:layout_centerInParent="true"
+        android:orientation="horizontal">
+        <EditText
+            android:id="@+id/etConfirmationCode1"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:layout_margin="@dimen/halfContentPadding"/>
+        <EditText
+            android:id="@+id/etConfirmationCode2"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:layout_margin="@dimen/halfContentPadding"/>
+        <EditText
+            android:id="@+id/etConfirmationCode3"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:layout_margin="@dimen/halfContentPadding"/>
+        <EditText
+            android:id="@+id/etConfirmationCode4"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:layout_margin="@dimen/halfContentPadding"/>
+    </LinearLayout>
+
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fabNext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/contentPadding"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:src="@mipmap/ic_arrow_right_white_24dp"/>
+
+</RelativeLayout>
