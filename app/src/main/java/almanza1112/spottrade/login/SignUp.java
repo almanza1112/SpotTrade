@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.app.Fragment;
@@ -19,6 +18,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,20 +44,16 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -96,12 +92,11 @@ public class SignUp extends Fragment implements View.OnClickListener{
 
     private Pattern pattern = Pattern.compile(RegularExpression.EMAIL_PATTERN);
 
-    private TextView tvAddProfilePhoto, tvDeleteProfilePhoto;
-    TextInputLayout  tilEmail;
-    private TextInputLayout tilFirstName, tilLastName;
+    private Button bAddProfilePhoto, bDeleteProfilePhoto;
+    private TextInputLayout tilFirstName, tilLastName, tilEmail;
     private TextInputEditText tietFirstName, tietLastName, tietEmail;
     private ImageView ivProfilePhoto;
-    private String firstName, lastName, email, phoneNumber;
+    private String firstName, lastName, email, phoneNumber, profilePhotoUrl = "";
     private final int GALLERY_CODE = 1;
     private final int READ_EXTERNAL_STORAGE_PERMISSION = 2;
 
@@ -111,11 +106,12 @@ public class SignUp extends Fragment implements View.OnClickListener{
     StorageReference storageReference;
 
     private FirebaseAuth firebaseAuth;
-    private FirebaseAuth.AuthStateListener firebaseAuthStateListener;
 
     @Override
     public View onCreateView(LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.sign_up, container, false);
+
+        phoneNumber = getArguments().getString("phoneNumber");
 
         final Toolbar toolbar = view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
@@ -136,10 +132,10 @@ public class SignUp extends Fragment implements View.OnClickListener{
 
         progressDialog = new ProgressDialog(getActivity());
 
-        tvAddProfilePhoto = view.findViewById(R.id.tvAddProfilePhoto);
-        tvAddProfilePhoto.setOnClickListener(this);
-        tvDeleteProfilePhoto = view.findViewById(R.id.tvDeleteProfilePhoto);
-        tvDeleteProfilePhoto.setOnClickListener(this);
+        bAddProfilePhoto = view.findViewById(R.id.bAddProfilePhoto);
+        bAddProfilePhoto.setOnClickListener(this);
+        bDeleteProfilePhoto = view.findViewById(R.id.bDeleteProfilePhoto);
+        bDeleteProfilePhoto.setOnClickListener(this);
 
         ivProfilePhoto = view.findViewById(R.id.ivProfilePhoto);
 
@@ -151,45 +147,26 @@ public class SignUp extends Fragment implements View.OnClickListener{
         tilEmail = view.findViewById(R.id.tilEmail);
         tietEmail = view.findViewById(R.id.tietEmail);
 
+        TextView tvPhoneNumber = view.findViewById(R.id.tvPhoneNumber);
+        tvPhoneNumber.setText(phoneNumber);
+
+        view.findViewById(R.id.bFacebookLogin).setOnClickListener(this);
+        view.findViewById(R.id.bGoogleLogin).setOnClickListener(this);
+
         view.findViewById(R.id.fabDone).setOnClickListener(this);
 
         storageReference = FirebaseStorage.getInstance().getReference();
 
         firebaseAuth = FirebaseAuth.getInstance();
-        firebaseAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-                if (firebaseUser != null){
-                    Log.e("firebase", "onAuthStateChanged: signed_in " + firebaseUser.getUid());
-                }
-                else {
-                    Log.e("firebase", "onAuthStateChanged: signed_out ");
-                }
-            }
-        };
+
 
         return view;
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        firebaseAuth.addAuthStateListener(firebaseAuthStateListener);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (firebaseAuthStateListener != null){
-            firebaseAuth.removeAuthStateListener(firebaseAuthStateListener);
-        }
-    }
-
-    @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.tvAddProfilePhoto:
+            case R.id.bAddProfilePhoto:
                 /*
                     Checks if permission was NOT granted == ask for permission
                     Else == permission was already granted, proceed to opening gallery
@@ -226,11 +203,12 @@ public class SignUp extends Fragment implements View.OnClickListener{
                 }
                 break;
 
-            case R.id.tvDeleteProfilePhoto:
+            case R.id.bDeleteProfilePhoto:
                 uri = null;
+                profilePhotoUrl = null;
                 ivProfilePhoto.setImageBitmap(null);
-                tvDeleteProfilePhoto.setVisibility(View.GONE);
-                tvAddProfilePhoto.setVisibility(View.VISIBLE);
+                bDeleteProfilePhoto.setVisibility(View.GONE);
+                bAddProfilePhoto.setVisibility(View.VISIBLE);
                 break;
 
             case R.id.bFacebookLogin:
@@ -246,8 +224,9 @@ public class SignUp extends Fragment implements View.OnClickListener{
                 firstName = tietFirstName.getText().toString();
                 lastName = tietLastName.getText().toString();
                 email = tietEmail.getText().toString();
-                //phoneNumber = tietPhoneNumber.getText().toString();
-                if (validateName() && validateEmail()){
+                boolean nameBool = validateName();
+                boolean emailBool = validateEmail();
+                if (nameBool && emailBool){
                     addNewUser();
                 }
                 break;
@@ -271,15 +250,16 @@ public class SignUp extends Fragment implements View.OnClickListener{
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (isFacebookClicked){
+            Log.e("onActivityRes", "fucking works");
             callbackManager.onActivityResult(requestCode, resultCode, data);
         }
-        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GALLERY_CODE && resultCode == RESULT_OK){
-            tvAddProfilePhoto.setVisibility(View.GONE);
+            bAddProfilePhoto.setVisibility(View.GONE);
             uri = data.getData();
             ivProfilePhoto.setImageURI(uri);
-            tvDeleteProfilePhoto.setVisibility(View.VISIBLE);
+            bDeleteProfilePhoto.setVisibility(View.VISIBLE);
         }
 
         // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
@@ -294,6 +274,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
     /* FACEBOOK LOGIN */
     // Step 1
     private void facebookLogin(){
+        Log.e("facebookLogin", "please work");
         isFacebookClicked = true;
         callbackManager = CallbackManager.Factory.create();
         LoginButton loginButton = new LoginButton(getActivity());
@@ -303,8 +284,12 @@ public class SignUp extends Fragment implements View.OnClickListener{
                 new FacebookCallback<LoginResult>() {
                     @Override
                     public void onSuccess(final LoginResult loginResult) {
+                        Log.e("facebook", "onSuccess");
+                        // These commented out lines are no longer needed for new sign in flow
+                        // keeping them around for future
                         //userID = loginResult.getAccessToken().getUserId();
-                        handleFacebookAccessToken(loginResult.getAccessToken());
+                        //handleFacebookAccessToken(loginResult.getAccessToken());
+                        getInfoFromFacebook(loginResult.getAccessToken());
                     }
 
                     @Override
@@ -314,6 +299,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
 
                     @Override
                     public void onError(FacebookException exception) {
+                        Log.e("facebook", "onError");
                         Toast.makeText(getActivity(), getResources().getString(R.string.Unable_to_connect_with_Facebook), Toast.LENGTH_SHORT).show();
                         exception.printStackTrace();
                     }
@@ -321,6 +307,9 @@ public class SignUp extends Fragment implements View.OnClickListener{
     }
 
     // Step 2
+    /*
+    // We no longer need step 2 because of different sign in process that only involves phone number
+    // keeping around just in case for the future
     private void handleFacebookAccessToken(final AccessToken token) {
         AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
         firebaseAuth.signInWithCredential(credential)
@@ -336,6 +325,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
                     }
                 });
     }
+    */
 
     // Step 3
     private void getInfoFromFacebook(AccessToken accessToken){
@@ -354,11 +344,12 @@ public class SignUp extends Fragment implements View.OnClickListener{
                                 }
                             }
                             lastName = names[names.length - 1];
+                            tietFirstName.setText(firstName);
+                            tietLastName.setText(lastName);
                             if (object.has("picture")){
-                                //profilePhotoUrl =  object.getJSONObject("picture").getJSONObject("data").getString("url");
+                                profilePhotoUrl =  object.getJSONObject("picture").getJSONObject("data").getString("url");
+                                Picasso.get().load(profilePhotoUrl).into(ivProfilePhoto);
                             }
-                            //facebookSignUp = true;
-                            //signInFacebookOrGoogle();
                         }
                         catch (JSONException e) {
                             e.printStackTrace();
@@ -377,7 +368,17 @@ public class SignUp extends Fragment implements View.OnClickListener{
         try {
             // Sign in successful
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            firebaseAuthWithGoogle(account);
+            //firebaseAuthWithGoogle(account);
+            firstName = account.getGivenName();
+            lastName = account.getFamilyName();
+            email = account.getEmail();
+            profilePhotoUrl = account.getPhotoUrl().toString();
+
+            tietFirstName.setText(firstName);
+            tietLastName.setText(lastName);
+            tietEmail.setText(email);
+            uri = Uri.parse(profilePhotoUrl);
+            Picasso.get().load(uri).into(ivProfilePhoto);
         }
         catch (ApiException e) {
             // Sign in failed
@@ -386,6 +387,9 @@ public class SignUp extends Fragment implements View.OnClickListener{
     }
 
     // Step 2
+    /*
+    // We no longer need step 2 because of different sign in process that only involves phone number
+    // keeping around just in case for the future
     private void firebaseAuthWithGoogle(final GoogleSignInAccount acct) {
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         firebaseAuth.signInWithCredential(credential)
@@ -409,43 +413,48 @@ public class SignUp extends Fragment implements View.OnClickListener{
                     }
                 });
     }
+    */
 
     private boolean validateEmail(){
-        boolean sitch;
         Matcher matcher = pattern.matcher(email);
         if (!matcher.matches()){
-            sitch = false;
             tilEmail.setError(getResources().getString(R.string.Invalid_email_format));
+            return false;
         }
         else {
             tilEmail.setErrorEnabled(false);
-            sitch = true;
+            return true;
         }
-        return sitch;
     }
 
     private boolean validateName(){
-        boolean sitch;
+        boolean firstName = validateFirstName();
+        boolean lastName = validateLastName();
+        return firstName && lastName;
+    }
+
+    private boolean validateFirstName(){
         if (firstName.isEmpty()){
-            sitch = false;
             tilFirstName.setError(getResources().getString(R.string.Field_cant_be_empty));
+            return false;
+        } else {
+            tilFirstName.setErrorEnabled(false);
+            return true;
+        }
+    }
+
+    private boolean validateLastName(){
+        if (lastName.isEmpty()){
+            tilLastName.setError(getResources().getString(R.string.Field_cant_be_empty));
+            return false;
         }
         else {
-            tilFirstName.setErrorEnabled(false);
-            if (lastName.isEmpty()){
-                sitch = false;
-                tilLastName.setError(getResources().getString(R.string.Field_cant_be_empty));
-            }
-            else {
-                sitch = true;
-                tilLastName.setErrorEnabled(false);
-            }
+            tilLastName.setErrorEnabled(false);
+            return true;
         }
-        return sitch;
     }
 
     private void addNewUser(){
-        tilEmail.setErrorEnabled(false);
         progressDialog.setTitle(getResources().getString(R.string.Registering));
         progressDialog.setMessage(getResources().getString(R.string.Creating_user));
         progressDialog.setCancelable(false);
@@ -458,20 +467,16 @@ public class SignUp extends Fragment implements View.OnClickListener{
             jObject.put("email", email);
             jObject.put("totalRatings", 0);
             jObject.put("overallRating", 0);
-            jObject.put("facebookSignUp", false);
-            jObject.put("googleSignUp", false);
             jObject.put("firebaseTokenID", FirebaseInstanceId.getInstance().getToken());
-            if (!phoneNumber.isEmpty()){
-                jObject.put("phoneNumber", phoneNumber);
-            }
+            jObject.put("phoneNumber", phoneNumber);
+
         }
         catch (JSONException e) {
             e.printStackTrace();
         }
 
-        HttpConnection httpConnection = new HttpConnection();
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.POST, httpConnection.htppConnectionURL() +"/user/create", jObject, new Response.Listener<JSONObject>() {
+                (Request.Method.POST, getString(R.string.URL) +"/user/create", jObject, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
@@ -481,48 +486,30 @@ public class SignUp extends Fragment implements View.OnClickListener{
                                 String email = response.getString("email");
                                 String firstName = response.getString("firstName");
                                 String lastName = response.getString("lastName");
-                                String password = response.getString("password");
                                 String totalRatings = response.getString("totalRatings");
                                 String overallRating = response.getString("overallRating");
+                                String phoneNumber = response.getString("phoneNumber");
 
-                                if (response.has("phoneNumber")){
-                                    String phoneNumber = response.getString("phoneNumber");
-                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_phone_number), phoneNumber);
-                                }
                                 if (response.has("profilePhotoUrl")){
                                     SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), response.getString("profilePhotoUrl"));
                                 }
 
+                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_phone_number), phoneNumber);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id), id);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email), email);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_first_name), firstName);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name), lastName);
-                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password), password);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_total_ratings), totalRatings);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_overall_rating), overallRating);
 
-                                firebaseAuth.createUserWithEmailAndPassword(response.getString("email"), response.getString("password")).addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        e.printStackTrace();
-                                        Toast.makeText(getActivity(), getResources().getString(R.string.Error_some_features_may_be_unavailable), Toast.LENGTH_SHORT).show();
-                                        startActivity(new Intent(getActivity(), MapsActivity.class));
-                                        getActivity().finish();
-                                    }
-                                }).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                                    @Override
-                                    public void onSuccess(AuthResult authResult) {
-                                        // If uri is not empty then that means that user wants to upload image
-                                        if (uri != null) {
-                                            uploadImageToFirebase(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)));
-                                        }
-                                        else{
-                                            progressDialog.dismiss();
-                                            startActivity(new Intent(getActivity(), MapsActivity.class));
-                                            getActivity().finish();
-                                        }
-                                    }
-                                });
+                                if (uri != null) {
+                                    uploadImageToFirebase(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)));
+                                }
+                                else{
+                                    progressDialog.dismiss();
+                                    startActivity(new Intent(getActivity(), MapsActivity.class));
+                                    getActivity().finish();
+                                }
                             }
                             else if (response.getString("status").equals("fail")){
                                 progressDialog.dismiss();
@@ -561,6 +548,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
     }
 
     private void uploadImageToFirebase(String id){
+        Log.e("getLastPath", uri.getLastPathSegment());
         progressDialog.setMessage(getResources().getString(R.string.Uploading_profile_image));
         StorageReference filePath = storageReference.child("Photos").child(id).child(uri.getLastPathSegment());
         filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -573,11 +561,17 @@ public class SignUp extends Fragment implements View.OnClickListener{
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
+                Log.e("upload", "I have failed");
+                e.printStackTrace();
                 progressDialog.dismiss();
                 Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(getActivity(), MapsActivity.class));
             }
         });
+    }
+
+    private void nonURI(){
+        //StorageReference sRer = storageReference.child("Photos").child();
     }
 
     // Uploads download url for profile photo to database

@@ -248,18 +248,23 @@ public class MapsActivity extends AppCompatActivity
         findViewById(R.id.fabSpot).setOnClickListener(this);
 
         drawer = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
                 drawerView.bringToFront();
+                drawerView.requestFocus();
+                drawerView.requestLayout();
+                navigationView.bringToFront();
+                navigationView.requestFocus();
+                navigationView.requestLayout();
             }
         };
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
 
         View navHeaderView = navigationView.getHeaderView(0);
         final ImageView ivProfilePhoto = navHeaderView.findViewById(R.id.ivProfilePhoto);

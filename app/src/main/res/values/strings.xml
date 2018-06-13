@@ -5,6 +5,11 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+    <!-- HTTP Connection -->
+    <string name="URL">http://192.168.1.153:3000</string>
+    <!--
+    <string name="URL">https://spottrade.herokuapp.com</string>
+    -->
     <!-- String for Facebook Login -->
     <string name="facebook_app_id">660255747499055</string>
     <string name="fb_login_protocol_scheme">fb660255747499055</string>
@@ -84,8 +89,10 @@
     <string name="Confirm_Password">Confirm Password</string>
     <string name="Confirm_New_Password">Confirm New Password</string>
     <string name="Confirmation_Code">Confirmation Code</string>
-    <string name="Continue_with_Facebook">Continue with Facebook</string>
-    <string name="Continue_with_Google">Continue with Google</string>
+    <string name="Confirming">Confirming</string>
+    <string name="Complete_with_Facebook">Complete with Facebook</string>
+    <string name="Complete_with_Google">Complete with Google</string>
+    <string name="Country_Codes">Country Codes</string>
     <string name="Create_SpotTrade_Account">Create SpotTrade Account</string>
     <string name="Create_Spot">Create Spot</string>
     <string name="Creating_user">Creating user</string>
@@ -133,6 +140,7 @@
     <string name="In_transit_to">In transit to</string>
     <string name="Incorrect_Password">Incorrect Password</string>
     <string name="Invalid_email_format">Invalid email format</string>
+    <string name="Invalid_number">Invalid number</string>
     <string name="Labor">Labor</string>
     <string name="Last_Name">Last Name</string>
     <string name="Later">Later</string>
@@ -142,6 +150,7 @@
     <string name="Location">Location</string>
     <string name="Log_In">Log In</string>
     <string name="Log_Out">Log Out</string>
+    <string name="Logging_In">Logging In</string>
     <string name="Make_default_payment_method">Make default payment method</string>
     <string name="Minimum_8_characters">Minimum 8 characters</string>
     <string name="MM_YY">MM/YY</string>
@@ -182,6 +191,7 @@
     <string name="Phone_Number">Phone Number</string>
     <string name="Make_Offer">Make Offer</string>
     <string name="Please_add_an_email_to_complete_registration">Please add an email to complete the sign up process</string>
+    <string name="Please_enter_your_mobile_number">Please enter your mobile number</string>
     <string name="Please_set_up_Android_Pay">Please set up Android Pay</string>
     <string name="Price">Price</string>
     <string name="Profile_Photo">Profile Photo</string>
@@ -198,9 +208,11 @@
     <string name="Sell">Sell</string>
     <string name="Seller">Seller</string>
     <string name="Selling">Selling</string>
+    <string name="Sending_confirmation_code">Sending confirmation code</string>
     <string name="Server_error">An error occurred, unable to complete request at this time</string>
     <string name="Sign_In">Sign In</string>
     <string name="Sign_Up">Sign Up</string>
+    <string name="Signing_in">Signing in</string>
     <string name="sold">sold</string>
     <string name="Sold_Spot">Sold Spot</string>
     <string name="sold_their_spot">sold their spot</string>
