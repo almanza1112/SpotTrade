@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<android.support.design.widget.CoordinatorLayout
     android:id="@+id/payment_activity"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+<RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clickable="true"
@@ -37,31 +40,25 @@
 
     <TextView
         android:id="@+id/tvNoPaymentMethods"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/No_payment_methods"
-        android:layout_below="@id/toolbar"
-        android:layout_centerHorizontal="true"
-        android:textAppearance="@android:style/TextAppearance.Medium"
-        android:layout_marginLeft="@dimen/contentPadding"
-        android:layout_marginRight="@dimen/contentPadding"
-        android:layout_marginTop="@dimen/contentPadding"
-        android:layout_marginBottom="@dimen/halfContentPadding"/>
+        android:layout_centerInParent="true"
+        android:textAppearance="@android:style/TextAppearance.Medium" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rvPaymentMethods"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tvNoPaymentMethods"/>
-
-    <Button
-        android:id="@+id/bAddPaymentMethod"
-        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_below="@+id/toolbar"/>
+</RelativeLayout>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fabAddPaymentMethod"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/rvPaymentMethods"
-        android:layout_marginRight="@dimen/contentPadding"
-        android:layout_alignParentRight="true"
-        android:text="@string/Add_Payment_Method"
-        android:textColor="@color/colorAccent"/>
-</RelativeLayout>
+        android:layout_margin="@dimen/contentPadding"
+        android:layout_gravity="bottom|right"
+        android:src="@mipmap/ic_add_white_24dp"
+        android:text="@string/Add_Payment_Method"/>
+</android.support.design.widget.CoordinatorLayout>
+

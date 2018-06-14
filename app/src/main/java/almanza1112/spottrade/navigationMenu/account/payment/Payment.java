@@ -79,7 +79,7 @@ public class Payment extends Fragment {
         progressBar = view.findViewById(R.id.progressBar);
         tvNoPaymentMethods = view.findViewById(R.id.tvNoPaymentMethods);
         rvPaymentMethods = view.findViewById(R.id.rvPaymentMethods);
-        view.findViewById(R.id.bAddPaymentMethod).setOnClickListener(new View.OnClickListener() {
+        view.findViewById(R.id.fabAddPaymentMethod).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Bundle bundle = new Bundle();
@@ -142,7 +142,6 @@ public class Payment extends Fragment {
                     public void onResponse(JSONObject response) {
                         try {
                             if (response.getString("status").equals("success")) {
-                                boolean isEmpty = true;
                                 List<String> paymentType = new ArrayList<>();
                                 List<String> paymentTypeName = new ArrayList<>();
                                 List<String> imageURL = new ArrayList<>();
@@ -152,7 +151,6 @@ public class Payment extends Fragment {
                                 List<Boolean> isDefault = new ArrayList<>();
                                 JSONObject customerObj = new JSONObject(response.getString("customer"));
                                 if (customerObj.has("creditCards")){
-                                    isEmpty = false;
                                     JSONArray creditCardsArray = new JSONArray(customerObj.getString("creditCards"));
                                     for (int i = 0; i < creditCardsArray.length(); i++){
                                         paymentType.add("creditCard");
@@ -170,7 +168,6 @@ public class Payment extends Fragment {
                                     }
                                 }
                                 if (customerObj.has("paypalAccounts")){
-                                    isEmpty = false;
                                     JSONArray paypalAccountsArray = new JSONArray(customerObj.getString("paypalAccounts"));
                                     for (int i = 0; i < paypalAccountsArray.length(); i++){
                                         paymentType.add("paypal");
@@ -182,7 +179,7 @@ public class Payment extends Fragment {
                                         isDefault.add(paypalAccountsArray.getJSONObject(i).getBoolean("default"));
                                     }
                                 }
-                                if (!isEmpty){
+                                if (paymentType.size() > 0){
                                     tvNoPaymentMethods.setVisibility(View.GONE);
                                     RecyclerView.Adapter  adapter = new PaymentAdapter(Payment.this ,getActivity(), paymentType, paymentTypeName, imageURL, credentials, expirationDate, token, isDefault);
                                     RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
@@ -216,7 +213,7 @@ public class Payment extends Fragment {
     }
 
     public void setSnackbar(String snackbarText) {
-        snackbar = Snackbar.make(getActivity().findViewById(R.id.payment_activity), snackbarText, Snackbar.LENGTH_SHORT);
+        snackbar = Snackbar.make(getActivity().findViewById(R.id.payment_activity), snackbarText, Snackbar.LENGTH_LONG);
         snackbar.show();
     }
 
