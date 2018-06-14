@@ -17,7 +17,6 @@ import android.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -84,7 +83,6 @@ import static android.app.Activity.RESULT_OK;
  */
 
 public class SignUp extends Fragment implements View.OnClickListener{
-    private static final String TAG = "SignUp";
 
     // Facebook Login
     private CallbackManager callbackManager;
@@ -255,7 +253,6 @@ public class SignUp extends Fragment implements View.OnClickListener{
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (isFacebookClicked){
-            Log.e("onActivityRes", "fucking works");
             callbackManager.onActivityResult(requestCode, resultCode, data);
         }
         if (requestCode == GALLERY_CODE && resultCode == RESULT_OK){
@@ -278,7 +275,6 @@ public class SignUp extends Fragment implements View.OnClickListener{
     /* FACEBOOK LOGIN */
     // Step 1
     private void facebookLogin(){
-        Log.e("facebookLogin", "please work");
         isFacebookClicked = true;
         callbackManager = CallbackManager.Factory.create();
         LoginButton loginButton = new LoginButton(getActivity());
@@ -288,7 +284,6 @@ public class SignUp extends Fragment implements View.OnClickListener{
                 new FacebookCallback<LoginResult>() {
                     @Override
                     public void onSuccess(final LoginResult loginResult) {
-                        Log.e("facebook", "onSuccess");
                         // These commented out lines are no longer needed for new sign in flow
                         // keeping them around for future
                         //userID = loginResult.getAccessToken().getUserId();
@@ -298,12 +293,10 @@ public class SignUp extends Fragment implements View.OnClickListener{
 
                     @Override
                     public void onCancel() {
-                        Log.e(TAG, "works");
                     }
 
                     @Override
                     public void onError(FacebookException exception) {
-                        Log.e("facebook", "onError");
                         Toast.makeText(getActivity(), getResources().getString(R.string.Unable_to_connect_with_Facebook), Toast.LENGTH_SHORT).show();
                         exception.printStackTrace();
                     }
@@ -356,7 +349,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
                             }
                         }
                         catch (JSONException e) {
-                            e.printStackTrace();
+                            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -386,7 +379,6 @@ public class SignUp extends Fragment implements View.OnClickListener{
         }
         catch (ApiException e) {
             // Sign in failed
-            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
         }
     }
 
@@ -507,9 +499,8 @@ public class SignUp extends Fragment implements View.OnClickListener{
             jObject.put("firebaseTokenID", FirebaseInstanceId.getInstance().getToken());
             jObject.put("phoneNumber", phoneNumber);
 
-        }
-        catch (JSONException e) {
-            e.printStackTrace();
+        } catch (JSONException e) {
+            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
         }
 
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
@@ -591,7 +582,6 @@ public class SignUp extends Fragment implements View.OnClickListener{
     }
 
     private void uploadImageToFirebase(Uri uri, String id){
-        Log.e("getLastPath", uri.getLastPathSegment());
         progressDialog.setMessage(getResources().getString(R.string.Uploading_profile_image));
         StorageReference filePath = storageReference.child("Photos").child(id).child(uri.getLastPathSegment());
         filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -604,8 +594,6 @@ public class SignUp extends Fragment implements View.OnClickListener{
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.e("upload", "I have failed");
-                e.printStackTrace();
                 progressDialog.dismiss();
                 Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(getActivity(), MapsActivity.class));
@@ -619,7 +607,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
         try {
             jObject.put("profilePhotoUrl", url);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
         }
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
@@ -627,14 +615,13 @@ public class SignUp extends Fragment implements View.OnClickListener{
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Log.e("uploadDownloadUrl", response +  "");
                 progressDialog.dismiss();
                 startActivity(new Intent(getActivity(), MapsActivity.class));
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
+                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
             }
         }
         );
