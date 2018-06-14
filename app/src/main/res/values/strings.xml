@@ -19,15 +19,10 @@
     <string name="logged_in_user_first_name">logged_in_user_first_name</string>
     <string name="logged_in_user_last_name">logged_in_user_last_name</string>
     <string name="logged_in_user_email">logged_in_user_email</string>
-    <string name="logged_in_user_password">logged_in_user_password</string>
     <string name="logged_in_user_phone_number">logged_in_user_phone_number</string>
     <string name="logged_in_user_photo_url">logged_in_user_photo_url</string>
     <string name="logged_in_user_total_ratings">logged_in_user_total_ratings</string>
     <string name="logged_in_user_overall_rating">logged_in_user_overall_rating</string>
-    <string name="logged_in_user_facebookSignUp">logged_in_user_facebook</string>
-    <string name="logged_in_user_googleSignUp">logged_in_user_facebook</string>
-    <string name="logged_in_user_facebookUserID">logged_in_user_facebookUserID</string>
-    <string name="logged_in_user_googleUserID">logged_in_user_googleUserID</string>
 
     <string name="SpotTradePref">SpotTradePref</string>
     <string name="bought_lid">lidBought</string>
@@ -75,7 +70,6 @@
     <string name="Cancel_Offer">Cancel Offer</string>
     <string name="Card_Number">Card Number</string>
     <string name="Category">Category</string>
-    <string name="Change_Password">Change Password</string>
     <string name="Change_Profile_Photo">Change Profile Photo</string>
     <string name="Checking_for_payment_methods">Checking for payment methods</string>
     <string name="Choose_Payment_Method">Choose Payment Method</string>
@@ -86,8 +80,6 @@
     <string name="Complete_Transaction">Complete Transaction</string>
     <string name="Completing">Completing</string>
     <string name="Completing_transaction">Completing transaction&#8230;</string>
-    <string name="Confirm_Password">Confirm Password</string>
-    <string name="Confirm_New_Password">Confirm New Password</string>
     <string name="Confirmation_Code">Confirmation Code</string>
     <string name="Confirming">Confirming</string>
     <string name="Complete_with_Facebook">Complete with Facebook</string>
@@ -96,7 +88,6 @@
     <string name="Create_SpotTrade_Account">Create SpotTrade Account</string>
     <string name="Create_Spot">Create Spot</string>
     <string name="Creating_user">Creating user</string>
-    <string name="Current_Password">Current Password</string>
     <string name="CVV">CVV</string>
     <string name="Date">Date</string>
     <string name="Date_and_Time">Date and Time</string>
@@ -122,7 +113,6 @@
     <string name="Error_unable_to_change_photo">Error: unable to change photo</string>
     <string name="Error_unable_to_update_payment_method">Error: unable to update payment method</string>
     <string name="Error_unable_to_update_field">Error: unable to update field</string>
-    <string name="Error_unable_to_change_password">Error: unable to change password</string>
     <string name="Error_some_features_may_be_unavailable">Error: some features may be unavailable</string>
     <string name="Error_signing_into_Firebase">Error signing into Firebase</string>
     <string name="Error_unable_to_upload_image">Error: unable to upload image</string>
@@ -133,12 +123,10 @@
     <string name="Filter">Filter</string>
     <string name="Filter_Star_Rating">Filter Star Rating</string>
     <string name="First_Name">First Name</string>
-    <string name="Forgot_Password"><u>Forgot Password?</u></string>
     <string name="got_spotted">got spotted</string>
     <string name="History">History</string>
     <string name="Home">Home</string>
     <string name="In_transit_to">In transit to</string>
-    <string name="Incorrect_Password">Incorrect Password</string>
     <string name="Invalid_email_format">Invalid email format</string>
     <string name="Invalid_number">Invalid number</string>
     <string name="Labor">Labor</string>
@@ -155,7 +143,6 @@
     <string name="Minimum_8_characters">Minimum 8 characters</string>
     <string name="MM_YY">MM/YY</string>
     <string name="Must_have_price">Must have a price</string>
-    <string name="New_Password">New Password</string>
     <string name="No">No</string>
     <string name="No_date_selected">No date selected</string>
     <string name="No_time_selected">No time selected</string>
@@ -180,8 +167,6 @@
     <string name="OK">OK</string>
     <string name="Other_Method">Other Method</string>
     <string name="Parking">Parking</string>
-    <string name="Password">Password</string>
-    <string name="Password_doesnt_match">Password doesn\'t match</string>
     <string name="Payment">Payment</string>
     <string name="Payment_method_deleted">Payment method deleted</string>
     <string name="Payment_Method_Options">Payment Method Options</string>

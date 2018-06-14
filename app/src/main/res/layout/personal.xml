@@ -211,55 +211,10 @@
     </RelativeLayout>
 
     <RelativeLayout
-        android:id="@+id/rlPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/rlEmail"
-        android:layout_margin="@dimen/contentPadding">
-        <ImageView
-            android:id="@+id/ivPasswordIcon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/contentPadding"
-            android:layout_alignParentLeft="true"
-            android:layout_centerVertical="true"
-            android:src="@mipmap/ic_key_grey600_24dp"/>
-        <TextView
-            android:id="@+id/tvPasswordText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="@dimen/contentPadding"
-            android:layout_toRightOf="@+id/ivPasswordIcon"
-            android:layout_toLeftOf="@+id/ivEditPassword"
-            android:textAppearance="@android:style/TextAppearance.Small"
-            android:textColor="@android:color/black"
-            android:text="@string/Password"/>
-        <TextView
-            android:id="@+id/tvPassword"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/contentPadding"
-            android:layout_below="@+id/tvPasswordText"
-            android:layout_toRightOf="@+id/ivPasswordIcon"
-            android:layout_toLeftOf="@+id/ivEditPassword"
-            android:textAppearance="@android:style/TextAppearance.Small"
-            android:textColor="@android:color/darker_gray"/>
-        <ImageView
-            android:id="@+id/ivEditPassword"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:paddingLeft="@dimen/contentPadding"
-            android:src="@mipmap/ic_account_edit_grey600_24dp"/>
-    </RelativeLayout>
-
-    <RelativeLayout
         android:id="@+id/rlPhoneNumber"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/rlPassword"
+        android:layout_below="@+id/rlEmail"
         android:layout_margin="@dimen/contentPadding">
         <ImageView
             android:id="@+id/ivPhoneIcon"

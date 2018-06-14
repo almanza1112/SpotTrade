@@ -14,7 +14,6 @@ import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -109,24 +108,7 @@ public class Personal extends Fragment implements View.OnClickListener {
         tvEmail.setText(SharedPref.getSharedPreferences(getActivity(), getString(R.string.logged_in_user_email)));
 
         tvEmail.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email)));
-        ImageView ivEditEmail = view.findViewById(R.id.ivEditEmail);
-        if (Boolean.valueOf(SharedPref.getSharedPreferences(getActivity(), getString(R.string.logged_in_user_googleSignUp)))
-                && SharedPref.getSharedPreferences(getActivity(), getString(R.string.logged_in_user_password)) == null){
-            ivEditEmail.setVisibility(View.GONE);
-        } else {
-            ivEditEmail.setOnClickListener(this);
-        }
-
-        TextView tvPassword = view.findViewById(R.id.tvPassword);
-        tvPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        view.findViewById(R.id.ivEditPassword).setOnClickListener(this);
-        String password = SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password));
-        if (password != null){
-            tvPassword.setText(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_password)));
-        }
-        else {
-            view.findViewById(R.id.rlPassword).setVisibility(View.GONE);
-        }
+        view.findViewById(R.id.ivEditEmail).setOnClickListener(this);
 
         tvPhoneNumber = view.findViewById(R.id.tvPhoneNumber);
         setPhoneNumber();
@@ -179,14 +161,6 @@ public class Personal extends Fragment implements View.OnClickListener {
 
             case R.id.ivEditEmail:
                 ADupdateField("email");
-                break;
-
-            case R.id.ivEditPassword:
-                ChangePassword changePassword = new ChangePassword();
-                FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.personal_activity, changePassword);
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
                 break;
 
             case R.id.ivEditPhoneNumber:
