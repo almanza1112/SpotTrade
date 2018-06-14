@@ -2,8 +2,11 @@ package almanza1112.spottrade.login;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -47,8 +50,6 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -58,8 +59,14 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -99,13 +106,12 @@ public class SignUp extends Fragment implements View.OnClickListener{
     private String firstName, lastName, email, phoneNumber, profilePhotoUrl = "";
     private final int GALLERY_CODE = 1;
     private final int READ_EXTERNAL_STORAGE_PERMISSION = 2;
+    private boolean isGallerySelected;
 
     ProgressDialog progressDialog = null;
 
     private Uri uri = null;
     StorageReference storageReference;
-
-    private FirebaseAuth firebaseAuth;
 
     @Override
     public View onCreateView(LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState) {
@@ -156,9 +162,6 @@ public class SignUp extends Fragment implements View.OnClickListener{
         view.findViewById(R.id.fabDone).setOnClickListener(this);
 
         storageReference = FirebaseStorage.getInstance().getReference();
-
-        firebaseAuth = FirebaseAuth.getInstance();
-
 
         return view;
     }
@@ -256,6 +259,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
             callbackManager.onActivityResult(requestCode, resultCode, data);
         }
         if (requestCode == GALLERY_CODE && resultCode == RESULT_OK){
+            isGallerySelected = true;
             bAddProfilePhoto.setVisibility(View.GONE);
             uri = data.getData();
             ivProfilePhoto.setImageURI(uri);
@@ -368,6 +372,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
         try {
             // Sign in successful
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            isGallerySelected = false;
             //firebaseAuthWithGoogle(account);
             firstName = account.getGivenName();
             lastName = account.getFamilyName();
@@ -377,8 +382,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
             tietFirstName.setText(firstName);
             tietLastName.setText(lastName);
             tietEmail.setText(email);
-            uri = Uri.parse(profilePhotoUrl);
-            Picasso.get().load(uri).into(ivProfilePhoto);
+            Picasso.get().load(profilePhotoUrl).into(ivProfilePhoto);
         }
         catch (ApiException e) {
             // Sign in failed
@@ -414,6 +418,39 @@ public class SignUp extends Fragment implements View.OnClickListener{
                 });
     }
     */
+
+    public File createImageFile() {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File mFileTemp = null;
+        String root=getActivity().getDir("my_sub_dir", Context.MODE_PRIVATE).getAbsolutePath();
+        File myDir = new File(root + "/Img");
+        if(!myDir.exists()){
+            myDir.mkdirs();
+        }
+        try {
+            mFileTemp= File.createTempFile(imageFileName,".jpg",myDir.getAbsoluteFile());
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        return mFileTemp;
+    }
+
+    private Uri getUri(){
+        File file = createImageFile();
+            FileOutputStream fout;
+            try {
+                fout = new FileOutputStream(file);
+                BitmapDrawable bitmapDrawable = ((BitmapDrawable) ivProfilePhoto.getDrawable());
+                Bitmap bitmap = bitmapDrawable.getBitmap();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 70, fout);
+                fout.flush();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return Uri.fromFile(file);
+
+    }
 
     private boolean validateEmail(){
         Matcher matcher = pattern.matcher(email);
@@ -502,8 +539,14 @@ public class SignUp extends Fragment implements View.OnClickListener{
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_total_ratings), totalRatings);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_overall_rating), overallRating);
 
-                                if (uri != null) {
-                                    uploadImageToFirebase(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)));
+                                if (uri != null || profilePhotoUrl != null) {
+                                    Uri newUri;
+                                    if (isGallerySelected){
+                                        newUri = uri;
+                                    } else {
+                                        newUri = getUri();
+                                    }
+                                    uploadImageToFirebase(newUri, SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)));
                                 }
                                 else{
                                     progressDialog.dismiss();
@@ -547,7 +590,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
         queue.add(jsObjRequest);
     }
 
-    private void uploadImageToFirebase(String id){
+    private void uploadImageToFirebase(Uri uri, String id){
         Log.e("getLastPath", uri.getLastPathSegment());
         progressDialog.setMessage(getResources().getString(R.string.Uploading_profile_image));
         StorageReference filePath = storageReference.child("Photos").child(id).child(uri.getLastPathSegment());
@@ -568,10 +611,6 @@ public class SignUp extends Fragment implements View.OnClickListener{
                 startActivity(new Intent(getActivity(), MapsActivity.class));
             }
         });
-    }
-
-    private void nonURI(){
-        //StorageReference sRer = storageReference.child("Photos").child();
     }
 
     // Uploads download url for profile photo to database
