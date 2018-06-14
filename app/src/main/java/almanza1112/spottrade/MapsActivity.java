@@ -348,8 +348,10 @@ public class MapsActivity extends AppCompatActivity
 
         switch (item.getItemId()) {
             case R.id.nav_home:
-                if (getFragmentManager().getBackStackEntryCount() > 0) {
+                int count = getFragmentManager().getBackStackEntryCount();
+                while(count > 0){
                     getFragmentManager().popBackStack();
+                    count--;
                 }
                 refreshMap();
                 break;
