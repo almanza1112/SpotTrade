@@ -49,14 +49,14 @@ import java.util.Locale;
 import java.util.Map;
 
 import almanza1112.spottrade.navigationMenu.account.payment.AddPaymentMethod;
-import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
 /**
  * Created by almanza1112 on 6/29/17.
  */
 
-public class CreateSpotActivity extends AppCompatActivity implements View.OnClickListener{
+public class CreateSpotActivity extends AppCompatActivity implements
+        View.OnClickListener{
     private TextView tvType, tvCategory, tvLocationName, tvLocationAddress, tvAddLocation,
             tvDate, tvTime, tvQuantity;
     private TextInputLayout tilPrice;
@@ -424,10 +424,9 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
         pd.setMessage(getResources().getString(R.string.Checking_for_payment_methods));
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        HttpConnection httpConnection = new HttpConnection();
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
-                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)),
+                getString(R.string.URL) + "/payment/customer/" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)),
                 null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -525,9 +524,8 @@ public class CreateSpotActivity extends AppCompatActivity implements View.OnClic
             e.printStackTrace();
         }
 
-        HttpConnection httpConnection = new HttpConnection();
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.POST, httpConnection.htppConnectionURL() +"/location/add", jsonObject, new Response.Listener<JSONObject>() {
+                (Request.Method.POST, getString(R.string.URL) +"/location/add", jsonObject, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {

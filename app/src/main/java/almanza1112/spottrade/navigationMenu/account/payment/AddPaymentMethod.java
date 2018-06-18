@@ -45,7 +45,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import almanza1112.spottrade.R;
-import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
 /**
@@ -141,10 +140,12 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem searchItem = menu.findItem(R.id.search);
-        searchItem.setVisible(false);
-        MenuItem filterItem = menu.findItem(R.id.filterMaps);
-        filterItem.setVisible(false);
+        if (!from.equals("CreateSpotActivity")){
+            MenuItem searchItem = menu.findItem(R.id.search);
+            searchItem.setVisible(false);
+            MenuItem filterItem = menu.findItem(R.id.filterMaps);
+            filterItem.setVisible(false);
+        }
     }
 
     @Override
@@ -195,10 +196,9 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
         pd.show();
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
-        HttpConnection httpConnection = new HttpConnection();
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
-                httpConnection.htppConnectionURL() + "/payment/clientToken",
+                getString(R.string.URL) + "/payment/clientToken",
                 null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -233,20 +233,16 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
                                             });
                                             break;
                                     }
-                                }
-                                catch (InvalidArgumentException e) {
+                                } catch (InvalidArgumentException e) {
                                     // There was an issue with your authorization string.
                                     Toast.makeText(getActivity(), getResources().getString(R.string.Error_invalid_argument), Toast.LENGTH_SHORT).show();
                                 }
-                            }
-                            else {
+                            } else {
                                 Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                             }
-                        }
-                        catch (JSONException e){
+                        } catch (JSONException e){
                             Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                         }
-                        pd.dismiss();
                     }
                 },
                 new Response.ErrorListener() {
@@ -270,14 +266,12 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
             jsonObject.put("lastName", SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name)));
             jsonObject.put("email", SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email)));
             jsonObject.put("paymentMethodNonce", paymentMethodNonce);
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        HttpConnection httpConnection = new HttpConnection();
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.POST, httpConnection.htppConnectionURL() +"/payment/customer/addpaymentmethod", jsonObject, new Response.Listener<JSONObject>() {
+                (Request.Method.POST, getString(R.string.URL) +"/payment/customer/addpaymentmethod", jsonObject, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
@@ -304,7 +298,6 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
                         pd.dismiss();
                         Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
