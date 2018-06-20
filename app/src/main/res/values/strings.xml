@@ -1,9 +1,7 @@
 <resources>
     <string name="app_name">SpotTrade</string>
-    <string name="title_activity_maps">Map</string>
-
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="navigation_drawer_open">navigation drawer open</string>
+    <string name="navigation_drawer_close">navigation drawer close</string>
 
     <!-- HTTP Connection -->
     <string name="URL">http://192.168.1.153:3000</string>
@@ -30,7 +28,6 @@
     <string name="bought_lng">bought_lng</string>
     <string name="bought_address">bought_address</string>
     <string name="bought_name">bought_name</string>
-    <string name="bought_seller_is_logged_in_user">bought_seller_is_logged_in_user</string>
 
     <string name="facebook_access_token">facebook access token</string>
     <string name="facebook_user_id">facebook user id</string>
@@ -40,11 +37,9 @@
     <!-- Strings for all the text in SpotTrade -->
     <string name="About">About</string>
     <string name="Accept">Accept</string>
-    <string name="Account">Account</string>
     <string name="Active_Spots">Active Spots</string>
     <string name="Add_Card">Add Card</string>
     <string name="Add_Credit_or_Debit_Card">Add Credit or Debit Card</string>
-    <string name="Add_Email">Add Email</string>
     <string name="Add_Location">Add Location</string>
     <string name="Add_Payment_Method">Add Payment Method</string>
     <string name="Add_profile_photo">Add Profile Photo</string>
@@ -60,19 +55,14 @@
     <string name="Are_you_sure_you_want_to_delete_this_spot">Are you sure you want to delete this spot?</string>
     <string name="Are_you_sure_you_want_to_log_out">Are you sure you want to log out?</string>
     <string name="available">available</string>
-    <string name="Bought_Spot">Bought Spot</string>
-    <string name="bought_your_spot">bought your spot</string>
     <string name="Buy_Now">Buy Now</string>
     <string name="Buyer">Buyer</string>
     <string name="Cancel">Cancel</string>
-    <string name="Cancel_Offer">Cancel Offer</string>
     <string name="Card_Number">Card Number</string>
     <string name="Category">Category</string>
     <string name="Change_Profile_Photo">Change Profile Photo</string>
     <string name="Checking_for_payment_methods">Checking for payment methods</string>
     <string name="Choose_Payment_Method">Choose Payment Method</string>
-    <string name="Choose_Category">Choose Category</string>
-    <string name="Choose_Type">Choose Type</string>
     <string name="Confirm">Confirm</string>
     <string name="Complete">Complete</string>
     <string name="Complete_Transaction">Complete Transaction</string>
@@ -83,7 +73,6 @@
     <string name="Complete_with_Facebook">Complete with Facebook</string>
     <string name="Complete_with_Google">Complete with Google</string>
     <string name="Country_Codes">Country Codes</string>
-    <string name="Create_SpotTrade_Account">Create SpotTrade Account</string>
     <string name="Create_Spot">Create Spot</string>
     <string name="Creating_user">Creating user</string>
     <string name="CVV">CVV</string>
@@ -96,23 +85,18 @@
     <string name="Deleting">Deleting</string>
     <string name="Deleting_payment_method">Deleting payment method</string>
     <string name="Description">Description</string>
-    <string name="Done">Done</string>
-    <string name="Edit_Category">Edit Category</string>
     <string name="Edit_Description">Edit Description</string>
     <string name="Edit_Price">Edit Price</string>
-    <string name="Edit_Spot">Edit Spot</string>
     <string name="Edit_Type">Edit Type</string>
     <string name="Email">Email</string>
+    <string name="Enter_the_confirmation_code_that_was_sent_to_your_phone">Enter the confirmation code that was sent to your phone</string>
     <string name="Error">Error</string>
     <string name="Error_invalid_argument">Error: invalid argument</string>
     <string name="Error_unable_to_add_card">Error: unable to add card</string>
-    <string name="Error_unable_to_add_spot">Error: unable to add spot</string>
     <string name="Error_unable_to_delete_payment_method">Error: unable to delete payment method</string>
     <string name="Error_unable_to_change_photo">Error: unable to change photo</string>
     <string name="Error_unable_to_update_payment_method">Error: unable to update payment method</string>
     <string name="Error_unable_to_update_field">Error: unable to update field</string>
-    <string name="Error_some_features_may_be_unavailable">Error: some features may be unavailable</string>
-    <string name="Error_signing_into_Firebase">Error signing into Firebase</string>
     <string name="Error_unable_to_upload_image">Error: unable to upload image</string>
     <string name="Error_processing_payment">Error processing payment, please user other payment method.</string>
     <string name="Error_service_unavailable">Error: service unavailable</string>
@@ -121,24 +105,18 @@
     <string name="Filter">Filter</string>
     <string name="Filter_Star_Rating">Filter Star Rating</string>
     <string name="First_Name">First Name</string>
-    <string name="got_spotted">got spotted</string>
+    <string name="Get_Started">Get Started</string>
     <string name="History">History</string>
-    <string name="Home">Home</string>
     <string name="In_transit_to">In transit to</string>
     <string name="Invalid_email_format">Invalid email format</string>
     <string name="Invalid_number_format">Invalid number format</string>
-    <string name="Labor">Labor</string>
     <string name="Last_Name">Last Name</string>
-    <string name="Later">Later</string>
     <string name="Line">Line</string>
     <string name="Loading">Loading</string>
     <string name="Loading_payment_methods">Loading payment methods</string>
     <string name="Location">Location</string>
-    <string name="Log_In">Log In</string>
     <string name="Log_Out">Log Out</string>
-    <string name="Logging_In">Logging In</string>
     <string name="Make_default_payment_method">Make default payment method</string>
-    <string name="Minimum_8_characters">Minimum 8 characters</string>
     <string name="MM_YY">MM/YY</string>
     <string name="Must_have_price">Must have a price</string>
     <string name="No">No</string>
@@ -152,7 +130,6 @@
     <string name="No_offers">No offers</string>
     <string name="No_Payment_Method">No Payment Method</string>
     <string name="Not_Now">Not Now</string>
-    <string name="Notifications">Notifications</string>
     <string name="Now">Now</string>
     <string name="Obtaining_credentials">Obtaining credentials</string>
     <string name="Offer">Offer</string>
@@ -173,7 +150,7 @@
     <string name="Personal">Personal</string>
     <string name="Phone_Number">Phone Number</string>
     <string name="Make_Offer">Make Offer</string>
-    <string name="Please_add_an_email_to_complete_registration">Please add an email to complete the sign up process</string>
+    <string name="Please_enter_your_mobile_phone_number_to_authenticate_this_device">Please enter your mobile phone number to authenticate this device</string>
     <string name="Please_enter_your_mobile_number">Please enter your mobile number</string>
     <string name="Please_set_up_Android_Pay">Please set up Android Pay</string>
     <string name="Price">Price</string>
@@ -184,8 +161,6 @@
     <string name="Registering">Registering</string>
     <string name="Regular">Regular</string>
     <string name="Request">Request</string>
-    <string name="Requested">Requested</string>
-    <string name="Requested_Spotter">Requested Spotter</string>
     <string name="Requesting">Requesting</string>
     <string name="Search">Search</string>
     <string name="Sell">Sell</string>
@@ -193,18 +168,12 @@
     <string name="Selling">Selling</string>
     <string name="Sending_confirmation_code">Sending confirmation code</string>
     <string name="Server_error">An error occurred, unable to complete request at this time</string>
-    <string name="Sign_In">Sign In</string>
     <string name="Sign_Up">Sign Up</string>
     <string name="Signing_in">Signing in</string>
-    <string name="sold">sold</string>
-    <string name="Sold_Spot">Sold Spot</string>
-    <string name="sold_their_spot">sold their spot</string>
     <string name="Spot">Spot</string>
     <string name="Spots">Spots</string>
     <string name="spots_">spots</string>
     <string name="Spot_successfully_deleted">Spot successfully deleted</string>
-    <string name="Spotted">Spotted</string>
-    <string name="spotted_you">spotted you</string>
     <string name="Time">Time</string>
     <string name="Type">Type</string>
     <string name="Unable_to_connect_with_Facebook">Unable to connect with Facebook</string>
@@ -229,8 +198,6 @@
     <string name="start_tracking">Start Tracking</string>
     <string name="stop_tracking">Stop Tracking</string>
     <string name="enter_transport_id">Enter transport ID</string>
-    <string name="enter_email">Enter email</string>
-    <string name="enter_password">Enter password</string>
     <string
         name="location_permissions_required">Location permissions are required for tracking
         location. Please grant these permissions to continue.</string>
@@ -241,16 +208,11 @@
     <string name="status">status</string>
     <string name="location_permission_required">Location permission required.</string>
     <string name="gps_required">Gps not enabled.</string>
-    <string name="ok">OK</string>
-    <string name="enable">Enable</string>
-    <string name="auth_failed">Firebase authentication failed</string>
-    <string name="confirm_stop">Do you really want to disable location tracking?</string>
 
     <string name="firebase_path" translatable="false">raw-locations/</string>
     <string name="prefs" translatable="false">prefs</string>
     <string name="transport_id" translatable="false">transport_id</string>
     <string name="email" translatable="false">email</string>
-    <string name="password" translatable="false">password</string>
 
     <!-- Country Codes -->
     <string-array name="CountryCodes" >

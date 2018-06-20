@@ -140,7 +140,7 @@ public class AddPaymentMethod extends Fragment implements
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        if (!from.equals("CreateSpotActivity")){
+        if (!from.equals("CreateSpot")){
             MenuItem searchItem = menu.findItem(R.id.search);
             searchItem.setVisible(false);
             MenuItem filterItem = menu.findItem(R.id.filterMaps);
@@ -289,7 +289,6 @@ public class AddPaymentMethod extends Fragment implements
                             Log.e("response", response + "");
                             if (response.getString("status").equals("success")){
                                 paymentMethodAddedListener.onPaymentMethodAdded(from);
-                                getFragmentManager().popBackStack();
                             } else {
                                 Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                             }

@@ -120,7 +120,8 @@ public class MapsActivity extends AppCompatActivity
         NavigationView.OnNavigationItemSelectedListener,
         AddPaymentMethod.PaymentMethodAddedListener,
         AddCreditDebitCard.CreditCardAddedListener,
-        ViewOffers.OfferAcceptedListener {
+        ViewOffers.OfferAcceptedListener ,
+        CreateSpot.SpotCreatedListener{
 
     private ProgressBar progressBar;
     private GoogleMap mMap;
@@ -142,7 +143,6 @@ public class MapsActivity extends AppCompatActivity
     private double latitude = 0, longitude = 0;
     private String locationName = "empty", locationAddress = "empty";
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
-    private int SPOT_CODE = 1;
     private int quantity;
     private String lid, price, type;
     private String typeSelected = "all";
@@ -154,6 +154,7 @@ public class MapsActivity extends AppCompatActivity
     private DatabaseReference databaseReference;
 
     Payment paymentFrag;
+    CreateSpot createSpotFrag;
 
     // For onOfferAccepted
     boolean isOfferAccepted;
@@ -286,11 +287,18 @@ public class MapsActivity extends AppCompatActivity
                 getMyLocation();
                 break;
             case R.id.fabSpot:
-                startActivityForResult(new Intent(MapsActivity.this, CreateSpotActivity.class)
-                        .putExtra("locationName", locationName)
-                        .putExtra("locationAddress", locationAddress)
-                        .putExtra("latitude", latitude)
-                        .putExtra("longitude", longitude), SPOT_CODE);
+                Bundle bundle = new Bundle();
+                bundle.putString("locationName", locationName);
+                bundle.putString("locationAddress", locationAddress);
+                bundle.putDouble("latitude", latitude);
+                bundle.putDouble("longitude", longitude);
+                createSpotFrag = new CreateSpot();
+                createSpotFrag.setArguments(bundle);
+                FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+                fragmentTransaction.setCustomAnimations(R.animator.right_in, R.animator.right_out, R.animator.right_in, R.animator.right_out);
+                fragmentTransaction.add(R.id.drawer_layout, createSpotFrag);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
                 break;
 
             case R.id.bDelete:
@@ -450,18 +458,7 @@ public class MapsActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == SPOT_CODE) {
-            if (resultCode == RESULT_OK) {
-                latitude = Double.valueOf(data.getStringExtra("latitude"));
-                longitude = Double.valueOf(data.getStringExtra("longitude"));
-                String name = data.getStringExtra("name");
-                String id = data.getStringExtra("id");
-                LatLng locash = new LatLng(latitude, longitude);
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(locash, 16));
-                marker = mMap.addMarker(new MarkerOptions().position(locash).title(name));
-                marker.setTag(id);
-            }
-        } else if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
+        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 Place place = PlaceAutocomplete.getPlace(this, data);
                 latitude = place.getLatLng().latitude;
@@ -708,6 +705,11 @@ public class MapsActivity extends AppCompatActivity
                 paymentFrag.setSnackbar(getString(R.string.Payment_method_added));
                 break;
 
+            case "CreateSpot":
+                getFragmentManager().popBackStack();
+                getFragmentManager().popBackStack();
+                createSpotFrag.validatePaymentMethod();
+                break;
             case "MapsActivity":
 
                 break;
@@ -718,13 +720,28 @@ public class MapsActivity extends AppCompatActivity
     public void onPaymentMethodAdded(String from) {
         switch (from){
             case "Payment":
+                getFragmentManager().popBackStack();
                 paymentFrag.getCustomer();
                 paymentFrag.setSnackbar(getString(R.string.Payment_method_added));
+                break;
+            case "CreateSpot":
+                getFragmentManager().popBackStack();
+                createSpotFrag.validatePaymentMethod();
                 break;
             case "MapsActivity":
                 validatePaymentMethod();
                 break;
         }
+    }
+
+    @Override
+    public void onSpotCreated(Double lat, Double lng, String name, String id) {
+        Log.e("hi", "works");
+        getFragmentManager().popBackStack();
+        LatLng locash = new LatLng(lat, lng);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(locash, 16));
+        marker = mMap.addMarker(new MarkerOptions().position(locash).title(name));
+        marker.setTag(id);
     }
 
     @Override

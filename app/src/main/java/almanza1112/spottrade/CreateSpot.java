@@ -2,20 +2,25 @@ package almanza1112.spottrade;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
@@ -51,12 +56,13 @@ import java.util.Map;
 import almanza1112.spottrade.navigationMenu.account.payment.AddPaymentMethod;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
+import static android.app.Activity.RESULT_OK;
+
 /**
  * Created by almanza1112 on 6/29/17.
  */
 
-public class CreateSpotActivity extends AppCompatActivity implements
-        View.OnClickListener{
+public class CreateSpot extends Fragment implements View.OnClickListener{
     private TextView tvType, tvCategory, tvLocationName, tvLocationAddress, tvAddLocation,
             tvDate, tvTime, tvQuantity;
     private TextInputLayout tilPrice;
@@ -73,57 +79,54 @@ public class CreateSpotActivity extends AppCompatActivity implements
     final int[] posCategory = {0};
     private Calendar calendar;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.create_spot, container, false);
 
-        Intent intent = getIntent();
-        locationName = intent.getStringExtra("locationName");
-        locationAddress = intent.getStringExtra("locationAddress");
-        latitude = intent.getDoubleExtra("latitude", 0);
-        longitude = intent.getDoubleExtra("longitude", 0);
+        pd = new ProgressDialog(getActivity());
 
-        setContentView(R.layout.create_spot_actiivty);
+        locationName = getArguments().getString("locationName");
+        locationAddress = getArguments().getString("locationAddress");
+        latitude = getArguments().getDouble("latitude", 0);
+        longitude = getArguments().getDouble("longitude", 0);
 
-        pd = new ProgressDialog(this);
+        final Toolbar toolbar = view.findViewById(R.id.toolbar);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setTitle(getResources().getString(R.string.Create_Spot));
 
-        final Toolbar toolbar = findViewById(R.id.toolbar);
-
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-        toolbar.setTitle(R.string.Create_Spot);
-
-        tvType = findViewById(R.id.tvType);
+        tvType = view.findViewById(R.id.tvType);
         tvType.setOnClickListener(this);
-        tvCategory = findViewById(R.id.tvCategory);
+        tvCategory = view.findViewById(R.id.tvCategory);
         tvCategory.setOnClickListener(this);
-        tvLocationName = findViewById(R.id.tvLocationName);
+        tvLocationName = view.findViewById(R.id.tvLocationName);
         tvLocationName.setOnClickListener(this);
-        tvLocationAddress = findViewById(R.id.tvLocationAddress);
+        tvLocationAddress = view.findViewById(R.id.tvLocationAddress);
         tvLocationAddress.setOnClickListener(this);
-        tvAddLocation = findViewById(R.id.tvAddLocation);
+        tvAddLocation = view.findViewById(R.id.tvAddLocation);
         tvAddLocation.setOnClickListener(this);
-        tvDate = findViewById(R.id.tvDate);
+        tvDate = view.findViewById(R.id.tvDate);
         tvDate.setOnClickListener(this);
-        tvTime = findViewById(R.id.tvTime);
+        tvTime = view.findViewById(R.id.tvTime);
         tvTime.setOnClickListener(this);
-        cbNow = findViewById(R.id.cbNow);
+        cbNow = view.findViewById(R.id.cbNow);
         cbNow.setChecked(true);
         cbNow.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked){
-                    tvDate.setTextColor(getColor(R.color.grey600));
-                    tvTime.setTextColor(getColor(R.color.grey600));
+                    tvDate.setTextColor(getActivity().getColor(R.color.grey600));
+                    tvTime.setTextColor(getActivity().getColor(R.color.grey600));
                 } else {
-                    tvDate.setTextColor(getColor(R.color.colorAccent));
-                    tvTime.setTextColor(getColor(R.color.colorAccent));
+                    tvDate.setTextColor(getActivity().getColor(R.color.colorAccent));
+                    tvTime.setTextColor(getActivity().getColor(R.color.colorAccent));
                 }
             }
         });
-        tvQuantity = findViewById(R.id.tvQuantity);
+        tvQuantity = view.findViewById(R.id.tvQuantity);
         tvQuantity.setText("1 " + getResources().getString(R.string.available));
         tvQuantity.setOnClickListener(this);
 
@@ -136,26 +139,27 @@ public class CreateSpotActivity extends AppCompatActivity implements
             tvLocationAddress.setText(locationAddress);
         }
 
-        tietDescription = findViewById(R.id.tietDescription);
-        tilPrice = findViewById(R.id.tilPrice);
-        tietPrice = findViewById(R.id.tietPrice);
-        cbOffers = findViewById(R.id.cbOffers);
+        tietDescription = view.findViewById(R.id.tietDescription);
+        tilPrice = view.findViewById(R.id.tilPrice);
+        tietPrice = view.findViewById(R.id.tietPrice);
+        cbOffers = view.findViewById(R.id.cbOffers);
 
-        final Button bCreateSpot = findViewById(R.id.bCreateSpot);
-        bCreateSpot.setOnClickListener(this);
+        view.findViewById(R.id.bCreateSpot).setOnClickListener(this);
 
         calendar = Calendar.getInstance();
         day = calendar.get(Calendar.DAY_OF_MONTH);
         month = calendar.get(Calendar.MONTH);
         year = calendar.get(Calendar.YEAR);
+        return view;
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.tvType:
+                Log.e("onClick", "type");
                 final CharSequence[] itemsType = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request)};
-                final AlertDialog.Builder alertDBType = new AlertDialog.Builder(this);
+                final AlertDialog.Builder alertDBType = new AlertDialog.Builder(getActivity());
                 alertDBType.setTitle(R.string.Type);
                 alertDBType.setSingleChoiceItems(itemsType, posType[0], new DialogInterface.OnClickListener() {
                     @Override
@@ -187,8 +191,9 @@ public class CreateSpotActivity extends AppCompatActivity implements
                 break;
 
             case R.id.tvCategory:
+                Log.e("onClick", "category");
                 final CharSequence[] itemsCategory = {getString(R.string.Regular), getString(R.string.Line), getString(R.string.Parking)};
-                final AlertDialog.Builder alertDB = new AlertDialog.Builder(this);
+                final AlertDialog.Builder alertDB = new AlertDialog.Builder(getActivity());
                 alertDB.setTitle(R.string.Category);
                 alertDB.setSingleChoiceItems(itemsCategory, posCategory[0], new DialogInterface.OnClickListener() {
                     @Override
@@ -249,7 +254,7 @@ public class CreateSpotActivity extends AppCompatActivity implements
                 npQuantity.setMaxValue(100);
                 npQuantity.setValue(quantity);
 
-                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
                 alertDialogBuilder.setView(alertLayout);
                 alertDialogBuilder.setTitle(R.string.Quantity);
                 alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
@@ -271,7 +276,7 @@ public class CreateSpotActivity extends AppCompatActivity implements
                 break;
 
             case R.id.tvDate:
-                DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+                DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
                         setDate(year, month, dayOfMonth);
@@ -282,8 +287,8 @@ public class CreateSpotActivity extends AppCompatActivity implements
                         tvDate.setText(epochToDateString(cDate.getTimeInMillis()));
 
                         cbNow.setChecked(false);
-                        tvTime.setTextColor(getColor(R.color.colorAccent));
-                        tvDate.setTextColor(getColor(R.color.colorAccent));
+                        tvTime.setTextColor(getActivity().getColor(R.color.colorAccent));
+                        tvDate.setTextColor(getActivity().getColor(R.color.colorAccent));
                     }
                 }, year, month , day);
                 datePickerDialog.getDatePicker().setMinDate(calendar.getTimeInMillis());
@@ -294,7 +299,7 @@ public class CreateSpotActivity extends AppCompatActivity implements
                 Calendar c = Calendar.getInstance();
                 hour = c.get(Calendar.HOUR_OF_DAY);
                 minute = c.get(Calendar.MINUTE);
-                TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+                TimePickerDialog timePickerDialog = new TimePickerDialog(getActivity(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         setTime(hourOfDay, minute);
@@ -304,32 +309,33 @@ public class CreateSpotActivity extends AppCompatActivity implements
                         tvTime.setText(epochToTimeString(calendarTime.getTimeInMillis()));
 
                         cbNow.setChecked(false);
-                        tvTime.setTextColor(getColor(R.color.colorAccent));
-                        tvDate.setTextColor(getColor(R.color.colorAccent));
+                        tvTime.setTextColor(getActivity().getColor(R.color.colorAccent));
+                        tvDate.setTextColor(getActivity().getColor(R.color.colorAccent));
                     }
                 }, hour, minute, false);
                 timePickerDialog.show();
                 break;
 
             default:
+                Log.e("onClick", "default");
                 try {
                     Intent intent =
-                            new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
-                                    .build(this);
+                            new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
+                                    .build(getActivity());
                     startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
                 } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
-                    Toast.makeText(this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
                 }
                 break;
         }
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE){
             if (resultCode == RESULT_OK){
-                Place place = PlaceAutocomplete.getPlace(this, data);
+                Place place = PlaceAutocomplete.getPlace(getActivity(), data);
                 latitude = place.getLatLng().latitude;
                 longitude = place.getLatLng().longitude;
                 locationName = place.getName().toString();
@@ -342,21 +348,48 @@ public class CreateSpotActivity extends AppCompatActivity implements
                 tvLocationName.setVisibility(View.VISIBLE);
                 tvLocationAddress.setVisibility(View.VISIBLE);
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
-                Status status = PlaceAutocomplete.getStatus(this, data);
-                Toast.makeText(this, status.getStatusMessage(), Toast.LENGTH_SHORT).show();
+                Status status = PlaceAutocomplete.getStatus(getActivity(), data);
+                Toast.makeText(getActivity(), status.getStatusMessage(), Toast.LENGTH_SHORT).show();
             }
         }
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case android.R.id.home:
-                onBackPressed();
-                break;
-        }
-        return true;
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        MenuItem searchItem = menu.findItem(R.id.search);
+        searchItem.setVisible(false);
+        MenuItem filterItem = menu.findItem(R.id.filterMaps);
+        filterItem.setVisible(false);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            spotCreatedListener = (SpotCreatedListener) context;
+        } catch (ClassCastException e){
+            throw new ClassCastException(context.toString() + " must implement OnItemClickedListener");
+        }
+    }
+
+    SpotCreatedListener spotCreatedListener = spotCreatedMethodCallback;
+
+    public interface SpotCreatedListener{
+        void onSpotCreated(Double lat, Double lng, String name, String id);
+    }
+
+    public static SpotCreatedListener spotCreatedMethodCallback = new SpotCreatedListener() {
+        @Override
+        public void onSpotCreated(Double lat, Double lng, String name, String id) {
+
+        }
+    };
 
     private boolean validatePrice(){
         if (tietPrice.getText().toString().isEmpty()){
@@ -420,13 +453,18 @@ public class CreateSpotActivity extends AppCompatActivity implements
         }
     }
 
-    private void validatePaymentMethod(){
+    public void validatePaymentMethod(){
+        if (!pd.isShowing()){
+            pd.setTitle(R.string.Adding_Spot);
+            pd.setCancelable(false);
+            pd.show();
+        }
         pd.setMessage(getResources().getString(R.string.Checking_for_payment_methods));
-        RequestQueue queue = Volley.newRequestQueue(this);
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
 
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
-                getString(R.string.URL) + "/payment/customer/" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)),
+                getString(R.string.URL) + "/payment/customer/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)),
                 null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -445,7 +483,7 @@ public class CreateSpotActivity extends AppCompatActivity implements
                             }
                         } catch (JSONException e){
                             pd.dismiss();
-                            Toast.makeText(CreateSpotActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                         }
                     }
                 },
@@ -453,7 +491,7 @@ public class CreateSpotActivity extends AppCompatActivity implements
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         pd.dismiss();
-                        Toast.makeText(CreateSpotActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -461,7 +499,7 @@ public class CreateSpotActivity extends AppCompatActivity implements
     }
 
     private void ADnoPaymentMethod(){
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
         alertDialogBuilder.setTitle(R.string.No_Payment_Method);
         alertDialogBuilder.setMessage(R.string.You_have_no_payment_method);
         alertDialogBuilder.setNegativeButton(R.string.Not_Now, new DialogInterface.OnClickListener() {
@@ -475,10 +513,11 @@ public class CreateSpotActivity extends AppCompatActivity implements
             public void onClick(DialogInterface dialog, int which) {
                 Bundle bundle = new Bundle();
                 AddPaymentMethod addPaymentMethod = new AddPaymentMethod();
-                bundle.putString("from", "CreateSpotActivity");
+                bundle.putString("from", "CreateSpot");
                 addPaymentMethod.setArguments(bundle);
                 FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.spot_activity, addPaymentMethod);
+                fragmentTransaction.setCustomAnimations(R.animator.right_in, R.animator.right_out, R.animator.right_in, R.animator.right_out);
+                fragmentTransaction.add(R.id.create_spot, addPaymentMethod);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
 
@@ -491,7 +530,7 @@ public class CreateSpotActivity extends AppCompatActivity implements
 
     private void postRequest(){
         pd.setMessage(getResources().getString(R.string.Adding_spot_to_SpotTrade_database));
-        RequestQueue queue = Volley.newRequestQueue(this);
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
         final JSONObject jsonObject = new JSONObject();
         final JSONObject sellerInfoObj = new JSONObject();
         try {
@@ -508,7 +547,7 @@ public class CreateSpotActivity extends AppCompatActivity implements
             jsonObject.put("quantity", quantity);
             jsonObject.put("hasBuyer", false);
 
-            sellerInfoObj.put("sellerID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
+            sellerInfoObj.put("sellerID", SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)));
             jsonObject.put("sellerInfo", sellerInfoObj);
 
             Calendar calendar = Calendar.getInstance();
@@ -533,27 +572,25 @@ public class CreateSpotActivity extends AppCompatActivity implements
                             String status = response.getString("status");
                             if (status.equals("success")){
                                 pd.dismiss();
-                                Intent intent = getIntent();
-                                intent.putExtra("latitude", response.getString("latitude"));
-                                intent.putExtra("longitude", response.getString("longitude"));
-                                intent.putExtra("id", response.getString("_id"));
-                                intent.putExtra("name", response.getString("name"));
-                                setResult(RESULT_OK, intent);
-                                finish();
+                                spotCreatedListener.onSpotCreated(
+                                        Double.valueOf(response.getString("latitude")),
+                                        Double.valueOf(response.getString("longitude")),
+                                        response.getString("_id"),
+                                        response.getString("name"));
                             } else {
                                 pd.dismiss();
-                                Toast.makeText(CreateSpotActivity.this, getResources().getString(R.string.Error_unable_to_add_spot), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                             }
                         } catch (JSONException e){
                             pd.dismiss();
-                            Toast.makeText(CreateSpotActivity.this, getResources().getString(R.string.Error_unable_to_add_spot), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                         }
                     }
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         pd.dismiss();
-                        Toast.makeText(CreateSpotActivity.this, getResources().getString(R.string.Error_unable_to_add_spot), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
                 }){
             @Override

@@ -16,6 +16,16 @@
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         android:background="@color/colorPrimary"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/contentPadding"
+        android:layout_above="@+id/llConfirmationCode"
+        android:text="@string/Enter_the_confirmation_code_that_was_sent_to_your_phone"
+        android:textAppearance="@android:style/TextAppearance.Medium"
+        android:textAlignment="center"
+        android:textColor="@android:color/black"/>
+
     <LinearLayout
         android:id="@+id/llConfirmationCode"
         android:layout_width="wrap_content"

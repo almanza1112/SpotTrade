@@ -92,8 +92,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".login.LoginActivity" android:screenOrientation="portrait"/>
-        <activity android:name=".CreateSpotActivity" android:screenOrientation="portrait"/>
-
 
         <!--
         <receiver
