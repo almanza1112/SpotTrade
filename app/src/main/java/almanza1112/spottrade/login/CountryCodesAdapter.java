@@ -1,8 +1,8 @@
 package almanza1112.spottrade.login;
 
 import android.app.Activity;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,14 +32,15 @@ class CountryCodesAdapter extends RecyclerView.Adapter<CountryCodesAdapter.Recyc
         this.countryName = countryName;
     }
 
+    @NonNull
     @Override
-    public CountryCodesAdapter.RecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public CountryCodesAdapter.RecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.country_codes_recyclerview_row, parent, false);
         return new RecyclerViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(RecyclerViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position) {
         holder.ivCountryFlag.setImageResource(activity.getResources().getIdentifier("drawable/" + countryID.get(position), null, activity.getPackageName()));
         holder.tvCountryNameCode.setText(countryName.get(position) + " (+" + countryCode.get(position) + ")");
     }

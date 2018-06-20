@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -63,14 +64,15 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
         this.isDefault = isDefault;
     }
 
+    @NonNull
     @Override
-    public RecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.payment_recyclerview_row, parent, false);
         return new RecyclerViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(PaymentAdapter.RecyclerViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull PaymentAdapter.RecyclerViewHolder holder, int position) {
         Picasso.get().load(imageURL.get(position)).into(holder.ivImage);
         holder.tvPaymentTypeName.setText(paymentTypeName.get(position));
         holder.tvCredentials.setText(credentials.get(position));
