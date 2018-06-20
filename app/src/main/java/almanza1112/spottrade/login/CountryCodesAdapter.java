@@ -59,7 +59,6 @@ class CountryCodesAdapter extends RecyclerView.Adapter<CountryCodesAdapter.Recyc
             llCountry.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.e("rvLL", "clicked");
                     countryCodes.countrySelected(countryCode.get(getAdapterPosition()), countryID.get(getAdapterPosition()));
                 }
             });

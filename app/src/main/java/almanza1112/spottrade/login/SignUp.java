@@ -72,7 +72,6 @@ import java.util.regex.Pattern;
 
 import almanza1112.spottrade.MapsActivity;
 import almanza1112.spottrade.R;
-import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.RegularExpression;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
@@ -611,8 +610,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
         }
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 progressDialog.dismiss();

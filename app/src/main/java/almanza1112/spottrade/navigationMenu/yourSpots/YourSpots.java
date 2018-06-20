@@ -5,8 +5,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -35,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import almanza1112.spottrade.R;
-import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
 /**
@@ -55,26 +52,11 @@ public class YourSpots extends Fragment {
         View view = inflater.inflate(R.layout.your_spots, container, false);
 
         final Toolbar toolbar = view.findViewById(R.id.toolbar);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setTitle(R.string.Your_Spots);
-
-        AppCompatActivity actionBar = (AppCompatActivity) getActivity();
-        actionBar.setSupportActionBar(toolbar);
-
-        DrawerLayout drawer = actionBar.findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                getActivity(),
-                drawer,
-                toolbar,
-                R.string.navigation_drawer_open,
-                R.string.navigation_drawer_close){
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                drawerView.bringToFront();
-            }
-        };
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
 
         progressBar = view.findViewById(R.id.progressBar);
         rvYourSpots = view.findViewById(R.id.rvYourSpots);
@@ -119,11 +101,9 @@ public class YourSpots extends Fragment {
                     String type;
                     if (pos[0] == 0){
                         type = "Sell";
-                    }
-                    else if (pos[0] == 1){
+                    } else if (pos[0] == 1){
                         type = "Request";
-                    }
-                    else {
+                    } else {
                         type = "all";
                     }
                     getYourSpots(type);
@@ -145,8 +125,7 @@ public class YourSpots extends Fragment {
         progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/yourspots?id="+ SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)) + "&transaction=available&type=" + type, null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/yourspots?id="+ SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)) + "&transaction=available&type=" + type, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{

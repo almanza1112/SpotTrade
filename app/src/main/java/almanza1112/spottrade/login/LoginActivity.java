@@ -41,9 +41,10 @@ import almanza1112.spottrade.nonActivity.SharedPref;
  * Created by almanza1112 on 6/21/17.
  */
 
-public class LoginActivity extends AppCompatActivity{
+public class LoginActivity extends AppCompatActivity  implements CountryCodes.CountrySelectedListener{
     private ProgressDialog pd = null;
     private String phoneNumber;
+    PhoneNumber phoneNumberFrag = new PhoneNumber();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,9 +55,9 @@ public class LoginActivity extends AppCompatActivity{
         findViewById(R.id.bGetStarted).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PhoneNumber phoneNumber = new PhoneNumber();
                 FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.login_activity, phoneNumber);
+                fragmentTransaction.setCustomAnimations(R.animator.bottom_in, R.animator.bottom_out, R.animator.bottom_in, R.animator.bottom_out);
+                fragmentTransaction.add(R.id.login_activity, phoneNumberFrag);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
             }
@@ -77,10 +78,14 @@ public class LoginActivity extends AppCompatActivity{
     public void onBackPressed() {
         if (getFragmentManager().getBackStackEntryCount() > 0){
             getFragmentManager().popBackStack();
-        }
-        else {
+        } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public void onCountrySelected(String countryCode, String countryID) {
+        phoneNumberFrag.updateCountry(countryCode, countryID);
     }
 
     public PhoneAuthProvider.OnVerificationStateChangedCallbacks phoneVerificationCallback = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
@@ -99,7 +104,8 @@ public class LoginActivity extends AppCompatActivity{
             ConfirmationCode confirmationCode = new ConfirmationCode();
             confirmationCode.setArguments(bundle);
             FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.phone_number, confirmationCode);
+            fragmentTransaction.setCustomAnimations(R.animator.right_in, R.animator.right_out, R.animator.right_in, R.animator.right_out);
+            fragmentTransaction.add(R.id.phone_number, confirmationCode);
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
         }
@@ -107,7 +113,11 @@ public class LoginActivity extends AppCompatActivity{
         @Override
         public void onVerificationFailed(FirebaseException e) {
             pd.dismiss();
-            Toast.makeText(LoginActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+            if (e.toString().contains("The format of the phone number provided is incorrect")){
+                phoneNumberFrag.tilPhoneNumber.setError(getString(R.string.Invalid_number_format));
+            } else {
+                Toast.makeText(LoginActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+            }
         }
     };
 

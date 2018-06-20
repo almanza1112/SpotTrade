@@ -10,7 +10,6 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,13 +29,11 @@ import almanza1112.spottrade.nonActivity.RegularExpression;
  * Created by Almanza on 6/5/2018.
  */
 
-public class PhoneNumber extends Fragment implements
-        View.OnClickListener,
-        CountryCodes.CountrySelectedListener{
+public class PhoneNumber extends Fragment implements View.OnClickListener{
 
     private TextView tvCountryCode;
     private ImageView ivCountryFlag;
-    private TextInputLayout tilPhoneNumber;
+    public TextInputLayout tilPhoneNumber;
     private TextInputEditText tietPhoneNumber;
     //private PhoneAuthProvider.OnVerificationStateChangedCallbacks phoneVerificationCallback;
 
@@ -71,7 +68,8 @@ public class PhoneNumber extends Fragment implements
             case R.id.llCountryFlagCode:
                 CountryCodes countryCodes = new CountryCodes();
                 FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.phone_number, countryCodes);
+                fragmentTransaction.setCustomAnimations(R.animator.bottom_in, R.animator.bottom_out, R.animator.bottom_in, R.animator.bottom_out);
+                fragmentTransaction.add(R.id.phone_number, countryCodes);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
                 break;
@@ -82,9 +80,7 @@ public class PhoneNumber extends Fragment implements
         }
     }
 
-    @Override
-    public void onCountrySelected(String countryCode, String countryID) {
-        Log.e("onCountrySelected", countryCode + " " + countryID);
+    public void updateCountry(String countryCode, String countryID) {
         ivCountryFlag.setImageResource(getActivity().getResources().getIdentifier("drawable/" + countryID, null, getActivity().getPackageName()));
         tvCountryCode.setText("+" + countryCode);
     }
@@ -101,8 +97,8 @@ public class PhoneNumber extends Fragment implements
             String[] g = aRl.split(",");
             if (g[1].trim().equals(CountryID.trim())) {
                 CountryZipCode = g[0];
-                Log.e("CountryZipCode", CountryZipCode);
-                Log.e("CountryID", CountryID);
+                //Log.e("CountryZipCode", CountryZipCode);
+                //Log.e("CountryID", CountryID);
 
                 // Handle the "-" change to underscore for gb countries and do(Dominican Republic) which is now dr
                 String pngName = CountryID.toLowerCase();
@@ -115,11 +111,11 @@ public class PhoneNumber extends Fragment implements
     }
 
     private void sendConfirmationCode(){
+        tilPhoneNumber.setErrorEnabled(false);
         String phoneNumber = tietPhoneNumber.getText().toString();
         if (phoneNumber.isEmpty()){
             tilPhoneNumber.setError(getString(R.string.Please_enter_your_mobile_number));
         } else {
-            tilPhoneNumber.setErrorEnabled(false);
             if (validatePhoneNumber(phoneNumber)){
                 ((LoginActivity)getActivity()).setPD();
                 String newPhoneNumber = tvCountryCode.getText().toString() + phoneNumber;
@@ -137,7 +133,7 @@ public class PhoneNumber extends Fragment implements
     private boolean validatePhoneNumber(String phoneNumber){
         Matcher matcher = phoneNumberPattern.matcher(phoneNumber);
         if (!matcher.matches()){
-            tilPhoneNumber.setError(getString(R.string.Invalid_number));
+            tilPhoneNumber.setError(getString(R.string.Invalid_number_format));
             return false;
         }
         else {

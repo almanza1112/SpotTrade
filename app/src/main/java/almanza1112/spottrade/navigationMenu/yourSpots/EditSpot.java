@@ -48,7 +48,6 @@ import java.util.Date;
 import java.util.Locale;
 
 import almanza1112.spottrade.R;
-import almanza1112.spottrade.nonActivity.HttpConnection;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -471,8 +470,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
     private void deleteSpot(){
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.DELETE, httpConnection.htppConnectionURL() + "/location/delete/" + lid, null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.DELETE, getString(R.string.URL) + "/location/delete/" + lid, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -509,8 +507,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         }
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/update/" + lid, jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/location/update/" + lid, jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{

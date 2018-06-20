@@ -51,7 +51,9 @@ import almanza1112.spottrade.nonActivity.SharedPref;
  * Created by almanza1112 on 8/24/17.
  */
 
-public class AddPaymentMethod extends Fragment implements View.OnClickListener{
+public class AddPaymentMethod extends Fragment implements
+        View.OnClickListener,
+        AddCreditDebitCard.CreditCardAddedListener{
 
     private ProgressDialog pd = null;
 
@@ -123,12 +125,10 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         from = getArguments().getString("from");
-        if (from.equals("MapsActivity")) {
-            try {
-                paymentMethodAddedListener = (PaymentMethodAddedListener) activity;
-            } catch (ClassCastException e) {
-                throw new ClassCastException(activity.toString() + " must implement OnItemClickedListener");
-            }
+        try {
+            paymentMethodAddedListener = (PaymentMethodAddedListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString() + " must implement OnItemClickedListener");
         }
     }
 
@@ -157,7 +157,8 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
                 bundle.putString("from", from);
                 addCreditDebitCard.setArguments(bundle);
                 FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.add_payment_method, addCreditDebitCard);
+                fragmentTransaction.setCustomAnimations(R.animator.right_in, R.animator.right_out, R.animator.right_in, R.animator.right_out);
+                fragmentTransaction.add(R.id.add_payment_method, addCreditDebitCard);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
                 break;
@@ -176,15 +177,23 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
         }
     }
 
+    @Override
+    public void onCreditCardAdded(String result) {
+        if (result.equals("added")) {
+            paymentMethodAddedListener.onPaymentMethodAdded(from);
+            getFragmentManager().popBackStack();
+        }
+    }
+
     PaymentMethodAddedListener paymentMethodAddedListener = paymentMethodAddedCallback;
 
     public interface PaymentMethodAddedListener{
-        void onPaymentMethodAdded(String result);
+        void onPaymentMethodAdded(String from);
     }
 
     public static PaymentMethodAddedListener paymentMethodAddedCallback = new PaymentMethodAddedListener() {
         @Override
-        public void onPaymentMethodAdded(String result) {
+        public void onPaymentMethodAdded(String from) {
 
         }
     };
@@ -275,24 +284,18 @@ public class AddPaymentMethod extends Fragment implements View.OnClickListener{
 
                     @Override
                     public void onResponse(JSONObject response) {
+                        pd.dismiss();
                         try{
+                            Log.e("response", response + "");
                             if (response.getString("status").equals("success")){
-                                if (from.equals("Payment")) {
-                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.payment_method_added), "added");
-                                }
-                                else if (from.equals("MapsActivity")){
-                                    paymentMethodAddedListener.onPaymentMethodAdded("added");
-                                }
+                                paymentMethodAddedListener.onPaymentMethodAdded(from);
                                 getFragmentManager().popBackStack();
-                            }
-                            else {
+                            } else {
                                 Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                             }
-                        }
-                        catch (JSONException e){
+                        } catch (JSONException e){
                             Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                         }
-                        pd.dismiss();
                     }
                 }, new Response.ErrorListener() {
 

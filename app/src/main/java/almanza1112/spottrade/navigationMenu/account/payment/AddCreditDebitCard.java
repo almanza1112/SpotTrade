@@ -45,7 +45,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import almanza1112.spottrade.R;
-import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
 /**
@@ -226,39 +225,36 @@ public class AddCreditDebitCard extends Fragment {
         return view;
     }
 
-    public interface CreditCardAddedListener {
-        void onCreditCardAdded(String result);
-    }
-
-    CreditCardAddedListener creditCardAddedListener = creditCardAddedCallback;
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         from = getArguments().getString("from");
-        if (from.equals("MapsActivity")) {
-            try {
-                creditCardAddedListener = (CreditCardAddedListener) activity;
-            } catch (ClassCastException e) {
-                throw new ClassCastException(activity.toString() + " must implement OnItemClickedListener");
-            }
+        try {
+            creditCardAddedListener = (CreditCardAddedListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString() + " must implement OnItemClickedListener");
         }
     }
 
+    public interface CreditCardAddedListener {
+        void onCreditCardAdded(String from);
+    }
+
+    CreditCardAddedListener creditCardAddedListener = creditCardAddedCallback;
+
     private static CreditCardAddedListener creditCardAddedCallback = new CreditCardAddedListener() {
         @Override
-        public void onCreditCardAdded(String result) {
+        public void onCreditCardAdded(String from) {
 
         }
     };
 
     private boolean validateFields(){
-        boolean sitch, cardNum, exprDate, cvv, zipcode;
+        boolean cardNum, exprDate, cvv, zipcode;
         if (tietCardNumber.getText().toString().isEmpty()){
             cardNum = false;
             tilCardNumber.setError(getResources().getString(R.string.Field_cant_be_empty));
-        }
-        else{
+        } else{
             cardNum = true;
             tilCardNumber.setErrorEnabled(false);
         }
@@ -266,8 +262,7 @@ public class AddCreditDebitCard extends Fragment {
         if (tietCVV.getText().toString().isEmpty()){
             cvv = false;
             tilCVV.setError(getResources().getString(R.string.Field_cant_be_empty));
-        }
-        else {
+        } else {
             cvv = true;
             tilCVV.setErrorEnabled(false);
         }
@@ -275,8 +270,7 @@ public class AddCreditDebitCard extends Fragment {
         if (tietExpirationDate.getText().toString().isEmpty()){
             exprDate = false;
             tilExpirationDate.setError(getResources().getString(R.string.Field_cant_be_empty));
-        }
-        else {
+        } else {
             exprDate = true;
             tilExpirationDate.setErrorEnabled(false);
         }
@@ -284,14 +278,12 @@ public class AddCreditDebitCard extends Fragment {
         if (tietZipCode.getText().toString().isEmpty()){
             zipcode = false;
             tilZipCode.setError(getResources().getString(R.string.Field_cant_be_empty));
-        }
-        else {
+        } else {
             zipcode = true;
             tilZipCode.setErrorEnabled(false);
         }
 
-        sitch = cardNum && cvv && exprDate && zipcode;
-        return sitch;
+        return cardNum && cvv && exprDate && zipcode;
     }
 
     private void getClientToken(){
@@ -301,10 +293,9 @@ public class AddCreditDebitCard extends Fragment {
         pd.show();
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
-        HttpConnection httpConnection = new HttpConnection();
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
-                httpConnection.htppConnectionURL() + "/payment/clientToken",
+                getString(R.string.URL) + "/payment/clientToken",
                 null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -326,16 +317,13 @@ public class AddCreditDebitCard extends Fragment {
                                             .postalCode(tietZipCode.getText().toString())
                                             .validate(true);
                                     Card.tokenize(mBraintreeFragment, cardBuilder);
-                                }
-                                catch (InvalidArgumentException e) {
+                                } catch (InvalidArgumentException e) {
                                     Toast.makeText(getActivity(), getResources().getString(R.string.Error_invalid_argument), Toast.LENGTH_SHORT).show();
                                 }
-                            }
-                            else {
+                            } else {
                                 Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_add_card), Toast.LENGTH_SHORT).show();
                             }
-                        }
-                        catch (JSONException e){
+                        } catch (JSONException e){
                             Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_add_card), Toast.LENGTH_SHORT).show();
                         }
                         pd.dismiss();
@@ -361,33 +349,22 @@ public class AddCreditDebitCard extends Fragment {
             jsonObject.put("lastName", SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name)));
             jsonObject.put("email", SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email)));
             jsonObject.put("paymentMethodNonce", paymentMethodNonce);
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        HttpConnection httpConnection = new HttpConnection();
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.POST, httpConnection.htppConnectionURL() +"/payment/customer/addpaymentmethod", jsonObject, new Response.Listener<JSONObject>() {
+                (Request.Method.POST, getString(R.string.URL) +"/payment/customer/addpaymentmethod", jsonObject, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
                         try{
                             if (response.getString("status").equals("success")){
-                                if (from.equals("MapsActivity")) {
-                                    creditCardAddedListener.onCreditCardAdded("added");
-                                }
-                                else if (from.equals("Payment")){
-                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.payment_method_added), "added");
-                                }
-                                getFragmentManager().popBackStack();
-                                getFragmentManager().popBackStack();
-                            }
-                            else {
+                                creditCardAddedListener.onCreditCardAdded(from);
+                            } else {
                                 Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_add_card), Toast.LENGTH_SHORT).show();
                             }
-                        }
-                        catch (JSONException e){
+                        } catch (JSONException e){
                             Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_add_card), Toast.LENGTH_SHORT).show();
                         }
                         pd.dismiss();

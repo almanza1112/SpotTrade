@@ -32,8 +32,6 @@
     <string name="bought_name">bought_name</string>
     <string name="bought_seller_is_logged_in_user">bought_seller_is_logged_in_user</string>
 
-    <string name="payment_method_added">payment_method_added</string>
-
     <string name="facebook_access_token">facebook access token</string>
     <string name="facebook_user_id">facebook user id</string>
 
@@ -128,7 +126,7 @@
     <string name="Home">Home</string>
     <string name="In_transit_to">In transit to</string>
     <string name="Invalid_email_format">Invalid email format</string>
-    <string name="Invalid_number">Invalid number</string>
+    <string name="Invalid_number_format">Invalid number format</string>
     <string name="Labor">Labor</string>
     <string name="Last_Name">Last Name</string>
     <string name="Later">Later</string>

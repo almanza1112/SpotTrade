@@ -262,6 +262,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
+        android:background="@android:color/white"
         fab:headerLayout="@layout/nav_header_main"
         fab:menu="@menu/activity_main_drawer" />
 </android.support.v4.widget.DrawerLayout>

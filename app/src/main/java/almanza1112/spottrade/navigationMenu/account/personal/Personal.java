@@ -16,8 +16,6 @@ import android.support.design.widget.TextInputLayout;
 import android.app.Fragment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
@@ -51,7 +49,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import almanza1112.spottrade.R;
-import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.RegularExpression;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
@@ -83,7 +80,12 @@ public class Personal extends Fragment implements View.OnClickListener {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.personal, container, false);
-        Toolbar toolbar = view.findViewById(R.id.toolbar);
+
+        final Toolbar toolbar = view.findViewById(R.id.toolbar);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setTitle(R.string.Personal);
 
         progressBar = view.findViewById(R.id.progressBar);
@@ -113,25 +115,6 @@ public class Personal extends Fragment implements View.OnClickListener {
         tvPhoneNumber = view.findViewById(R.id.tvPhoneNumber);
         setPhoneNumber();
         view.findViewById(R.id.ivEditPhoneNumber).setOnClickListener(this);
-
-        AppCompatActivity actionBar = (AppCompatActivity) getActivity();
-        actionBar.setSupportActionBar(toolbar);
-
-        DrawerLayout drawer = actionBar.findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                getActivity(),
-                drawer,
-                toolbar,
-                R.string.navigation_drawer_open,
-                R.string.navigation_drawer_close) {
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                drawerView.bringToFront();
-            }
-        };
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
 
         return view;
     }
@@ -258,8 +241,7 @@ public class Personal extends Fragment implements View.OnClickListener {
         }
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -376,19 +358,16 @@ public class Personal extends Fragment implements View.OnClickListener {
         }
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/delete/photo/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/user/delete/photo/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
                     if (response.getString("status").equals("success")){
                         setSnackBar(getResources().getString(R.string.Profile_photo_deleted));
-                    }
-                    else {
+                    } else {
                         Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_photo), Toast.LENGTH_SHORT).show();
                     }
-                }
-                catch (JSONException e){
+                } catch (JSONException e){
                     Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_photo), Toast.LENGTH_SHORT).show();
                 }
                 progressBar.setVisibility(View.GONE);
@@ -520,8 +499,7 @@ public class Personal extends Fragment implements View.OnClickListener {
         }
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
@@ -588,8 +566,7 @@ public class Personal extends Fragment implements View.OnClickListener {
         // If email matches the format required, check if the email exists already
         if (matcher.matches()){
             RequestQueue queue = Volley.newRequestQueue(getActivity());
-            HttpConnection httpConnection = new HttpConnection();
-            final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/user/check?email=" + email, null, new Response.Listener<JSONObject>() {
+            final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/user/check?email=" + email, null, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
                     try{
@@ -600,8 +577,7 @@ public class Personal extends Fragment implements View.OnClickListener {
                             tilUpdate.setError(response.getString("reason"));
                         }
                         progressBar.setVisibility(View.GONE);
-                    }
-                    catch (JSONException e){
+                    } catch (JSONException e){
                         sitch[0] = false;
                         progressBar.setVisibility(View.GONE);
                         Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
@@ -617,8 +593,7 @@ public class Personal extends Fragment implements View.OnClickListener {
             }
             );
             queue.add(jsonObjectRequest);
-        }
-        else {
+        } else {
             sitch[0] = false;
         }
         return sitch[0];

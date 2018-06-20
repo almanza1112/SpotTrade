@@ -5,12 +5,11 @@ import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,7 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import almanza1112.spottrade.R;
-import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
 /**
@@ -46,7 +44,7 @@ import almanza1112.spottrade.nonActivity.SharedPref;
 public class Payment extends Fragment {
 
     private ProgressBar progressBar;
-    private TextView tvNoPaymentMethods;
+    public TextView tvNoPaymentMethods;
     RecyclerView rvPaymentMethods;
     public Snackbar snackbar;
 
@@ -54,27 +52,13 @@ public class Payment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.payment, container, false);
-        Toolbar toolbar = view.findViewById(R.id.toolbar);
+
+        final Toolbar toolbar = view.findViewById(R.id.toolbar);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setTitle(R.string.Payment);
-
-        AppCompatActivity actionBar = (AppCompatActivity) getActivity();
-        actionBar.setSupportActionBar(toolbar);
-
-        DrawerLayout drawer = actionBar.findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                getActivity(),
-                drawer,
-                toolbar,
-                R.string.navigation_drawer_open,
-                R.string.navigation_drawer_close) {
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                drawerView.bringToFront();
-            }
-        };
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
 
         progressBar = view.findViewById(R.id.progressBar);
         tvNoPaymentMethods = view.findViewById(R.id.tvNoPaymentMethods);
@@ -87,7 +71,8 @@ public class Payment extends Fragment {
                 AddPaymentMethod addPaymentMethod = new AddPaymentMethod();
                 addPaymentMethod.setArguments(bundle);
                 FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.drawer_layout, addPaymentMethod);
+                fragmentTransaction.setCustomAnimations(R.animator.right_in, R.animator.right_out, R.animator.right_in, R.animator.right_out);
+                fragmentTransaction.add(R.id.payment, addPaymentMethod);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
             }
@@ -101,15 +86,6 @@ public class Payment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.payment_method_added)) != null){
-            SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.payment_method_added));
-            setSnackbar(getResources().getString(R.string.Payment_method_added));
-        }
     }
 
     @Override
@@ -128,14 +104,13 @@ public class Payment extends Fragment {
         filterItem.setVisible(false);
     }
 
-    private void getCustomer(){
+    public void getCustomer(){
         progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
-        HttpConnection httpConnection = new HttpConnection();
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
-                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)),
+                getString(R.string.URL) + "/payment/customer/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)),
                 null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -213,7 +188,7 @@ public class Payment extends Fragment {
     }
 
     public void setSnackbar(String snackbarText) {
-        snackbar = Snackbar.make(getActivity().findViewById(R.id.payment_activity), snackbarText, Snackbar.LENGTH_LONG);
+        snackbar = Snackbar.make(getActivity().findViewById(R.id.payment), snackbarText, Snackbar.LENGTH_LONG);
         snackbar.show();
     }
 

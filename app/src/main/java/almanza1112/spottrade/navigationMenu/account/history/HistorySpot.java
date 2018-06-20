@@ -32,7 +32,6 @@ import java.util.Date;
 import java.util.Locale;
 
 import almanza1112.spottrade.R;
-import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
 /**
@@ -101,8 +100,7 @@ public class HistorySpot extends Fragment {
         progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/history/transinfo/" + id + "?userID=" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/history/transinfo/" + id + "?userID=" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{

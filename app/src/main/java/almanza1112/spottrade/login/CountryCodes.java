@@ -62,11 +62,17 @@ public class CountryCodes extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof CountrySelectedListener){
+        try {
             countrySelectedListener = (CountrySelectedListener) context;
-        } else {
-            Log.e("FAKE", "news");
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " must implement OnItemClickedListener");
         }
+    }
+
+    @Override
+    public void onDetach() {
+        countrySelectedListener = null;
+        super.onDetach();
     }
 
     CountrySelectedListener countrySelectedListener = countrySelectedCallback;
@@ -83,7 +89,7 @@ public class CountryCodes extends Fragment {
     };
 
     public void countrySelected(String countryCode, String countryID){
-        countrySelectedListener.onCountrySelected(countryCode, countryID);
         getFragmentManager().popBackStack();
+        countrySelectedListener.onCountrySelected(countryCode, countryID);
     }
 }

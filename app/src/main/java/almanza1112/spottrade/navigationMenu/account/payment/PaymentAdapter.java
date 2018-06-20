@@ -26,7 +26,6 @@ import org.json.JSONObject;
 import java.util.List;
 
 import almanza1112.spottrade.R;
-import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
 /**
@@ -147,10 +146,9 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
         }
         RequestQueue queue = Volley.newRequestQueue(activity);
 
-        HttpConnection httpConnection = new HttpConnection();
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.PUT,
-                httpConnection.htppConnectionURL() + "/payment/customer/updatepaymentmethod",
+                activity.getString(R.string.URL) + "/payment/customer/updatepaymentmethod",
                 jObject,
                 new Response.Listener<JSONObject>() {
             @Override
@@ -220,10 +218,9 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
         pd.show();
         RequestQueue queue = Volley.newRequestQueue(activity);
 
-        HttpConnection httpConnection = new HttpConnection();
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.DELETE,
-                httpConnection.htppConnectionURL() + "/payment/customer/deletepaymentmethod?token=" + token + "&id=" + SharedPref.getSharedPreferences(activity, activity.getResources().getString(R.string.logged_in_user_id)),
+                activity.getString(R.string.URL) + "/payment/customer/deletepaymentmethod?token=" + token + "&id=" + SharedPref.getSharedPreferences(activity, activity.getResources().getString(R.string.logged_in_user_id)),
                 null,
                 new Response.Listener<JSONObject>()
                 {
@@ -244,12 +241,14 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                                 paymentToken.remove(position);
                                 isDefault.remove(position);
                                 notifyDataSetChanged();
-                            }
-                            else{
+
+                                if (paymentType.size() == 0){
+                                    payment.tvNoPaymentMethods.setVisibility(View.VISIBLE);
+                                }
+                            } else{
                                 Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_delete_payment_method), Toast.LENGTH_SHORT).show();
                             }
-                        }
-                        catch (JSONException e){
+                        } catch (JSONException e){
                             Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_delete_payment_method), Toast.LENGTH_SHORT).show();
                         }
                         pd.dismiss();

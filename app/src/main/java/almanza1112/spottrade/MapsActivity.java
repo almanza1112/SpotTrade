@@ -108,7 +108,6 @@ import almanza1112.spottrade.navigationMenu.account.history.History;
 import almanza1112.spottrade.navigationMenu.account.personal.Personal;
 import almanza1112.spottrade.login.LoginActivity;
 import almanza1112.spottrade.nonActivity.CircleTransform;
-import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 import almanza1112.spottrade.nonActivity.tracking.TrackerService;
 import almanza1112.spottrade.navigationMenu.yourSpots.ViewOffers;
@@ -122,6 +121,7 @@ public class MapsActivity extends AppCompatActivity
         AddPaymentMethod.PaymentMethodAddedListener,
         AddCreditDebitCard.CreditCardAddedListener,
         ViewOffers.OfferAcceptedListener {
+
     private ProgressBar progressBar;
     private GoogleMap mMap;
     Location myLocation;
@@ -152,6 +152,8 @@ public class MapsActivity extends AppCompatActivity
     private final int ACCESS_FINE_LOCATION_PERMISSION_TRACKING = 6;
 
     private DatabaseReference databaseReference;
+
+    Payment paymentFrag;
 
     // For onOfferAccepted
     boolean isOfferAccepted;
@@ -347,14 +349,6 @@ public class MapsActivity extends AppCompatActivity
         Fragment fragment = null;
 
         switch (item.getItemId()) {
-            case R.id.nav_home:
-                int count = getFragmentManager().getBackStackEntryCount();
-                while(count > 0){
-                    getFragmentManager().popBackStack();
-                    count--;
-                }
-                refreshMap();
-                break;
             case R.id.nav_your_spots:
                 fragment = new YourSpots();
                 break;
@@ -368,7 +362,8 @@ public class MapsActivity extends AppCompatActivity
                 fragment = new Personal();
                 break;
             case R.id.nav_payment:
-                fragment = new Payment();
+                paymentFrag = new Payment();
+                fragment = paymentFrag;
                 break;
             case R.id.nav_about:
                 fragment = new About();
@@ -380,7 +375,8 @@ public class MapsActivity extends AppCompatActivity
 
         if (fragment != null) {
             FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.drawer_layout, fragment);
+            fragmentTransaction.setCustomAnimations(R.animator.bottom_in, R.animator.bottom_out, R.animator.bottom_in, R.animator.bottom_out);
+            fragmentTransaction.add(R.id.drawer_layout, fragment);
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
         }
@@ -389,6 +385,7 @@ public class MapsActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
 
     @Override
     protected void onResume() {
@@ -412,7 +409,7 @@ public class MapsActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case R.id.search:
                 try {
-                    Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN).build(this);
+                    Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY).build(this);
                     startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
                 } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
                     e.printStackTrace();
@@ -624,8 +621,7 @@ public class MapsActivity extends AppCompatActivity
 
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/" + marker.getTag() + "?user=" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/" + marker.getTag() + "?user=" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
@@ -703,16 +699,31 @@ public class MapsActivity extends AppCompatActivity
     }
 
     @Override
-    public void onCreditCardAdded(String result) {
-        if (result.equals("added")) {
-            validatePaymentMethod();
+    public void onCreditCardAdded(String from) {
+        switch (from){
+            case "Payment":
+                getFragmentManager().popBackStack();
+                getFragmentManager().popBackStack();
+                paymentFrag.getCustomer();
+                paymentFrag.setSnackbar(getString(R.string.Payment_method_added));
+                break;
+
+            case "MapsActivity":
+
+                break;
         }
     }
 
     @Override
-    public void onPaymentMethodAdded(String result) {
-        if (result.equals("added")) {
-            validatePaymentMethod();
+    public void onPaymentMethodAdded(String from) {
+        switch (from){
+            case "Payment":
+                paymentFrag.getCustomer();
+                paymentFrag.setSnackbar(getString(R.string.Payment_method_added));
+                break;
+            case "MapsActivity":
+                validatePaymentMethod();
+                break;
         }
     }
 
@@ -787,8 +798,7 @@ public class MapsActivity extends AppCompatActivity
     private void getAvailableSpots(String typeSelected){
         progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/all?sellerID=all&transaction=available&type=" + typeSelected, null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/all?sellerID=all&transaction=available&type=" + typeSelected, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -829,8 +839,7 @@ public class MapsActivity extends AppCompatActivity
     private void transactionDeleteSpot(){
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.DELETE, httpConnection.htppConnectionURL() + "/location/delete/" + lid, null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.DELETE, getString(R.string.URL) + "/location/delete/" + lid, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -859,14 +868,12 @@ public class MapsActivity extends AppCompatActivity
         try {
             jObject.put("buyerID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
             jObject.put("quantity", quantity);
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/buy/" + lid, jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/location/transaction/buy/" + lid, jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 pd.dismiss();
@@ -933,8 +940,7 @@ public class MapsActivity extends AppCompatActivity
         }
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/offer/" + lid, jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/location/transaction/offer/" + lid, jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -964,8 +970,7 @@ public class MapsActivity extends AppCompatActivity
 
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/offer/cancel/" + lid + "?user=" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/location/transaction/offer/cancel/" + lid + "?user=" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -1135,10 +1140,9 @@ public class MapsActivity extends AppCompatActivity
         pd.show();
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        HttpConnection httpConnection = new HttpConnection();
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
-                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)),
+                getString(R.string.URL) + "/payment/customer/" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)),
                 null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -1306,10 +1310,9 @@ public class MapsActivity extends AppCompatActivity
         pd.show();
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        HttpConnection httpConnection = new HttpConnection();
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
-                httpConnection.htppConnectionURL() + "/payment/customer/" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)),
+                getString(R.string.URL) + "/payment/customer/" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)),
                 null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -1433,26 +1436,22 @@ public class MapsActivity extends AppCompatActivity
             jsonObject.put("paymentMethodToken", token);
             jsonObject.put("amount", totalPrice);
 
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        HttpConnection httpConnection = new HttpConnection();
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.POST, httpConnection.htppConnectionURL() +"/payment/checkout", jsonObject, new Response.Listener<JSONObject>() {
+                (Request.Method.POST, getString(R.string.URL) +"/payment/checkout", jsonObject, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
                         try{
                             if (response.getString("status").equals("success")){
                                 transactionBuyNow(quantity);
-                            }
-                            else {
+                            } else {
                                 ADerrorProcessingPayment();
                             }
-                        }
-                        catch (JSONException e){
+                        } catch (JSONException e){
                             e.printStackTrace();
                         }
                     }
@@ -1569,8 +1568,7 @@ public class MapsActivity extends AppCompatActivity
         progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, httpConnection.htppConnectionURL() + "/location/transaction/check?uid="+ SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/transaction/check?uid="+ SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -1590,13 +1588,11 @@ public class MapsActivity extends AppCompatActivity
                         //getFirebaseData(lidBought);
                         progressBar.setVisibility(View.GONE);
                         //startTrackingService();
-                    }
-                    else if (response.getString("status").equals("fail") && response.getString("reason").equals("no onGoingTransactions")){
+                    } else if (response.getString("status").equals("fail") && response.getString("reason").equals("no onGoingTransactions")){
                         getAvailableSpots(typeSelected);
                         progressBar.setVisibility(View.GONE);
                     }
-                }
-                catch (JSONException e){
+                } catch (JSONException e){
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(MapsActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                 }

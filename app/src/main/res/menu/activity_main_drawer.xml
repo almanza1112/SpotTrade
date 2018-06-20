@@ -1,43 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
-
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_home"
-            android:icon="@mipmap/ic_home_grey600_24dp"
-            android:checked="true"
-            android:title="@string/Home" />
+    <group>
         <item
             android:id="@+id/nav_your_spots"
             android:icon="@mipmap/ic_map_marker_black_24dp"
             android:title="@string/Your_Spots" />
-    </group>
-
-    <item android:title="@string/Account">
-        <menu>
-            <group android:checkableBehavior="single">
-                <item
-                    android:id="@+id/nav_history"
-                    android:icon="@mipmap/ic_history_black_24dp"
-                    android:title="@string/History" />
-                <item
-                    android:id="@+id/nav_feedback"
-                    android:icon="@mipmap/ic_comment_black_24dp"
-                    android:title="@string/Feedback" />
-                <item
-                    android:id="@+id/nav_payment"
-                    android:icon="@mipmap/ic_currency_usd_grey600_24dp"
-                    android:title="@string/Payment"/>
-                <item
-                    android:id="@+id/nav_personal"
-                    android:icon="@mipmap/ic_person_black_24dp"
-                    android:title="@string/Personal"/>
-            </group>
-        </menu>
-    </item>
-
-    <group android:id="@+id/bottom" android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_history"
+            android:icon="@mipmap/ic_history_black_24dp"
+            android:title="@string/History" />
+        <item
+            android:id="@+id/nav_feedback"
+            android:icon="@mipmap/ic_comment_black_24dp"
+            android:title="@string/Feedback" />
+        <item
+            android:id="@+id/nav_payment"
+            android:icon="@mipmap/ic_currency_usd_grey600_24dp"
+            android:title="@string/Payment"/>
+        <item
+            android:id="@+id/nav_personal"
+            android:icon="@mipmap/ic_person_black_24dp"
+            android:title="@string/Personal"/>
         <item
             android:id="@+id/nav_about"
             android:icon="@mipmap/ic_info_outline_black_24dp"
@@ -48,5 +31,4 @@
             android:checkable="false"
             android:title="@string/Log_Out" />
     </group>
-
 </menu>

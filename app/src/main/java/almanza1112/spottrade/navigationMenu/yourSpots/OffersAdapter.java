@@ -24,7 +24,6 @@ import org.json.JSONObject;
 import java.util.List;
 
 import almanza1112.spottrade.R;
-import almanza1112.spottrade.nonActivity.HttpConnection;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
 /**
@@ -127,14 +126,12 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
             jObject.put("_id", id); // id of the item in offers array
             jObject.put("userID", uid);
             jObject.put("sellerID", SharedPref.getSharedPreferences(activity, activity.getResources().getString(R.string.logged_in_user_id)));
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         RequestQueue queue = Volley.newRequestQueue(activity);
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/offers/decline", jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, activity.getString(R.string.URL) + "/location/transaction/offers/decline", jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -149,12 +146,10 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
                         totalOfferPrice.remove(position);
                         dateOffered.remove(position);
                         notifyDataSetChanged();
-                    }
-                    else {
+                    } else {
                         Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
-                }
-                catch (JSONException e){
+                } catch (JSONException e){
                     Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                 }
                 viewOffers.setProgressBar(View.GONE);
@@ -180,14 +175,12 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
             jObject.put("offerPrice", price);
             jObject.put("buyerID", uid);
             jObject.put("sellerID", SharedPref.getSharedPreferences(activity, activity.getResources().getString(R.string.logged_in_user_id)));
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         RequestQueue queue = Volley.newRequestQueue(activity);
 
-        HttpConnection httpConnection = new HttpConnection();
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, httpConnection.htppConnectionURL() + "/location/transaction/offers/accept", jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, activity.getString(R.string.URL) + "/location/transaction/offers/accept", jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
