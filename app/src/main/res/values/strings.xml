@@ -58,6 +58,7 @@
     <string name="Buy_Now">Buy Now</string>
     <string name="Buyer">Buyer</string>
     <string name="Cancel">Cancel</string>
+    <string name="cannot_delete_payment_message">Unable to delete payment method because you have a pending Spot Request</string>
     <string name="Card_Number">Card Number</string>
     <string name="Category">Category</string>
     <string name="Change_Profile_Photo">Change Profile Photo</string>
@@ -176,6 +177,7 @@
     <string name="Spot_successfully_deleted">Spot successfully deleted</string>
     <string name="Time">Time</string>
     <string name="Type">Type</string>
+    <string name="Unable_to_delete">Unable to delete</string>
     <string name="Unable_to_connect_with_Facebook">Unable to connect with Facebook</string>
     <string name="Update">Update</string>
     <string name="updated">updated</string>

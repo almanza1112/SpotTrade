@@ -108,8 +108,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                     CharSequence[] items;
                     if (isDefault.get(getAdapterPosition())){
                         items = new CharSequence[]{activity.getResources().getString(R.string.Delete)};
-                    }
-                    else{
+                    } else{
                         items = new CharSequence[]{activity.getResources().getString(R.string.Delete), activity.getResources().getString(R.string.Make_default_payment_method)};
                     }
                     alertDialogBuilder.setItems(items, new DialogInterface.OnClickListener() {
@@ -142,8 +141,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
         final JSONObject jObject = new JSONObject();
         try {
             jObject.put("token", token);
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         RequestQueue queue = Volley.newRequestQueue(activity);
@@ -160,12 +158,10 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                         isDefault.set(position, true);
                         isDefault.set(defaultPos, false);
                         notifyDataSetChanged();
-                    }
-                    else {
+                    } else {
                         Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_update_payment_method), Toast.LENGTH_SHORT).show();
                     }
-                }
-                catch (JSONException e){
+                } catch (JSONException e){
                     Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_delete_payment_method), Toast.LENGTH_SHORT).show();
                 }
                 pd.dismiss();
@@ -247,6 +243,9 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                                 if (paymentType.size() == 0){
                                     payment.tvNoPaymentMethods.setVisibility(View.VISIBLE);
                                 }
+                            } else if (response.getString("status").equals("fail") && response.getString("reason").equals("User has available Request")){
+                                // User has a Request that is available and cannot delete the payment method
+                                ADcannotDeletePaymentMethod();
                             } else{
                                 Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_delete_payment_method), Toast.LENGTH_SHORT).show();
                             }
@@ -266,5 +265,20 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                 }
         );
         queue.add(jsonObjectRequest);
+    }
+
+    private void ADcannotDeletePaymentMethod(){
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activity);
+        alertDialogBuilder.setTitle(R.string.Unable_to_delete);
+        alertDialogBuilder.setMessage(R.string.cannot_delete_payment_message);
+        alertDialogBuilder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 }
