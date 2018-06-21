@@ -183,7 +183,7 @@ public class MapsActivity extends AppCompatActivity
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         } else {
-            //checkOnGoingTransactions();
+            checkOnGoingTransactions();
         }
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
