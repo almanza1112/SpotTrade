@@ -152,7 +152,6 @@ public class MapsActivity extends AppCompatActivity
     private int typePosition = 0;
     private int categoryPosition = 0;
 
-    final int[] pos = {2};
 
     private final int ACCESS_FINE_LOCATION_PERMISSION_MAP = 5;
     private final int ACCESS_FINE_LOCATION_PERMISSION_TRACKING = 6;

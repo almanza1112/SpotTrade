@@ -157,7 +157,6 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.tvType:
-                Log.e("onClick", "type");
                 final CharSequence[] itemsType = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request)};
                 final AlertDialog.Builder alertDBType = new AlertDialog.Builder(getActivity());
                 alertDBType.setTitle(R.string.Type);
@@ -191,8 +190,7 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
                 break;
 
             case R.id.tvCategory:
-                Log.e("onClick", "category");
-                final CharSequence[] itemsCategory = {getString(R.string.Regular), getString(R.string.Line), getString(R.string.Parking)};
+                final CharSequence[] itemsCategory = {getString(R.string.Line), getString(R.string.Parking), getString(R.string.Other),};
                 final AlertDialog.Builder alertDB = new AlertDialog.Builder(getActivity());
                 alertDB.setTitle(R.string.Category);
                 alertDB.setSingleChoiceItems(itemsCategory, posCategory[0], new DialogInterface.OnClickListener() {
@@ -212,14 +210,14 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
                     public void onClick(DialogInterface dialog, int which) {
                         tvCategory.setError(null);
                         if (posCategory[0] == 0){
-                            category = "Regular";
-                            tvCategory.setText(R.string.Regular);
-                        } else if (posCategory[0] == 1){
                             category = "Line";
                             tvCategory.setText(R.string.Line);
-                        } else if (posCategory[0] == 2){
+                        } else if (posCategory[0] == 1){
                             category = "Parking";
                             tvCategory.setText(R.string.Parking);
+                        } else if (posCategory[0] == 2){
+                            category = "Other";
+                            tvCategory.setText(R.string.Other);
                         }
                     }
                 });
