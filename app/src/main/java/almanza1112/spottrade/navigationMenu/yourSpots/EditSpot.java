@@ -197,6 +197,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                 ViewOffers viewOffers = new ViewOffers();
                 viewOffers.setArguments(bundle);
                 FragmentTransaction fragmentTransaction = getActivity().getFragmentManager().beginTransaction();
+                fragmentTransaction.setCustomAnimations(R.animator.right_in, R.animator.right_out, R.animator.right_in, R.animator.right_out);
                 fragmentTransaction.replace(R.id.drawer_layout, viewOffers);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
@@ -239,8 +240,10 @@ public class EditSpot extends Fragment implements View.OnClickListener{
     public void onPrepareOptionsMenu(Menu menu) {
         MenuItem searchItem = menu.findItem(R.id.search);
         searchItem.setVisible(false);
-        MenuItem filterItem = menu.findItem(R.id.filterMaps);
-        filterItem.setVisible(false);
+        MenuItem filterMaps = menu.findItem(R.id.filterMaps);
+        filterMaps.setVisible(false);
+        MenuItem filterYourSpots = menu.findItem(R.id.filterYourSpots);
+        filterYourSpots.setVisible(false);
     }
 
     @Override

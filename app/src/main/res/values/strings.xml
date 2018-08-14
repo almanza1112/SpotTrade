@@ -32,8 +32,19 @@
     <string name="facebook_access_token">facebook access token</string>
     <string name="facebook_user_id">facebook user id</string>
 
-    <!-- End of strings for SharedPreferences -->
+    <!-- String Array for Spinner -->
+    <string-array name="type_array">
+        <item>@string/All</item>
+        <item>@string/Sell</item>
+        <item>@string/Request</item>
+    </string-array>
 
+    <string-array name="category_array">
+        <item>@string/All</item>
+        <item>@string/Line</item>
+        <item>@string/Parking</item>
+        <item>@string/Other</item>
+    </string-array>
     <!-- Strings for all the text in SpotTrade -->
     <string name="About">About</string>
     <string name="Accept">Accept</string>
@@ -148,6 +159,7 @@
     <string name="Payment_Method_Options">Payment Method Options</string>
     <string name="Payment_method_added">Payment method added</string>
     <string name="No_payment_methods">No payment methods</string>
+    <string name="Other">Other</string>
     <string name="Personal">Personal</string>
     <string name="Phone_Number">Phone Number</string>
     <string name="Make_Offer">Make Offer</string>
@@ -164,6 +176,8 @@
     <string name="Request">Request</string>
     <string name="Requesting">Requesting</string>
     <string name="Search">Search</string>
+    <string name="Select_Category"><b>Select Category</b></string>
+    <string name="Select_Type"><b>Select Type</b></string>
     <string name="Sell">Sell</string>
     <string name="Seller">Seller</string>
     <string name="Selling">Selling</string>

@@ -47,12 +47,14 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -145,7 +147,11 @@ public class MapsActivity extends AppCompatActivity
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private int quantity;
     private String lid, price, type;
-    private String typeSelected = "all";
+    private String typeSelected = "All";
+    private String categorySelected = "All";
+    private int typePosition = 0;
+    private int categoryPosition = 0;
+
     final int[] pos = {2};
 
     private final int ACCESS_FINE_LOCATION_PERMISSION_MAP = 5;
@@ -812,10 +818,10 @@ public class MapsActivity extends AppCompatActivity
         }
     };
 
-    private void getAvailableSpots(String typeSelected){
+    private void getAvailableSpots(String typeSelected, String categorySelected){
         progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/all?sellerID=all&transaction=available&type=" + typeSelected, null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/maps?type=" + typeSelected + "&category=" + categorySelected, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -1509,30 +1515,96 @@ public class MapsActivity extends AppCompatActivity
     }
 
     private void ADfilterMaps(){
-        final CharSequence[] items = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request), getResources().getString(R.string.All)};
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setTitle(getResources().getString(R.string.Filter) + " " + getResources().getString(R.string.Spots));
-        alertDialogBuilder.setSingleChoiceItems(items, pos[0], new DialogInterface.OnClickListener() {
+        LayoutInflater inflater = getLayoutInflater();
+        View alertLayout = inflater.inflate(R.layout.maps_activity_filter_spots_alertdialog, null);
+
+        final Spinner sType = alertLayout.findViewById(R.id.sType);
+        final Spinner sCategory = alertLayout.findViewById(R.id.sCategory);
+
+        switch (typeSelected){
+            case "All":
+                typePosition = 0;
+                break;
+            case "Sell":
+                typePosition = 1;
+                break;
+            case "Request":
+                typePosition = 2;
+                break;
+        }
+
+        switch (categorySelected){
+            case "All":
+                categoryPosition = 0;
+                break;
+            case "Line":
+                categoryPosition = 1;
+                break;
+            case "Parking":
+                categoryPosition = 2;
+                break;
+            case "Other":
+                categoryPosition = 3;
+                break;
+        }
+
+        sType.setSelection(typePosition);
+        sCategory.setSelection(categoryPosition);
+
+        sType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                pos[0] = which;
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                // {All, Sell, Request}
+                switch (position){
+                    case 0:
+                        typeSelected = "All";
+                        break;
+                    case 1:
+                        typeSelected = "Sell";
+                        break;
+                    case 2:
+                        typeSelected = "Request";
+                        break;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
             }
         });
+
+        sCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                // {All, Line, Parking, Other}
+                switch (position){
+                    case 0:
+                        categorySelected = "All";
+                        break;
+                    case 1:
+                        categorySelected = "Line";
+                        break;
+                    case 2:
+                        categorySelected = "Parking";
+                        break;
+                    case 3:
+                        categorySelected = "Other";
+                        break;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setView(alertLayout);
+        alertDialogBuilder.setTitle(getResources().getString(R.string.Filter) + " " + getResources().getString(R.string.Spots));
         alertDialogBuilder.setPositiveButton(R.string.Apply, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String type;
-                if (pos[0] == 0) {
-                    type = "Sell";
-                }
-                else if (pos[0] == 1) {
-                    type = "Request";
-                }
-                else {
-                    type = "all";
-                }
-                typeSelected = type;
-                getAvailableSpots(type);
+                getAvailableSpots(typeSelected, categorySelected);
             }
         });
         alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
@@ -1548,7 +1620,7 @@ public class MapsActivity extends AppCompatActivity
     private void refreshMap(){
         if (mMap != null){
             mMap.clear();
-            getAvailableSpots(typeSelected);
+            getAvailableSpots(typeSelected, categorySelected);
         }
     }
 
@@ -1606,7 +1678,7 @@ public class MapsActivity extends AppCompatActivity
                         progressBar.setVisibility(View.GONE);
                         //startTrackingService();
                     } else if (response.getString("status").equals("fail") && response.getString("reason").equals("no onGoingTransactions")){
-                        getAvailableSpots(typeSelected);
+                        getAvailableSpots(typeSelected, categorySelected);
                         progressBar.setVisibility(View.GONE);
                     }
                 } catch (JSONException e){
