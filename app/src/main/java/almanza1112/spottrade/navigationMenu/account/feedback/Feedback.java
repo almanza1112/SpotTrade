@@ -14,8 +14,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 
 import almanza1112.spottrade.R;
+import almanza1112.spottrade.nonActivity.SharedPref;
 
 /**
  * Created by almanza1112 on 10/19/17.
@@ -33,6 +35,12 @@ public class Feedback extends Fragment {
         View view = inflater.inflate(R.layout.feedback, container, false);
 
         final Toolbar toolbar = view.findViewById(R.id.toolbar);
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) toolbar.getLayoutParams();
+        int statusBarHeight = Integer.valueOf(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.status_bar_height)));
+        int actionBarHeight = Integer.valueOf(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.action_bar_height)));
+        layoutParams.height = actionBarHeight + statusBarHeight;
+        toolbar.setLayoutParams(layoutParams);
+        toolbar.setPadding(0, statusBarHeight, 0, 0);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);

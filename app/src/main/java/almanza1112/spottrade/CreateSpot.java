@@ -25,6 +25,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.NumberPicker;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -92,6 +93,12 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
         longitude = getArguments().getDouble("longitude", 0);
 
         final Toolbar toolbar = view.findViewById(R.id.toolbar);
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) toolbar.getLayoutParams();
+        int statusBarHeight = Integer.valueOf(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.status_bar_height)));
+        int actionBarHeight = Integer.valueOf(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.action_bar_height)));
+        layoutParams.height = actionBarHeight + statusBarHeight;
+        toolbar.setLayoutParams(layoutParams);
+        toolbar.setPadding(0, statusBarHeight, 0, 0);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);

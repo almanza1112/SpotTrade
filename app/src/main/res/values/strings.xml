@@ -21,6 +21,8 @@
     <string name="logged_in_user_photo_url">logged_in_user_photo_url</string>
     <string name="logged_in_user_total_ratings">logged_in_user_total_ratings</string>
     <string name="logged_in_user_overall_rating">logged_in_user_overall_rating</string>
+    <string name="status_bar_height">status_bar_height</string>
+    <string name="action_bar_height">action_bar_height</string>
 
     <string name="SpotTradePref">SpotTradePref</string>
     <string name="bought_lid">lidBought</string>
@@ -45,6 +47,7 @@
         <item>@string/Parking</item>
         <item>@string/Other</item>
     </string-array>
+
     <!-- Strings for all the text in SpotTrade -->
     <string name="About">About</string>
     <string name="Accept">Accept</string>

@@ -23,6 +23,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -48,6 +49,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import almanza1112.spottrade.R;
+import almanza1112.spottrade.nonActivity.SharedPref;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -85,6 +87,12 @@ public class EditSpot extends Fragment implements View.OnClickListener{
         int offerTotal = getArguments().getInt("offerTotal");
 
         toolbar = view.findViewById(R.id.toolbar);
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) toolbar.getLayoutParams();
+        int statusBarHeight = Integer.valueOf(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.status_bar_height)));
+        int actionBarHeight = Integer.valueOf(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.action_bar_height)));
+        layoutParams.height = actionBarHeight + statusBarHeight;
+        toolbar.setLayoutParams(layoutParams);
+        toolbar.setPadding(0, statusBarHeight, 0, 0);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);

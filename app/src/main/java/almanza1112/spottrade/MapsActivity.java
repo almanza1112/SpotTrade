@@ -7,6 +7,7 @@ import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -32,6 +33,9 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.OnApplyWindowInsetsListener;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.view.WindowInsetsCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -44,6 +48,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
@@ -170,16 +175,33 @@ public class MapsActivity extends AppCompatActivity
     // For the inflated menu in toolbar
     private MenuItem searchMenuItem, filterMenuItem;
 
+    private RelativeLayout.LayoutParams tb;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_activity);
 
-        CardView cvToolbar = findViewById(R.id.cvToolbar);
+        final CardView cvToolbar = findViewById(R.id.cvToolbar);
         Toolbar toolbar = findViewById(R.id.toolbar);
 
-        RelativeLayout.LayoutParams tb = (RelativeLayout.LayoutParams) cvToolbar.getLayoutParams();
-        tb.setMargins(20, 20, 20, 0);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), new OnApplyWindowInsetsListener() {
+            @Override
+            public WindowInsetsCompat onApplyWindowInsets(View v, WindowInsetsCompat insets) {
+                final int statusBarHeight = insets.getSystemWindowInsetTop();
+                SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.status_bar_height), String.valueOf(statusBarHeight));
+                tb = (RelativeLayout.LayoutParams) cvToolbar.getLayoutParams();
+                tb.setMargins(20, statusBarHeight + 20, 20, 0);
+                return insets;
+            }
+        });
+
+        final TypedArray ta = getTheme().obtainStyledAttributes(
+                new int[] {android.R.attr.actionBarSize});
+        int actionBarHeight = (int) ta.getDimension(0, 0);
+        SharedPref.setSharedPreferences(this, getResources().getString(R.string.action_bar_height), String.valueOf(actionBarHeight));
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
 
         pd = new ProgressDialog(this);
         progressBar = findViewById(R.id.progressBar);
@@ -274,7 +296,6 @@ public class MapsActivity extends AppCompatActivity
         };
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
 
         View navHeaderView = navigationView.getHeaderView(0);
         final ImageView ivProfilePhoto = navHeaderView.findViewById(R.id.ivProfilePhoto);
@@ -400,7 +421,6 @@ public class MapsActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
 
     @Override
     protected void onResume() {

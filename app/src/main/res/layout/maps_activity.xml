@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:fab="http://schemas.android.com/apk/res-auto">
+
     <android.support.design.widget.CoordinatorLayout
         android:id="@+id/coordinatorLayout"
         android:layout_width="match_parent"
@@ -14,17 +15,12 @@
             android:id="@+id/relativeLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-            <RelativeLayout
-                android:id="@+id/rlMap"
+            <fragment
+                android:id="@+id/map"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-                <fragment
-                    android:id="@+id/map"
-                    android:name="com.google.android.gms.maps.SupportMapFragment"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    tools:context="almanza1112.spottrade.MapsActivity" />
-            </RelativeLayout>
+                android:layout_height="match_parent"
+                tools:context="almanza1112.spottrade.MapsActivity" />
             <android.support.v7.widget.CardView
                 android:id="@+id/cvToolbar"
                 android:layout_width="match_parent"
@@ -263,7 +259,6 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:fitsSystemWindows="true"
         android:background="@android:color/white"
         fab:headerLayout="@layout/nav_header_main"
         fab:menu="@menu/activity_main_drawer" />
