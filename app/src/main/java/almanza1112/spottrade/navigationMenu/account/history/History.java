@@ -188,7 +188,7 @@ public class History extends Fragment {
                         tvNoHistory.setVisibility(View.VISIBLE);
                     }
                 } catch (JSONException e){
-                    Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                    setToastServerError();
                 }
                 progressBar.setVisibility(View.GONE);
             }
@@ -196,7 +196,7 @@ public class History extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                setToastServerError();
             }
         }
         );
@@ -207,5 +207,11 @@ public class History extends Fragment {
         Date updatedate = new Date(epochSeconds * 1000);
         SimpleDateFormat format = new SimpleDateFormat("EEE, d MMM yyyy 'at' H:mm a", Locale.getDefault());
         return format.format(updatedate);
+    }
+
+    private void setToastServerError(){
+        if (isAdded()){
+            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+        }
     }
 }

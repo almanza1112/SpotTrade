@@ -172,10 +172,10 @@ public class HistorySpot extends Fragment {
                         tvTotal.setText("$" + total);
                         tvDescription.setText(locationObj.getString("description"));
                     } else if (response.getString("status").equals("fail")){
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                        setToastServerError();
                     }
                 } catch (JSONException e){
-                    Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                    setToastServerError();
                 }
                 progressBar.setVisibility(View.GONE);
             }
@@ -183,7 +183,7 @@ public class HistorySpot extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                setToastServerError();
             }
         }
         );
@@ -194,5 +194,11 @@ public class HistorySpot extends Fragment {
         Date updatedate = new Date(epochSeconds * 1000);
         SimpleDateFormat format = new SimpleDateFormat("EEE, d MMM yyyy 'at' H:mm a", Locale.getDefault());
         return format.format(updatedate);
+    }
+
+    private void setToastServerError(){
+        if (isAdded()){
+            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+        }
     }
 }

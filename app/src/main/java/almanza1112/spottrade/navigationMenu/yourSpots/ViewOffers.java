@@ -170,7 +170,7 @@ public class ViewOffers extends Fragment {
                             dateOffered.add(offersArr.getJSONObject(i).getLong("offerDate"));
                         }
 
-                        adapter = new OffersAdapter(    ViewOffers.this, getActivity(), lid, latitude, longitude, _id, userID, firstName, profilePhotoUrl,
+                        adapter = new ViewOffersAdapter(    ViewOffers.this, getActivity(), lid, latitude, longitude, _id, userID, firstName, profilePhotoUrl,
                                                         priceOffered, quantityOffered, totalOfferPrice,
                                                         dateOffered);
                         layoutManager = new LinearLayoutManager(getActivity());
@@ -178,10 +178,10 @@ public class ViewOffers extends Fragment {
                         rvOffers.setAdapter(adapter);
 
                     } else {
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                        setToastServerError();
                     }
                 } catch (JSONException e){
-                    Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                    setToastServerError();
                 }
                 progressBar.setVisibility(View.GONE);
             }
@@ -189,7 +189,7 @@ public class ViewOffers extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                setToastServerError();
             }
         }
         );
@@ -203,5 +203,11 @@ public class ViewOffers extends Fragment {
 
     public void setProgressBar(int view){
         progressBar.setVisibility(view);
+    }
+
+    public void setToastServerError(){
+        if (isAdded()){
+            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+        }
     }
 }

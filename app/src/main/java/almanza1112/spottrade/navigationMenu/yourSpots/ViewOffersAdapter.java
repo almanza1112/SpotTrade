@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -30,7 +29,7 @@ import almanza1112.spottrade.nonActivity.SharedPref;
  * Created by almanza1112 on 1/30/18.
  */
 
-class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolder> {
+class ViewOffersAdapter extends RecyclerView.Adapter<ViewOffersAdapter.RecyclerViewHolder> {
 
     private ViewOffers viewOffers;
     private Activity activity;
@@ -46,11 +45,11 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
     private List<String> totalOfferPrice;
     private List<Long> dateOffered;
 
-    OffersAdapter(  ViewOffers viewOffers, Activity activity, String lid, String latitude,
-                    String longitude, List<String> _id, List<String> userID, List<String> firstName,
-                    List<String> profilePhotoUrl, List<String> priceOffered,
-                    List<Integer> quantityOffered, List<String> totalOfferPrice,
-                    List<Long> dateOffered){
+    ViewOffersAdapter(ViewOffers viewOffers, Activity activity, String lid, String latitude,
+                      String longitude, List<String> _id, List<String> userID, List<String> firstName,
+                      List<String> profilePhotoUrl, List<String> priceOffered,
+                      List<Integer> quantityOffered, List<String> totalOfferPrice,
+                      List<Long> dateOffered){
         this.viewOffers = viewOffers;
         this.activity = activity;
         this.lid = lid;
@@ -67,7 +66,7 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
     }
 
     @Override
-    public OffersAdapter.RecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewOffersAdapter.RecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.your_spots_spot_offers_recyclerview_row, parent, false);
         return new RecyclerViewHolder(view);
     }
@@ -147,10 +146,10 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
                         dateOffered.remove(position);
                         notifyDataSetChanged();
                     } else {
-                        Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                        viewOffers.setToastServerError();
                     }
                 } catch (JSONException e){
-                    Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                    viewOffers.setToastServerError();
                 }
                 viewOffers.setProgressBar(View.GONE);
             }
@@ -158,7 +157,7 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
             @Override
             public void onErrorResponse(VolleyError error) {
                 viewOffers.setProgressBar(View.GONE);
-                Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                viewOffers.setToastServerError();
             }
         }
         );
@@ -202,11 +201,11 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
                         }
                     }
                     else {
-                        Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                        viewOffers.setToastServerError();
                     }
                 }
                 catch (JSONException e){
-                    Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                    viewOffers.setToastServerError();
                 }
                 viewOffers.setProgressBar(View.GONE);
             }
@@ -214,7 +213,7 @@ class OffersAdapter extends RecyclerView.Adapter<OffersAdapter.RecyclerViewHolde
             @Override
             public void onErrorResponse(VolleyError error) {
                 viewOffers.setProgressBar(View.GONE);
-                Toast.makeText(activity, activity.getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                viewOffers.setToastServerError();
             }
         }
         );

@@ -325,13 +325,13 @@ public class AddCreditDebitCard extends Fragment {
                                             .validate(true);
                                     Card.tokenize(mBraintreeFragment, cardBuilder);
                                 } catch (InvalidArgumentException e) {
-                                    Toast.makeText(getActivity(), getResources().getString(R.string.Error_invalid_argument), Toast.LENGTH_SHORT).show();
+                                    setToastServerError();
                                 }
                             } else {
-                                Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_add_card), Toast.LENGTH_SHORT).show();
+                                setToastServerError();
                             }
                         } catch (JSONException e){
-                            Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_add_card), Toast.LENGTH_SHORT).show();
+                            setToastServerError();
                         }
                         pd.dismiss();
                     }
@@ -340,7 +340,7 @@ public class AddCreditDebitCard extends Fragment {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         pd.dismiss();
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                        setToastServerError();
                     }
                 }
         );
@@ -369,19 +369,18 @@ public class AddCreditDebitCard extends Fragment {
                             if (response.getString("status").equals("success")){
                                 creditCardAddedListener.onCreditCardAdded(from);
                             } else {
-                                Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_add_card), Toast.LENGTH_SHORT).show();
+                                setToastServerError();
                             }
                         } catch (JSONException e){
-                            Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_add_card), Toast.LENGTH_SHORT).show();
+                            setToastServerError();
                         }
                         pd.dismiss();
                     }
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
                         pd.dismiss();
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                        setToastServerError();
                     }
                 }){
             @Override
@@ -396,8 +395,12 @@ public class AddCreditDebitCard extends Fragment {
             }
         };
 
-        // Access the RequestQueue through your singleton class.
         queue.add(jsObjRequest);
+    }
 
+    private void setToastServerError(){
+        if (isAdded()){
+            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+        }
     }
 }

@@ -561,7 +561,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                         }
                     }
                 } catch(JSONException e){
-                    Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                    setToastServerError();
                 }
                 progressBar.setVisibility(View.GONE);
             }
@@ -569,7 +569,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                setToastServerError();
             }
         }
         );
@@ -613,5 +613,11 @@ public class EditSpot extends Fragment implements View.OnClickListener{
     private void setSnackbar(String snackbarText) {
         snackbar = Snackbar.make(getActivity().findViewById(R.id.edit_spot), snackbarText, Snackbar.LENGTH_SHORT);
         snackbar.show();
+    }
+
+    private void setToastServerError(){
+        if (isAdded()){
+            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+        }
     }
 }

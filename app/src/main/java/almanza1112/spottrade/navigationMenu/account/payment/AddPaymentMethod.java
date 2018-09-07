@@ -251,21 +251,22 @@ public class AddPaymentMethod extends Fragment implements
                                     }
                                 } catch (InvalidArgumentException e) {
                                     // There was an issue with your authorization string.
-                                    Toast.makeText(getActivity(), getResources().getString(R.string.Error_invalid_argument), Toast.LENGTH_SHORT).show();
+                                    setToastServerError();
                                 }
                             } else {
-                                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                                setToastServerError();
                             }
                         } catch (JSONException e){
-                            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                            setToastServerError();
                         }
+                        pd.dismiss();
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         pd.dismiss();
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                        setToastServerError();
                     }
                 }
         );
@@ -297,10 +298,10 @@ public class AddPaymentMethod extends Fragment implements
                             if (response.getString("status").equals("success")){
                                 paymentMethodAddedListener.onPaymentMethodAdded(from);
                             } else {
-                                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                                setToastServerError();
                             }
                         } catch (JSONException e){
-                            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                            setToastServerError();
                         }
                     }
                 }, new Response.ErrorListener() {
@@ -308,7 +309,7 @@ public class AddPaymentMethod extends Fragment implements
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         pd.dismiss();
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                        setToastServerError();
                     }
                 }){
             @Override
@@ -323,8 +324,12 @@ public class AddPaymentMethod extends Fragment implements
             }
         };
 
-        // Access the RequestQueue through your singleton class.
         queue.add(jsObjRequest);
+    }
 
+    private void setToastServerError(){
+        if (isAdded()){
+            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+        }
     }
 }

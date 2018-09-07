@@ -186,11 +186,10 @@ public class YourSpots extends Fragment {
                         rvYourSpots.setLayoutManager(layoutManager);
                         rvYourSpots.setAdapter(adapter);
                     } else {
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                        setToastServerError();
                     }
                 } catch (JSONException e){
-                    e.printStackTrace();
-                    Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                    setToastServerError();
                 }
                 progressBar.setVisibility(View.GONE);
             }
@@ -198,10 +197,16 @@ public class YourSpots extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                setToastServerError();
             }
         }
         );
         queue.add(jsonObjectRequest);
+    }
+
+    private void setToastServerError(){
+        if (isAdded()){
+            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+        }
     }
 }

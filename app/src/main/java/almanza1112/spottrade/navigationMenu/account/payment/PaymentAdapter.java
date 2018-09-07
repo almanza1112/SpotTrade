@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -159,19 +158,17 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                         isDefault.set(defaultPos, false);
                         notifyDataSetChanged();
                     } else {
-                        Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_update_payment_method), Toast.LENGTH_SHORT).show();
+                        payment.setToastUnableToUpdatePaymentMethod();
                     }
                 } catch (JSONException e){
-                    Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_delete_payment_method), Toast.LENGTH_SHORT).show();
-                }
+                    payment.setToastUnableToUpdatePaymentMethod();                }
                 pd.dismiss();
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 pd.dismiss();
-                Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_delete_payment_method), Toast.LENGTH_SHORT).show();
-            }
+                payment.setToastUnableToUpdatePaymentMethod();            }
         }
         );
         queue.add(jsonObjectRequest);
@@ -247,10 +244,10 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                                 // User has a Request that is available and cannot delete the payment method
                                 ADcannotDeletePaymentMethod();
                             } else{
-                                Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_delete_payment_method), Toast.LENGTH_SHORT).show();
+                                payment.setToastUnableToDeletePaymentMethod();
                             }
                         } catch (JSONException e){
-                            Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_delete_payment_method), Toast.LENGTH_SHORT).show();
+                            payment.setToastUnableToDeletePaymentMethod();
                         }
                         pd.dismiss();
                     }
@@ -260,7 +257,7 @@ class PaymentAdapter extends RecyclerView.Adapter<PaymentAdapter.RecyclerViewHol
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         pd.dismiss();
-                        Toast.makeText(activity, activity.getResources().getString(R.string.Error_unable_to_delete_payment_method), Toast.LENGTH_SHORT).show();
+                        payment.setToastUnableToDeletePaymentMethod();
                     }
                 }
         );

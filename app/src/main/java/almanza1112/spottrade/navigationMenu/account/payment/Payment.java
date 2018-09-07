@@ -177,7 +177,7 @@ public class Payment extends Fragment {
                             */
                         }
                         catch (JSONException e){
-                            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                            setToastServerError();
                         }
                         progressBar.setVisibility(View.GONE);
                     }
@@ -186,7 +186,7 @@ public class Payment extends Fragment {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         progressBar.setVisibility(View.GONE);
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+                        setToastServerError();
                     }
                 }
         );
@@ -198,4 +198,21 @@ public class Payment extends Fragment {
         snackbar.show();
     }
 
+    private void setToastServerError(){
+        if (isAdded()){
+            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void setToastUnableToDeletePaymentMethod(){
+        if (isAdded()){
+            Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_delete_payment_method), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void setToastUnableToUpdatePaymentMethod(){
+        if (isAdded()){
+            Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_update_payment_method), Toast.LENGTH_SHORT).show();
+        }
+    }
 }
