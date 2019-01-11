@@ -130,7 +130,8 @@ public class MapsActivity extends AppCompatActivity
         AddPaymentMethod.PaymentMethodAddedListener,
         AddCreditDebitCard.CreditCardAddedListener,
         ViewOffers.OfferAcceptedListener ,
-        CreateSpot.SpotCreatedListener{
+        CreateSpot.SpotCreatedListener,
+        Personal.ProfilePhotoChangedListener{
 
     private ProgressBar progressBar;
     private GoogleMap mMap;
@@ -143,7 +144,7 @@ public class MapsActivity extends AppCompatActivity
     private Animation bottomUp, bottomDown;
     private TextView tvFullName, tvUserRating, tvTotalRating, tvLocationName, tvLocationAddress,
             tvTransaction, tvDescription, tvQuantity;
-    private ImageView ivSellerProfilePhoto;
+    private ImageView ivSellerProfilePhoto, ivProfilePhoto;
     private Button bBuyNow, bMakeOffer, bCancelOffer, bDelete;
     private Marker marker;
     private GoogleApiClient mGoogleApiClient;
@@ -298,7 +299,7 @@ public class MapsActivity extends AppCompatActivity
         toggle.syncState();
 
         View navHeaderView = navigationView.getHeaderView(0);
-        final ImageView ivProfilePhoto = navHeaderView.findViewById(R.id.ivProfilePhoto);
+        ivProfilePhoto = navHeaderView.findViewById(R.id.ivProfilePhoto);
         if (SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_photo_url)) != null) {
             Picasso.get().load(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_photo_url))).fit().centerCrop().into(ivProfilePhoto);
         }
@@ -767,6 +768,11 @@ public class MapsActivity extends AppCompatActivity
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(locash, 16));
         marker = mMap.addMarker(new MarkerOptions().position(locash).title(name));
         marker.setTag(id);
+    }
+
+    @Override
+    public void onProfilePhotoChanged(String profilePhotoUrl) {
+        Picasso.get().load(SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_photo_url))).fit().centerCrop().into(ivProfilePhoto);
     }
 
     @Override

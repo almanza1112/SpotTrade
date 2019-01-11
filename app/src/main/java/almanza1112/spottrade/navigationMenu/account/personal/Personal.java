@@ -2,6 +2,7 @@ package almanza1112.spottrade.navigationMenu.account.personal;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -218,6 +219,29 @@ public class Personal extends Fragment implements View.OnClickListener {
         }
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            profilePhotoChangedListener = (ProfilePhotoChangedListener) context;
+        } catch (ClassCastException e){
+            throw new ClassCastException(context.toString() + " must implement OnItemClickedListener");
+        }
+    }
+
+    ProfilePhotoChangedListener profilePhotoChangedListener = profilePhotoChangedCallback;
+
+    public interface ProfilePhotoChangedListener {
+        void onProfilePhotoChanged(String profilePhotoUrl);
+    }
+
+    public static ProfilePhotoChangedListener profilePhotoChangedCallback = new ProfilePhotoChangedListener() {
+        @Override
+        public void onProfilePhotoChanged(String profilePhotoUrl) {
+
+        }
+    };
+
     private void uploadImageToFirebase(Uri uri){
         ivProfilePhoto.setImageURI(uri);
         StorageReference filePath = storageReference.child("Photos").child(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id))).child(uri.getLastPathSegment());
@@ -253,13 +277,13 @@ public class Personal extends Fragment implements View.OnClickListener {
             public void onResponse(JSONObject response) {
                 try{
                     if (response.getString("status").equals("success")){
+                        profilePhotoChangedListener.onProfilePhotoChanged(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)));
                         setSnackBar(getResources().getString(R.string.Profile_photo_updated));
                     }
                     else {
                         Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_photo), Toast.LENGTH_SHORT).show();
                     }
-                }
-                catch (JSONException e){
+                } catch (JSONException e){
                     Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_change_photo), Toast.LENGTH_SHORT).show();
                 }
                 progressBar.setVisibility(View.GONE);
