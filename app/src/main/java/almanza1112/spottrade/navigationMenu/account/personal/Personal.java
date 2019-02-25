@@ -6,9 +6,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -20,6 +22,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -47,6 +50,8 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,6 +73,7 @@ public class Personal extends Fragment implements View.OnClickListener {
     private TextInputLayout tilUpdate;
     private ImageView ivProfilePhoto;
     private ProgressBar progressBar;
+    private Uri profileImageUri;
     private Pattern pattern = Pattern.compile(RegularExpression.EMAIL_PATTERN);
 
     private final int GALLERY_CODE = 1;
@@ -194,27 +200,22 @@ public class Personal extends Fragment implements View.OnClickListener {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GALLERY_CODE && resultCode == RESULT_OK){
             progressBar.setVisibility(View.VISIBLE);
-            // Check if there is an image already
-            if (SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)) != null){
-                // There is an image, proceed to delete it
-                StorageReference photoRef = firebaseStorage.getReferenceFromUrl(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)));
-                photoRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        // On success of deletion, proceed to add new image
-                        uploadImageToFirebase(data.getData());
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        progressBar.setVisibility(View.GONE);
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-            else {
-                // There is no image, proceed to just uploading it
-                uploadImageToFirebase(data.getData());
+            // Convert image to base64
+            profileImageUri = data.getData();
+            Uri image = data.getData(); //The uri with the location of the file
+            if (image != null) {
+                Bitmap bitmap = null;
+                try {
+                    bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), image);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                byte[] byteArray = outputStream.toByteArray();
+
+                uploadImage(Base64.encodeToString(byteArray, Base64.DEFAULT));
             }
         }
     }
@@ -242,41 +243,24 @@ public class Personal extends Fragment implements View.OnClickListener {
         }
     };
 
-    private void uploadImageToFirebase(Uri uri){
-        ivProfilePhoto.setImageURI(uri);
-        StorageReference filePath = storageReference.child("Photos").child(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id))).child(uri.getLastPathSegment());
-        filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url));
-                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), downloadUrl.toString());
-                uploadDownloadUrl(downloadUrl.toString());
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    // Uploads download url for profile photo to database
-    private void uploadDownloadUrl(String url){
+    private void uploadImage(String encodedImage){
         final JSONObject jObject = new JSONObject();
         try {
-            jObject.put("profilePhotoUrl", url);
+            jObject.put("encodedImage", encodedImage);
+            jObject.put("_id", SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)));
         } catch (JSONException e) {
             e.printStackTrace();
         }
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, getString(R.string.URL) + "/user/update/photo", jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
                     if (response.getString("status").equals("success")){
+                        ivProfilePhoto.setImageURI(profileImageUri);
+                        SharedPref.removeSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url));
+                        SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), response.getString("profilePhotoUrl"));
                         profilePhotoChangedListener.onProfilePhotoChanged(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)));
                         setSnackBar(getResources().getString(R.string.Profile_photo_updated));
                     }
