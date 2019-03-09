@@ -11,15 +11,6 @@
     Package name:
     15:C6:C4:93:1A:15:8F:46:5B:5B:62:D8:6D:F0:5E:1B:5C:96:D7:FF
 
-
-    10:06:FC:C8:8A:B8:92:FE:0C:1D:18:00:A4:47:E3:50:04:E6:6A:44
-
-    SHA-1 certificate fingerprint:
-    15:C6:C4:93:1A:15:8F:46:5B:5B:62:D8:6D:F0:5E:1B:5C:96:D7:FF
-
-    New fingerprint as of 3/1/2018
-    10:06:FC:C8:8A:B8:92:FE:0C:1D:18:00:A4:47:E3:50:04:E6:6A:44
-
     Alternatively, follow the directions here:
     https://developers.google.com/maps/documentation/android/start#get-key
 
@@ -28,5 +19,5 @@
     -->
 
     <!-- USED API KEY FROM BUBBLES -->
-    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyADQwHZS3zBDTraFJ4Qpfrnc3HdKhIbCU4</string>
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyAMpHCn-UzDmg1nCE00Jz8Bn7VVi3aQO8k</string>
 </resources>
