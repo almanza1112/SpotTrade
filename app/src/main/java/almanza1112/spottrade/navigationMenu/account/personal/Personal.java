@@ -23,6 +23,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -44,7 +45,6 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
@@ -181,21 +181,6 @@ public class Personal extends Fragment implements View.OnClickListener {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        //super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode){
-            case READ_EXTERNAL_STORAGE_PERMISSION:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    Intent intent = new Intent();
-                    intent.setType("image/*");
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
-                    startActivityForResult(Intent.createChooser(intent, "Select Picture"), GALLERY_CODE);
-                }
-                break;
-        }
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GALLERY_CODE && resultCode == RESULT_OK){
@@ -215,6 +200,7 @@ public class Personal extends Fragment implements View.OnClickListener {
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
                 byte[] byteArray = outputStream.toByteArray();
 
+                // upload image to server
                 uploadImage(Base64.encodeToString(byteArray, Base64.DEFAULT));
             }
         }
@@ -242,6 +228,13 @@ public class Personal extends Fragment implements View.OnClickListener {
 
         }
     };
+
+    public void onPermissionGranted(){
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), GALLERY_CODE);
+    }
 
     private void uploadImage(String encodedImage){
         final JSONObject jObject = new JSONObject();
@@ -286,10 +279,13 @@ public class Personal extends Fragment implements View.OnClickListener {
     private void ADupdateProfilePhoto(){
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
         final CharSequence[] items;
+
         if (SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)) == null){
+            // There is no profile photo, only 1 option should appear: "Add Profile Photo"
             items = new CharSequence[]{getResources().getString(R.string.Add_profile_photo)};
         }
         else {
+            // There is a profile photo, 2 options should appear: "Delete", "Change Profile Photo"
             items = new CharSequence[]{getResources().getString(R.string.Delete), getResources().getString(R.string.Change_Profile_Photo)};
         }
 
@@ -297,29 +293,16 @@ public class Personal extends Fragment implements View.OnClickListener {
         alertDialogBuilder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (items.length == 1){
-                    //means there is no photo
-                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                            &&
-                            ContextCompat.checkSelfPermission(
-                                    getActivity(),
-                                    Manifest.permission.READ_EXTERNAL_STORAGE)
-                                    != PackageManager.PERMISSION_GRANTED){
-                        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                                READ_EXTERNAL_STORAGE_PERMISSION);
-                    }
-                    else {
-                        Intent intent = new Intent();
-                        intent.setType("image/*");
-                        intent.setAction(Intent.ACTION_GET_CONTENT);
-                        startActivityForResult(Intent.createChooser(intent, "Select Picture"), GALLERY_CODE);
+                if (items.length == 1){ // Means there is no photo, only option there is "Add Profile Photo"
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_EXTERNAL_STORAGE_PERMISSION);
+                    } else {
+                        onPermissionGranted();
                     }
                 }
-                else if (items.length == 2){
-                    //means there is a photo
-                    if (which == 0){
+                else if (items.length == 2){ // Means there is a photo, 2 options: "Delete", "Change Profile Photo"
+                    if (which == 0){ // Delete photo
                         progressBar.setVisibility(View.VISIBLE);
-                        //delete photo
                         StorageReference photoRef = firebaseStorage.getReferenceFromUrl(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)));
                         photoRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
@@ -338,18 +321,10 @@ public class Personal extends Fragment implements View.OnClickListener {
                         });
                     }
                     else if (which == 1){
-                        //change photo
-                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                                &&
-                                ContextCompat.checkSelfPermission(
-                                        getActivity(),
-                                        Manifest.permission.READ_EXTERNAL_STORAGE)
-                                        != PackageManager.PERMISSION_GRANTED){
-                            ActivityCompat.requestPermissions(getActivity(),
-                                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                                    READ_EXTERNAL_STORAGE_PERMISSION);
-                        }
-                        else {
+                        // change photo
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_EXTERNAL_STORAGE_PERMISSION);
+                        } else {
                             Intent intent = new Intent();
                             intent.setType("image/*");
                             intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -465,7 +440,7 @@ public class Personal extends Fragment implements View.OnClickListener {
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Boolean wantToCloseDialog = false;
+                boolean wantToCloseDialog = false;
                 //Do stuff, possibly set wantToCloseDialog to true then...
                 String str = tietUpdate.getText().toString();
                 switch (field) {

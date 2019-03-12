@@ -163,11 +163,13 @@ public class MapsActivity extends AppCompatActivity
 
     private final int ACCESS_FINE_LOCATION_PERMISSION_MAP = 5;
     private final int ACCESS_FINE_LOCATION_PERMISSION_TRACKING = 6;
+    private final int READ_EXTERNAL_STORAGE_PERMISSION = 2;
 
     private DatabaseReference databaseReference;
 
-    Payment paymentFrag;
-    CreateSpot createSpotFrag;
+    Payment paymentFragment;
+    CreateSpot createSpotFragment;
+    Personal personalFragment;
 
     // For onOfferAccepted
     boolean isOfferAccepted;
@@ -321,11 +323,11 @@ public class MapsActivity extends AppCompatActivity
                 bundle.putString("locationAddress", locationAddress);
                 bundle.putDouble("latitude", latitude);
                 bundle.putDouble("longitude", longitude);
-                createSpotFrag = new CreateSpot();
-                createSpotFrag.setArguments(bundle);
+                createSpotFragment = new CreateSpot();
+                createSpotFragment.setArguments(bundle);
                 FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
                 fragmentTransaction.setCustomAnimations(R.animator.right_in, R.animator.right_out, R.animator.right_in, R.animator.right_out);
-                fragmentTransaction.add(R.id.drawer_layout, createSpotFrag);
+                fragmentTransaction.add(R.id.drawer_layout, createSpotFragment);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
                 break;
@@ -396,11 +398,12 @@ public class MapsActivity extends AppCompatActivity
                 fragment = new Feedback();
                 break;
             case R.id.nav_personal:
-                fragment = new Personal();
+                personalFragment = new Personal();
+                fragment = personalFragment;
                 break;
             case R.id.nav_payment:
-                paymentFrag = new Payment();
-                fragment = paymentFrag;
+                paymentFragment = new Payment();
+                fragment = paymentFragment;
                 break;
             case R.id.nav_about:
                 fragment = new About();
@@ -586,48 +589,47 @@ public class MapsActivity extends AppCompatActivity
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         // If request is cancelled, the result arrays are empty.
-        if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_MAP) {
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                Criteria criteria = new Criteria();
-                String provider = locationManager.getBestProvider(criteria, true);
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
-                    return;
-                }
-                myLocation = locationManager.getLastKnownLocation(provider);
-                mMap.setMyLocationEnabled(true);
-                double latitude = 0;
-                double longitude = 0;
-                try {
-                    latitude = myLocation.getLatitude();
-                    longitude = myLocation.getLongitude();
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
-                }
-                currentLocation = new LatLng(latitude, longitude);
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
-            } else {
-                // permission denied, boo! Disable the
-                // functionality that depends on this permission.
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
-            }
-        } else if (requestCode == ACCESS_FINE_LOCATION_PERMISSION_TRACKING) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (type.equals("Sell")) {
-                    validatePaymentMethod();
-                } else if (type.equals("Request")) {
-                    transactionBuyNow(1);
-                }
-            } else {
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            switch (requestCode){
+                case ACCESS_FINE_LOCATION_PERMISSION_MAP:
+                    LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                    Criteria criteria = new Criteria();
+                    String provider = locationManager.getBestProvider(criteria, true);
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
+                    myLocation = locationManager.getLastKnownLocation(provider);
+                    mMap.setMyLocationEnabled(true);
+                    double latitude = 0;
+                    double longitude = 0;
+                    try {
+                        latitude = myLocation.getLatitude();
+                        longitude = myLocation.getLongitude();
+                    } catch (NullPointerException e) {
+                        e.printStackTrace();
+                    }
+                    currentLocation = new LatLng(latitude, longitude);
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
+                    break;
+
+                case ACCESS_FINE_LOCATION_PERMISSION_TRACKING:
+                    if (type.equals("Sell")) {
+                        validatePaymentMethod();
+                    } else if (type.equals("Request")) {
+                        transactionBuyNow(1);
+                    }
+                    break;
+
+                case READ_EXTERNAL_STORAGE_PERMISSION:
+                    personalFragment.onPermissionGranted();
+                    break;
             }
         }
     }
@@ -727,14 +729,14 @@ public class MapsActivity extends AppCompatActivity
             case "Payment":
                 getFragmentManager().popBackStack();
                 getFragmentManager().popBackStack();
-                paymentFrag.getCustomer();
-                paymentFrag.setSnackbar(getString(R.string.Payment_method_added));
+                paymentFragment.getCustomer();
+                paymentFragment.setSnackbar(getString(R.string.Payment_method_added));
                 break;
 
             case "CreateSpot":
                 getFragmentManager().popBackStack();
                 getFragmentManager().popBackStack();
-                createSpotFrag.validatePaymentMethod();
+                createSpotFragment.validatePaymentMethod();
                 break;
             case "MapsActivity":
 
@@ -747,12 +749,12 @@ public class MapsActivity extends AppCompatActivity
         switch (from){
             case "Payment":
                 getFragmentManager().popBackStack();
-                paymentFrag.getCustomer();
-                paymentFrag.setSnackbar(getString(R.string.Payment_method_added));
+                paymentFragment.getCustomer();
+                paymentFragment.setSnackbar(getString(R.string.Payment_method_added));
                 break;
             case "CreateSpot":
                 getFragmentManager().popBackStack();
-                createSpotFrag.validatePaymentMethod();
+                createSpotFragment.validatePaymentMethod();
                 break;
             case "MapsActivity":
                 validatePaymentMethod();
@@ -1818,8 +1820,7 @@ public class MapsActivity extends AppCompatActivity
         snackbar.show();
     }
 
-    public void animateMarker(final Marker marker, final LatLng toPosition,
-                              final boolean hideMarker) {
+    public void animateMarker(final Marker marker, final LatLng toPosition, final boolean hideMarker) {
         final Handler handler = new Handler();
         final long start = SystemClock.uptimeMillis();
         Projection proj = mMap.getProjection();
