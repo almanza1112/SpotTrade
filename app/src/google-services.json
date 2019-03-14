@@ -15,14 +15,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "88729508985-erpkeb2t8vthfmmhm1rbc5tacre30kq7.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "almanza1112.spottrade",
-            "certificate_hash": "1006fcc88ab892fe0c1d1800a447e35004e66a44"
-          }
-        },
-        {
           "client_id": "88729508985-s7iphrjb0nk6hta99oq059r4elge18lm.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
