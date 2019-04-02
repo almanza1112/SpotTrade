@@ -15,7 +15,7 @@
       },
       "oauth_client": [
         {
-          "client_id": "88729508985-s7iphrjb0nk6hta99oq059r4elge18lm.apps.googleusercontent.com",
+          "client_id": "88729508985-rm0mdiojtv6dstkm1g2dq76r6cig4iuk.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "almanza1112.spottrade",
@@ -23,7 +23,7 @@
           }
         },
         {
-          "client_id": "88729508985-mp379a72jtgi9hivgvaedgg5sa7s8p7i.apps.googleusercontent.com",
+          "client_id": "88729508985-v2fmcolgfrk5n296s87dofvu1ei1cial.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -40,11 +40,11 @@
           "status": 2,
           "other_platform_oauth_client": [
             {
-              "client_id": "88729508985-r5vdm4hl0m11tdof5qlin3hnivl1memn.apps.googleusercontent.com",
+              "client_id": "88729508985-v2fmcolgfrk5n296s87dofvu1ei1cial.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "88729508985-2nj5kf1kgov5mu6c8jvoeo5ou76r9cue.apps.googleusercontent.com",
+              "client_id": "88729508985-ar1f40mbruur38lfndpaqgfgln4ndu7i.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "almanza1112.spottrade"

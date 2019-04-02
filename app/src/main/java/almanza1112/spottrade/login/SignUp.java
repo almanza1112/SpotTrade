@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,6 +18,8 @@ import android.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,6 +61,7 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -103,7 +107,6 @@ public class SignUp extends Fragment implements View.OnClickListener{
     private String firstName, lastName, email, phoneNumber, profilePhotoUrl = "";
     private final int GALLERY_CODE = 1;
     private final int READ_EXTERNAL_STORAGE_PERMISSION = 2;
-    private boolean isGallerySelected;
 
     ProgressDialog progressDialog = null;
 
@@ -126,7 +129,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
         // Configure sign-in to request the user's ID, email address, and basic
         // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestIdToken("88729508985-s7iphrjb0nk6hta99oq059r4elge18lm.apps.googleusercontent.com")
                 .requestEmail()
                 .build();
 
@@ -206,7 +209,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
             case R.id.bDeleteProfilePhoto:
                 uri = null;
                 profilePhotoUrl = null;
-                ivProfilePhoto.setImageBitmap(null);
+                ivProfilePhoto.setImageDrawable(null);
                 bDeleteProfilePhoto.setVisibility(View.GONE);
                 bAddProfilePhoto.setVisibility(View.VISIBLE);
                 break;
@@ -224,9 +227,10 @@ public class SignUp extends Fragment implements View.OnClickListener{
                 firstName = tietFirstName.getText().toString();
                 lastName = tietLastName.getText().toString();
                 email = tietEmail.getText().toString();
+                boolean profilePhotoBool = validateProfilePhoto();
                 boolean nameBool = validateName();
                 boolean emailBool = validateEmail();
-                if (nameBool && emailBool){
+                if (nameBool && emailBool && profilePhotoBool){
                     addNewUser();
                 }
                 break;
@@ -255,11 +259,14 @@ public class SignUp extends Fragment implements View.OnClickListener{
             callbackManager.onActivityResult(requestCode, resultCode, data);
         }
         if (requestCode == GALLERY_CODE && resultCode == RESULT_OK){
-            isGallerySelected = true;
             bAddProfilePhoto.setVisibility(View.GONE);
+            bAddProfilePhoto.setTextColor(getResources().getColor(R.color.colorAccent));
+            bAddProfilePhoto.setError(null);
+
+            bDeleteProfilePhoto.setVisibility(View.VISIBLE);
+
             uri = data.getData();
             ivProfilePhoto.setImageURI(uri);
-            bDeleteProfilePhoto.setVisibility(View.VISIBLE);
         }
 
         // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
@@ -364,7 +371,6 @@ public class SignUp extends Fragment implements View.OnClickListener{
         try {
             // Sign in successful
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            isGallerySelected = false;
             //firebaseAuthWithGoogle(account);
             firstName = account.getGivenName();
             lastName = account.getFamilyName();
@@ -378,6 +384,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
         }
         catch (ApiException e) {
             // Sign in failed
+            Log.e("GoogleSignIn", e + "");
         }
     }
 
@@ -411,8 +418,8 @@ public class SignUp extends Fragment implements View.OnClickListener{
     */
 
     public File createImageFile() {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
+        //String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        String imageFileName = "profilePhoto";
         File mFileTemp = null;
         String root=getActivity().getDir("my_sub_dir", Context.MODE_PRIVATE).getAbsolutePath();
         File myDir = new File(root + "/Img");
@@ -440,7 +447,16 @@ public class SignUp extends Fragment implements View.OnClickListener{
                 e.printStackTrace();
             }
             return Uri.fromFile(file);
+    }
 
+    private boolean validateProfilePhoto(){
+        if (ivProfilePhoto.getDrawable() != null){
+            return true;
+        } else {
+            bAddProfilePhoto.setTextColor(getResources().getColor(R.color.bt_error_red));
+            bAddProfilePhoto.setError(getString(R.string.Profile_photo_must_be_added));
+            return false;
+        }
     }
 
     private boolean validateEmail(){
@@ -498,6 +514,14 @@ public class SignUp extends Fragment implements View.OnClickListener{
             jObject.put("firebaseTokenID", FirebaseInstanceId.getInstance().getToken());
             jObject.put("phoneNumber", phoneNumber);
 
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) ivProfilePhoto.getDrawable();
+            Bitmap bitmap = bitmapDrawable.getBitmap();
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG,100, outputStream);
+            byte[] byteArray = outputStream.toByteArray();
+            jObject.put("encodedImage", byteArray);
+
         } catch (JSONException e) {
             Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
         }
@@ -517,10 +541,6 @@ public class SignUp extends Fragment implements View.OnClickListener{
                                 String overallRating = response.getString("overallRating");
                                 String phoneNumber = response.getString("phoneNumber");
 
-                                if (response.has("profilePhotoUrl")){
-                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), response.getString("profilePhotoUrl"));
-                                }
-
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_phone_number), phoneNumber);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id), id);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_email), email);
@@ -529,22 +549,14 @@ public class SignUp extends Fragment implements View.OnClickListener{
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_total_ratings), totalRatings);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_overall_rating), overallRating);
 
-                                if (uri != null || profilePhotoUrl != null) {
-                                    Uri newUri;
-                                    if (isGallerySelected){
-                                        newUri = uri;
-                                    } else {
-                                        newUri = getUri();
-                                    }
-                                    uploadImageToFirebase(newUri, SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)));
+                                if (response.has("profilePhotoUrl")){
+                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), response.getString("profilePhotoUrl"));
                                 }
-                                else{
-                                    progressDialog.dismiss();
-                                    startActivity(new Intent(getActivity(), MapsActivity.class));
-                                    getActivity().finish();
-                                }
-                            }
-                            else if (response.getString("status").equals("fail")){
+
+                                progressDialog.dismiss();
+                                startActivity(new Intent(getActivity(), MapsActivity.class));
+                                getActivity().finish();
+                            } else if (response.getString("status").equals("fail")){
                                 progressDialog.dismiss();
                                 String reason = response.getString("reason");
                                 if (reason.equals("Email already in use")){
@@ -578,51 +590,5 @@ public class SignUp extends Fragment implements View.OnClickListener{
 
         // Access the RequestQueue through your singleton class.
         queue.add(jsObjRequest);
-    }
-
-    private void uploadImageToFirebase(Uri uri, String id){
-        progressDialog.setMessage(getResources().getString(R.string.Uploading_profile_image));
-        StorageReference filePath = storageReference.child("Photos").child(id).child(uri.getLastPathSegment());
-        filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), downloadUrl.toString());
-                uploadDownloadUrl(downloadUrl.toString());
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                progressDialog.dismiss();
-                Toast.makeText(getActivity(), getResources().getString(R.string.Error_unable_to_upload_image), Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(getActivity(), MapsActivity.class));
-            }
-        });
-    }
-
-    // Uploads download url for profile photo to database
-    private void uploadDownloadUrl(String url){
-        final JSONObject jObject = new JSONObject();
-        try {
-            jObject.put("profilePhotoUrl", url);
-        } catch (JSONException e) {
-            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
-        }
-        RequestQueue queue = Volley.newRequestQueue(getActivity());
-
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/user/update/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                progressDialog.dismiss();
-                startActivity(new Intent(getActivity(), MapsActivity.class));
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
-            }
-        }
-        );
-        queue.add(jsonObjectRequest);
     }
 }
