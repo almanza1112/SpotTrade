@@ -11,7 +11,8 @@
         android:id="@+id/ivCountryFlag"
         android:layout_width="40dp"
         android:layout_height="match_parent"
-        android:layout_marginRight="@dimen/contentPadding" />
+        android:layout_marginRight="@dimen/contentPadding"
+        android:tint="#1A000000" />
     <TextView
         android:id="@+id/tvCountryNameCode"
         android:layout_width="wrap_content"

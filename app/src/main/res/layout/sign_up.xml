@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:windowBackground"
+    android:background="@color/backgroundColor"
     android:elevation="15dp">
 
     <android.support.v7.widget.Toolbar
@@ -15,175 +15,183 @@
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         android:background="@color/colorPrimary"/>
 
-    <LinearLayout
-        android:id="@+id/llAddProfilePhoto"
+
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/contentPadding"
+        android:layout_height="match_parent"
         android:layout_below="@id/toolbar"
-        android:orientation="horizontal">
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/contentPadding"
-            android:src="@mipmap/ic_image_grey600_24dp"/>
+        android:fillViewport="true">
         <LinearLayout
-            android:id="@+id/llProfilePhoto"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginRight="40dp"
-            android:orientation="vertical"
-            android:gravity="center_horizontal">
-            <android.support.v7.widget.CardView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:elevation="0dp"
-                app:cardCornerRadius="50dp"
-                android:innerRadius="0dp"
-                android:shape="ring"
-                android:thicknessRatio="1.9">
+            android:orientation="vertical">
+            <LinearLayout
+                android:id="@+id/llAddProfilePhoto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/contentPadding"
+                android:orientation="horizontal">
                 <ImageView
-                    android:id="@+id/ivProfilePhoto"
-                    android:layout_height="100dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/contentPadding"
+                    android:src="@mipmap/ic_image_grey600_24dp"/>
+                <LinearLayout
+                    android:id="@+id/llProfilePhoto"
                     android:layout_width="match_parent"
-                    android:layout_alignParentTop="true"
-                    android:layout_centerHorizontal="true"
-                    android:scaleType="centerCrop"/>
-            </android.support.v7.widget.CardView>
-            <Button
-                android:id="@+id/bAddProfilePhoto"
-                style="?android:attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="40dp"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal">
+                    <android.support.v7.widget.CardView
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:layout_marginTop="1dp"
+                        android:elevation="0dp"
+                        app:cardCornerRadius="50dp"
+                        android:innerRadius="0dp"
+                        android:shape="ring"
+                        android:background="@drawable/black_border"
+                        android:thicknessRatio="1.9">
+                        <ImageView
+                            android:id="@+id/ivProfilePhoto"
+                            android:layout_height="100dp"
+                            android:layout_width="match_parent"
+                            android:layout_alignParentTop="true"
+                            android:layout_centerHorizontal="true"
+                            android:scaleType="centerCrop"/>
+                    </android.support.v7.widget.CardView>
+                    <Button
+                        android:id="@+id/bAddProfilePhoto"
+                        style="?android:attr/borderlessButtonStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/Add_profile_photo"
+                        android:textColor="@color/colorAccent" />
+                    <Button
+                        android:id="@+id/bDeleteProfilePhoto"
+                        style="?android:attr/borderlessButtonStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/Delete"
+                        android:textColor="@color/colorAccent"
+                        android:visibility="gone"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/llFirstLastName"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/Add_profile_photo"
-                android:textColor="@color/colorAccent" />
-            <Button
-                android:id="@+id/bDeleteProfilePhoto"
-                style="?android:attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
+                android:layout_margin="@dimen/contentPadding"
+                android:orientation="horizontal">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/contentPadding"
+                    android:src="@mipmap/ic_person_black_24dp"
+                    android:tint="@color/grey600"/>
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/tilFirstName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".4"
+                    android:layout_marginLeft="@dimen/contentPadding">
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/tietFirstName"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="-4dp"
+                        android:hint="@string/First_Name"
+                        android:inputType="textCapSentences"
+                        android:maxLines="1"/>
+                </android.support.design.widget.TextInputLayout>
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/tilLastName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".6">
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/tietLastName"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="-4dp"
+                        android:hint="@string/Last_Name"
+                        android:inputType="textCapSentences"
+                        android:maxLines="1"/>
+                </android.support.design.widget.TextInputLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/llEmail"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/Delete"
-                android:textColor="@color/colorAccent"
-                android:visibility="gone"/>
+                android:layout_margin="@dimen/contentPadding"
+                android:orientation="horizontal">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/contentPadding"
+                    android:src="@mipmap/ic_email_outline_grey600_24dp"/>
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/tilEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/contentPadding">
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/tietEmail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="-4dp"
+                        android:hint="@string/Email"
+                        android:inputType="textEmailAddress"
+                        android:maxLines="1"/>
+                </android.support.design.widget.TextInputLayout>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/llPhoneNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/contentPadding"
+                android:orientation="horizontal">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/contentPadding"
+                    android:src="@mipmap/ic_phone_grey600_24dp"/>
+                <TextView
+                    android:id="@+id/tvPhoneNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/contentPadding"
+                    android:textAppearance="@android:style/TextAppearance.Medium"
+                    android:textColor="@android:color/black"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/bFacebookLogin"
+                android:layout_marginTop="@dimen/contentPadding"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:backgroundTint="@color/com_facebook_blue"
+                android:text="@string/Complete_with_Facebook"
+                android:textColor="@android:color/white"
+                android:drawableLeft="@drawable/com_facebook_button_icon" />
+
+            <Button
+                android:id="@+id/bGoogleLogin"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:backgroundTint="@color/common_google_signin_btn_text_dark"
+                android:text="@string/Complete_with_Google"
+                android:drawableLeft="@drawable/googleg_standard_color_18"/>
         </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/llFirstLastName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/llAddProfilePhoto"
-        android:layout_margin="@dimen/contentPadding"
-        android:orientation="horizontal">
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginRight="@dimen/contentPadding"
-            android:src="@mipmap/ic_person_black_24dp"
-            android:tint="@color/grey600"/>
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/tilFirstName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight=".4"
-            android:layout_marginLeft="@dimen/contentPadding">
-            <android.support.design.widget.TextInputEditText
-                android:id="@+id/tietFirstName"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="-4dp"
-                android:hint="@string/First_Name"
-                android:inputType="textCapSentences"
-                android:maxLines="1"/>
-        </android.support.design.widget.TextInputLayout>
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/tilLastName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight=".6">
-            <android.support.design.widget.TextInputEditText
-                android:id="@+id/tietLastName"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="-4dp"
-                android:hint="@string/Last_Name"
-                android:inputType="textCapSentences"
-                android:maxLines="1"/>
-        </android.support.design.widget.TextInputLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/llEmail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/llFirstLastName"
-        android:layout_margin="@dimen/contentPadding"
-        android:orientation="horizontal">
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginRight="@dimen/contentPadding"
-            android:src="@mipmap/ic_email_outline_grey600_24dp"/>
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/tilEmail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/contentPadding">
-            <android.support.design.widget.TextInputEditText
-                android:id="@+id/tietEmail"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="-4dp"
-                android:hint="@string/Email"
-                android:inputType="textEmailAddress"
-                android:maxLines="1"/>
-        </android.support.design.widget.TextInputLayout>
-    </LinearLayout>
-
-
-    <LinearLayout
-        android:id="@+id/llPhoneNumber"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/llEmail"
-        android:layout_margin="@dimen/contentPadding"
-        android:orientation="horizontal">
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginRight="@dimen/contentPadding"
-            android:src="@mipmap/ic_phone_grey600_24dp"/>
-        <TextView
-            android:id="@+id/tvPhoneNumber"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/contentPadding"
-            android:textAppearance="@android:style/TextAppearance.Medium"
-            android:textColor="@android:color/black"
-            android:textStyle="bold"/>
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/bFacebookLogin"
-        android:layout_marginTop="@dimen/contentPadding"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/llPhoneNumber"
-        android:backgroundTint="@color/com_facebook_blue"
-        android:text="@string/Complete_with_Facebook"
-        android:textColor="@android:color/white"
-        android:drawableLeft="@drawable/com_facebook_button_icon" />
-
-    <Button
-        android:id="@+id/bGoogleLogin"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/bFacebookLogin"
-        android:backgroundTint="@color/common_google_signin_btn_text_dark"
-        android:text="@string/Complete_with_Google"
-        android:drawableLeft="@drawable/googleg_standard_color_18"/>
+    </ScrollView>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabDone"

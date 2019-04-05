@@ -2,13 +2,10 @@ package almanza1112.spottrade.login;
 
 import android.Manifest;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -49,27 +46,18 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -104,13 +92,12 @@ public class SignUp extends Fragment implements View.OnClickListener{
     private TextInputLayout tilFirstName, tilLastName, tilEmail;
     private TextInputEditText tietFirstName, tietLastName, tietEmail;
     private ImageView ivProfilePhoto;
-    private String firstName, lastName, email, phoneNumber, profilePhotoUrl = "";
+    private String firstName, lastName, email, phoneNumber;
     private final int GALLERY_CODE = 1;
     private final int READ_EXTERNAL_STORAGE_PERMISSION = 2;
 
     ProgressDialog progressDialog = null;
 
-    private Uri uri = null;
     StorageReference storageReference;
 
     @Override
@@ -207,8 +194,6 @@ public class SignUp extends Fragment implements View.OnClickListener{
                 break;
 
             case R.id.bDeleteProfilePhoto:
-                uri = null;
-                profilePhotoUrl = null;
                 ivProfilePhoto.setImageDrawable(null);
                 bDeleteProfilePhoto.setVisibility(View.GONE);
                 bAddProfilePhoto.setVisibility(View.VISIBLE);
@@ -265,8 +250,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
 
             bDeleteProfilePhoto.setVisibility(View.VISIBLE);
 
-            uri = data.getData();
-            ivProfilePhoto.setImageURI(uri);
+            ivProfilePhoto.setImageURI(data.getData());
         }
 
         // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
@@ -350,8 +334,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
                             tietFirstName.setText(firstName);
                             tietLastName.setText(lastName);
                             if (object.has("picture")){
-                                profilePhotoUrl =  object.getJSONObject("picture").getJSONObject("data").getString("url");
-                                Picasso.get().load(profilePhotoUrl).into(ivProfilePhoto);
+                                Picasso.get().load(object.getJSONObject("picture").getJSONObject("data").getString("url")).into(ivProfilePhoto);
                             }
                         }
                         catch (JSONException e) {
@@ -366,7 +349,6 @@ public class SignUp extends Fragment implements View.OnClickListener{
     }
 
     /* GOOGLE LOGIN */
-    // Step 1
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             // Sign in successful
@@ -375,78 +357,16 @@ public class SignUp extends Fragment implements View.OnClickListener{
             firstName = account.getGivenName();
             lastName = account.getFamilyName();
             email = account.getEmail();
-            profilePhotoUrl = account.getPhotoUrl().toString();
 
             tietFirstName.setText(firstName);
             tietLastName.setText(lastName);
             tietEmail.setText(email);
-            Picasso.get().load(profilePhotoUrl).into(ivProfilePhoto);
+            Picasso.get().load(account.getPhotoUrl().toString()).into(ivProfilePhoto);
         }
         catch (ApiException e) {
             // Sign in failed
             Log.e("GoogleSignIn", e + "");
         }
-    }
-
-    // Step 2
-    /*
-    // We no longer need step 2 because of different sign in process that only involves phone number
-    // keeping around just in case for the future
-    private void firebaseAuthWithGoogle(final GoogleSignInAccount acct) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            firstName = acct.getGivenName();
-                            lastName = acct.getFamilyName();
-                            email = acct.getEmail();
-                            //profilePhotoUrl = acct.getPhotoUrl().toString();
-                            //userID = acct.getId();
-                            //googleSignUp = true;
-                            //signInFacebookOrGoogle();
-                        }
-                        else {
-                            // If sign in fails, display a message to the user.
-                            //Snackbar.make(findViewById(R.id.login_activity), "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-    }
-    */
-
-    public File createImageFile() {
-        //String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        String imageFileName = "profilePhoto";
-        File mFileTemp = null;
-        String root=getActivity().getDir("my_sub_dir", Context.MODE_PRIVATE).getAbsolutePath();
-        File myDir = new File(root + "/Img");
-        if(!myDir.exists()){
-            myDir.mkdirs();
-        }
-        try {
-            mFileTemp= File.createTempFile(imageFileName,".jpg",myDir.getAbsoluteFile());
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-        return mFileTemp;
-    }
-
-    private Uri getUri(){
-        File file = createImageFile();
-            FileOutputStream fout;
-            try {
-                fout = new FileOutputStream(file);
-                BitmapDrawable bitmapDrawable = ((BitmapDrawable) ivProfilePhoto.getDrawable());
-                Bitmap bitmap = bitmapDrawable.getBitmap();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 70, fout);
-                fout.flush();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return Uri.fromFile(file);
     }
 
     private boolean validateProfilePhoto(){
@@ -520,7 +440,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.PNG,100, outputStream);
             byte[] byteArray = outputStream.toByteArray();
-            jObject.put("encodedImage", byteArray);
+            jObject.put("encodedImage", Base64.encodeToString(byteArray, Base64.DEFAULT));
 
         } catch (JSONException e) {
             Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
@@ -548,10 +468,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name), lastName);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_total_ratings), totalRatings);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_overall_rating), overallRating);
-
-                                if (response.has("profilePhotoUrl")){
-                                    SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), response.getString("profilePhotoUrl"));
-                                }
+                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), response.getString("profilePhotoUrl"));
 
                                 progressDialog.dismiss();
                                 startActivity(new Intent(getActivity(), MapsActivity.class));
