@@ -108,6 +108,7 @@ public class Personal extends Fragment implements View.OnClickListener {
 
         ivProfilePhoto = view.findViewById(R.id.ivProfilePhoto);
         view.findViewById(R.id.ivEditProfilePhoto).setOnClickListener(this);
+        Log.e("profilePhotoURL", SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)));
         if (SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url)) != null){
             Picasso.get().load(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url))).fit().centerCrop().into(ivProfilePhoto);
         }

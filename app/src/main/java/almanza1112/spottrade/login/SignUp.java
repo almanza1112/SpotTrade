@@ -2,10 +2,13 @@ package almanza1112.spottrade.login;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -13,6 +16,7 @@ import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.BitmapCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
@@ -25,7 +29,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -56,6 +59,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -99,6 +106,8 @@ public class SignUp extends Fragment implements View.OnClickListener{
     ProgressDialog progressDialog = null;
 
     StorageReference storageReference;
+
+    //private static final String TAG = "SignUp";
 
     @Override
     public View onCreateView(LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState) {
@@ -161,15 +170,9 @@ public class SignUp extends Fragment implements View.OnClickListener{
                     Checks if permission was NOT granted == ask for permission
                     Else == permission was already granted, proceed to opening gallery
                  */
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                        &&
-                        ContextCompat.checkSelfPermission(
-                                getActivity(),
-                                Manifest.permission.READ_EXTERNAL_STORAGE)
-                                != PackageManager.PERMISSION_GRANTED){
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
 
-                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                            READ_EXTERNAL_STORAGE_PERMISSION);
+                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_EXTERNAL_STORAGE_PERMISSION);
                     /*
                     // Should we show an explanation?
                     if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
@@ -184,12 +187,11 @@ public class SignUp extends Fragment implements View.OnClickListener{
                         // result of the request.
                     }
                     */
-                }
-                else {
-                    Intent intent = new Intent();
+                } else {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
                     intent.setType("image/*");
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
-                    startActivityForResult(Intent.createChooser(intent, "Select Picture"), GALLERY_CODE);
+                    startActivityForResult(Intent.createChooser(intent, "Select Photo"), GALLERY_CODE);
                 }
                 break;
 
@@ -209,6 +211,10 @@ public class SignUp extends Fragment implements View.OnClickListener{
                 break;
 
             case R.id.fabDone:
+                progressDialog.setTitle(getResources().getString(R.string.Registering));
+                progressDialog.setMessage(getResources().getString(R.string.Creating_user));
+                progressDialog.setCancelable(false);
+                progressDialog.show();
                 firstName = tietFirstName.getText().toString();
                 lastName = tietLastName.getText().toString();
                 email = tietEmail.getText().toString();
@@ -216,7 +222,9 @@ public class SignUp extends Fragment implements View.OnClickListener{
                 boolean nameBool = validateName();
                 boolean emailBool = validateEmail();
                 if (nameBool && emailBool && profilePhotoBool){
-                    addNewUser();
+                    new BitmapCompression().execute();
+                } else {
+                    progressDialog.dismiss();
                 }
                 break;
         }
@@ -228,9 +236,9 @@ public class SignUp extends Fragment implements View.OnClickListener{
         switch (requestCode){
             case READ_EXTERNAL_STORAGE_PERMISSION:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    Intent intent = new Intent();
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
                     intent.setType("image/*");
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
                     startActivityForResult(Intent.createChooser(intent, "Select Picture"), GALLERY_CODE);
                 }
                 break;
@@ -249,8 +257,8 @@ public class SignUp extends Fragment implements View.OnClickListener{
             bAddProfilePhoto.setError(null);
 
             bDeleteProfilePhoto.setVisibility(View.VISIBLE);
-
-            ivProfilePhoto.setImageURI(data.getData());
+            Picasso.get().load(data.getData()).into(ivProfilePhoto);
+            //ivProfilePhoto.setImageURI(data.getData());
         }
 
         // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
@@ -369,6 +377,86 @@ public class SignUp extends Fragment implements View.OnClickListener{
         }
     }
 
+    public File createImageFile() {
+        String imageFileName = "profilePhoto";
+        File mFileTemp = null;
+        String root=getActivity().getDir("my_sub_dir", Context.MODE_PRIVATE).getAbsolutePath();
+        File myDir = new File(root + "/Img");
+        if(!myDir.exists()){
+            myDir.mkdirs();
+        }
+        try {
+            mFileTemp= File.createTempFile(imageFileName,".jpg",myDir.getAbsoluteFile());
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        return mFileTemp;
+    }
+
+    private File getFile(){
+        File file = createImageFile();
+        FileOutputStream fout;
+        try {
+            fout = new FileOutputStream(file);
+            BitmapDrawable bitmapDrawable = ((BitmapDrawable) ivProfilePhoto.getDrawable());
+            Bitmap bitmap = bitmapDrawable.getBitmap();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fout);
+            fout.flush();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return file;
+    }
+
+    public Bitmap reduceBitmapSize(File file){
+        try {
+            // BitmapFactory options to downsize the image
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+            o.inSampleSize = 6;
+            // factor of downsizing the image
+
+            FileInputStream inputStream = new FileInputStream(file);
+            //Bitmap selectedBitmap = null;
+            BitmapFactory.decodeStream(inputStream, null, o);
+            inputStream.close();
+
+            // The new size we want to scale to
+            final int REQUIRED_SIZE = 50;
+
+            // Find the correct scale value. It should be the power of 2.
+            int scale = 1;
+            while(o.outWidth / scale / 2 >= REQUIRED_SIZE && o.outHeight / scale / 2 >= REQUIRED_SIZE) {
+                scale *= 2;
+            }
+
+            BitmapFactory.Options o2 = new BitmapFactory.Options();
+            o2.inSampleSize = scale;
+            inputStream = new FileInputStream(file);
+
+            Bitmap selectedBitmap = BitmapFactory.decodeStream(inputStream, null, o2);
+            inputStream.close();
+
+            //Log.e(TAG, "sizeAfterReduction: " + BitmapCompat.getAllocationByteCount(selectedBitmap));
+
+            // here i override the original image file
+            // commenting this out because i do not need it, taking different approach
+            // might come in handy in the future
+            /*
+            file.createNewFile();
+            FileOutputStream outputStream = new FileOutputStream(file);
+
+            selectedBitmap.compress(Bitmap.CompressFormat.JPEG, 100 , outputStream);
+
+            return file
+            */
+
+            return selectedBitmap;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     private boolean validateProfilePhoto(){
         if (ivProfilePhoto.getDrawable() != null){
             return true;
@@ -418,11 +506,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
         }
     }
 
-    private void addNewUser(){
-        progressDialog.setTitle(getResources().getString(R.string.Registering));
-        progressDialog.setMessage(getResources().getString(R.string.Creating_user));
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+    private void addNewUser(byte[] byteArray){
         RequestQueue queue = Volley.newRequestQueue(getActivity());
         final JSONObject jObject = new JSONObject();
         try {
@@ -433,13 +517,6 @@ public class SignUp extends Fragment implements View.OnClickListener{
             jObject.put("overallRating", 0);
             jObject.put("firebaseTokenID", FirebaseInstanceId.getInstance().getToken());
             jObject.put("phoneNumber", phoneNumber);
-
-            BitmapDrawable bitmapDrawable = (BitmapDrawable) ivProfilePhoto.getDrawable();
-            Bitmap bitmap = bitmapDrawable.getBitmap();
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG,100, outputStream);
-            byte[] byteArray = outputStream.toByteArray();
             jObject.put("encodedImage", Base64.encodeToString(byteArray, Base64.DEFAULT));
 
         } catch (JSONException e) {
@@ -451,6 +528,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
 
                     @Override
                     public void onResponse(JSONObject response) {
+                        Log.e("response", response.toString());
                         try {
                             if (response.getString("status").equals("success")) {
                                 String id = response.getString("_id");
@@ -460,6 +538,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
                                 String totalRatings = response.getString("totalRatings");
                                 String overallRating = response.getString("overallRating");
                                 String phoneNumber = response.getString("phoneNumber");
+                                String profilePhotoUrl = response.getString("profilePhotoUrl");
 
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_phone_number), phoneNumber);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id), id);
@@ -468,7 +547,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_last_name), lastName);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_total_ratings), totalRatings);
                                 SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_overall_rating), overallRating);
-                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), response.getString("profilePhotoUrl"));
+                                SharedPref.setSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_photo_url), profilePhotoUrl);
 
                                 progressDialog.dismiss();
                                 startActivity(new Intent(getActivity(), MapsActivity.class));
@@ -482,6 +561,8 @@ public class SignUp extends Fragment implements View.OnClickListener{
                             }
                         }
                         catch (JSONException e) {
+                            progressDialog.dismiss();
+                            e.printStackTrace();
                             Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -494,7 +575,7 @@ public class SignUp extends Fragment implements View.OnClickListener{
                     }
                 }){
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
+            protected Map<String, String> getParams() {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("Content-Type", "application/json");
                 return headers;
@@ -508,4 +589,46 @@ public class SignUp extends Fragment implements View.OnClickListener{
         // Access the RequestQueue through your singleton class.
         queue.add(jsObjRequest);
     }
+
+    private class BitmapCompression extends AsyncTask<Void, Void, Void>
+    {
+        byte[] byteArray;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            //this method will be running on UI thread
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            //this method will be running on background thread so don't update UI from here
+            //do your long running http tasks here,you don't want to pass argument and u can access the parent class' variable url over here
+            float photoSize = BitmapCompat.getAllocationByteCount((((BitmapDrawable)ivProfilePhoto.getDrawable()).getBitmap()));
+            //Log.e("IMAGE_SIZE", "SIZE: "+BitmapCompat.getAllocationByteCount((((BitmapDrawable)ivProfilePhoto.getDrawable()).getBitmap())));
+            Bitmap bitmap;
+
+            if (photoSize > 200000){
+                bitmap = reduceBitmapSize(getFile());
+            } else {
+                BitmapDrawable bitmapDrawable = (BitmapDrawable) ivProfilePhoto.getDrawable();
+                bitmap = bitmapDrawable.getBitmap();
+            }
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG,100, outputStream);
+            byteArray = outputStream.toByteArray();
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            //this method will be running on UI thread
+            addNewUser(byteArray);
+        }
+
+    }
+
 }
