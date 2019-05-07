@@ -1532,6 +1532,34 @@ public class MapsActivity extends AppCompatActivity
         alertDialog.show();
     }
 
+    private void ADfilterSpotsByCategory(){
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(getResources().getString(R.string.Filter_Spots));
+        alertDialogBuilder.setItems(R.array.category_array, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case 0:
+                        categorySelected = "All";
+                        break;
+                    case 1:
+                        categorySelected = "Parking";
+                        break;
+                    case 2:
+                        categorySelected = "Line";
+                        break;
+                    case 3:
+                        categorySelected = "Other";
+                }
+
+                ADfilterSpotsByType();
+            }
+        });
+
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
     private void ADfilterSpotsByType(){
         String title = "";
         switch (categorySelected){
@@ -1570,34 +1598,6 @@ public class MapsActivity extends AppCompatActivity
                 }
 
                 getAvailableSpots(typeSelected, categorySelected);
-            }
-        });
-
-        final AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
-    }
-
-    private void ADfilterSpotsByCategory(){
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setTitle(getResources().getString(R.string.Filter_Spots));
-        alertDialogBuilder.setItems(R.array.category_array, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which){
-                    case 0:
-                        categorySelected = "All";
-                        break;
-                    case 1:
-                        categorySelected = "Parking";
-                        break;
-                    case 2:
-                        categorySelected = "Line";
-                        break;
-                    case 3:
-                        categorySelected = "Other";
-                }
-
-                ADfilterSpotsByType();
             }
         });
 
