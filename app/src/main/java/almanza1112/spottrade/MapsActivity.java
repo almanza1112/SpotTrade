@@ -53,14 +53,12 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -346,15 +344,8 @@ public class MapsActivity extends AppCompatActivity
                 card validation etc.
                  */
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                        ContextCompat.checkSelfPermission(
-                                this,
-                                Manifest.permission.ACCESS_FINE_LOCATION)
-                                != PackageManager.PERMISSION_GRANTED) {
-
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                            ACCESS_FINE_LOCATION_PERMISSION_TRACKING);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION_PERMISSION_TRACKING);
                 } else {
                     if (type.equals("Sell")) {
                         validatePaymentMethod();
@@ -461,7 +452,7 @@ public class MapsActivity extends AppCompatActivity
                 break;
 
             case R.id.filterMaps:
-                ADfilterMaps();
+                ADfilterSpotsByCategory();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -1541,48 +1532,32 @@ public class MapsActivity extends AppCompatActivity
         alertDialog.show();
     }
 
-    private void ADfilterMaps(){
-        LayoutInflater inflater = getLayoutInflater();
-        View alertLayout = inflater.inflate(R.layout.maps_activity_filter_spots_alertdialog, null);
-
-        final Spinner sType = alertLayout.findViewById(R.id.sType);
-        final Spinner sCategory = alertLayout.findViewById(R.id.sCategory);
-
-        switch (typeSelected){
-            case "All":
-                typePosition = 0;
-                break;
-            case "Sell":
-                typePosition = 1;
-                break;
-            case "Request":
-                typePosition = 2;
-                break;
-        }
-
+    private void ADfilterSpotsByType(){
+        String title = "";
         switch (categorySelected){
             case "All":
-                categoryPosition = 0;
+                title = getResources().getString(R.string.Filter_All_Spots);
                 break;
-            case "Line":
-                categoryPosition = 1;
-                break;
+
             case "Parking":
-                categoryPosition = 2;
+                title = getResources().getString(R.string.Filter_Parking_Spots);
                 break;
+
+            case "Line":
+                title = getResources().getString(R.string.Filter_Line_Spots);
+                break;
+
             case "Other":
-                categoryPosition = 3;
+                title = getResources().getString(R.string.Filter_Spots);
                 break;
         }
 
-        sType.setSelection(typePosition);
-        sCategory.setSelection(categoryPosition);
-
-        sType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(title);
+        alertDialogBuilder.setItems(R.array.type_array, new DialogInterface.OnClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // {All, Sell, Request}
-                switch (position){
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
                     case 0:
                         typeSelected = "All";
                         break;
@@ -1593,53 +1568,39 @@ public class MapsActivity extends AppCompatActivity
                         typeSelected = "Request";
                         break;
                 }
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+                getAvailableSpots(typeSelected, categorySelected);
             }
         });
 
-        sCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    private void ADfilterSpotsByCategory(){
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(getResources().getString(R.string.Filter_Spots));
+        alertDialogBuilder.setItems(R.array.category_array, new DialogInterface.OnClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // {All, Line, Parking, Other}
-                switch (position){
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
                     case 0:
                         categorySelected = "All";
                         break;
                     case 1:
-                        categorySelected = "Line";
+                        categorySelected = "Parking";
                         break;
                     case 2:
-                        categorySelected = "Parking";
+                        categorySelected = "Line";
                         break;
                     case 3:
                         categorySelected = "Other";
-                        break;
                 }
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+                ADfilterSpotsByType();
             }
         });
 
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setView(alertLayout);
-        alertDialogBuilder.setTitle(getResources().getString(R.string.Filter) + " " + getResources().getString(R.string.Spots));
-        alertDialogBuilder.setPositiveButton(R.string.Apply, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                getAvailableSpots(typeSelected, categorySelected);
-            }
-        });
-        alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
         final AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
     }

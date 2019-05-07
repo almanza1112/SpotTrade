@@ -43,8 +43,8 @@
 
     <string-array name="category_array">
         <item>@string/All</item>
-        <item>@string/Line</item>
         <item>@string/Parking</item>
+        <item>@string/Line</item>
         <item>@string/Other</item>
     </string-array>
 
@@ -118,7 +118,11 @@
     <string name="Feedback">Feedback</string>
     <string name="Field_cant_be_empty">Field can\'t be empty</string>
     <string name="Filter">Filter</string>
+    <string name="Filter_Spots">Filter Spots</string>
     <string name="Filter_Star_Rating">Filter Star Rating</string>
+    <string name="Filter_All_Spots">Filter All Spots</string>
+    <string name="Filter_Parking_Spots">Filter Parking Spots</string>
+    <string name="Filter_Line_Spots">Filter Line Spots</string>
     <string name="First_Name">First Name</string>
     <string name="Get_Started">Get Started</string>
     <string name="History">History</string>
