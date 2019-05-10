@@ -140,8 +140,7 @@ public class MapsActivity extends AppCompatActivity
     LatLng currentLocation, spotLocation;
     private ViewGroup hiddenPanel;
     private Animation bottomUp, bottomDown;
-    private TextView tvFullName, tvUserRating, tvTotalRating, tvLocationName, tvLocationAddress,
-            tvTransaction, tvDescription, tvQuantity;
+    private TextView tvFullName, tvUserRating, tvTotalRating, tvLocationName, tvLocationAddress, tvTransaction, tvDescription, tvQuantity;
     private ImageView ivSellerProfilePhoto, ivProfilePhoto;
     private Button bBuyNow, bMakeOffer, bCancelOffer, bDelete;
     private Marker marker;
@@ -155,9 +154,6 @@ public class MapsActivity extends AppCompatActivity
     private String lid, price, type;
     private String typeSelected = "All";
     private String categorySelected = "All";
-    private int typePosition = 0;
-    private int categoryPosition = 0;
-
 
     private final int ACCESS_FINE_LOCATION_PERMISSION_MAP = 5;
     private final int ACCESS_FINE_LOCATION_PERMISSION_TRACKING = 6;
