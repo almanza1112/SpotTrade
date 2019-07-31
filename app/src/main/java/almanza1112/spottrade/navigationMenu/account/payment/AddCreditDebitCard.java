@@ -1,7 +1,7 @@
 package almanza1112.spottrade.navigationMenu.account.payment;
 
 import android.app.Activity;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.annotation.Nullable;

@@ -2,12 +2,12 @@ package almanza1112.spottrade.navigationMenu.yourSpots;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.app.FragmentTransaction;
+import android.support.v4.app.FragmentTransaction;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -204,7 +204,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                 bundle.putString("lid", lid);
                 ViewOffers viewOffers = new ViewOffers();
                 viewOffers.setArguments(bundle);
-                FragmentTransaction fragmentTransaction = getActivity().getFragmentManager().beginTransaction();
+                FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.setCustomAnimations(R.animator.right_in, R.animator.right_out, R.animator.right_in, R.animator.right_out);
                 fragmentTransaction.replace(R.id.drawer_layout, viewOffers);
                 fragmentTransaction.addToBackStack(null);

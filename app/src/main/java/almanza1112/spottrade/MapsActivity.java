@@ -27,8 +27,8 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -129,7 +129,9 @@ public class MapsActivity extends AppCompatActivity
         AddCreditDebitCard.CreditCardAddedListener,
         ViewOffers.OfferAcceptedListener ,
         CreateSpot.SpotCreatedListener,
-        Personal.ProfilePhotoChangedListener{
+        Personal.ProfilePhotoChangedListener,
+        BottomSheetFilterMapType.FilterMapTypeSelectedListener,
+        BottomSheetFilterMapCategory.FilterMapCategorySelectedListener{
 
     private ProgressBar progressBar;
     private GoogleMap mMap;
@@ -164,6 +166,8 @@ public class MapsActivity extends AppCompatActivity
     Payment paymentFragment;
     CreateSpot createSpotFragment;
     Personal personalFragment;
+    BottomSheetFilterMapType bottomSheetFilterMapType;
+    BottomSheetFilterMapCategory bottomSheetFilterMapCategory;
 
     // For onOfferAccepted
     boolean isOfferAccepted;
@@ -178,6 +182,7 @@ public class MapsActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_activity);
+
 
         final CardView cvToolbar = findViewById(R.id.cvToolbar);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -319,7 +324,7 @@ public class MapsActivity extends AppCompatActivity
                 bundle.putDouble("longitude", longitude);
                 createSpotFragment = new CreateSpot();
                 createSpotFragment.setArguments(bundle);
-                FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.setCustomAnimations(R.animator.right_in, R.animator.right_out, R.animator.right_in, R.animator.right_out);
                 fragmentTransaction.add(R.id.drawer_layout, createSpotFragment);
                 fragmentTransaction.addToBackStack(null);
@@ -401,7 +406,7 @@ public class MapsActivity extends AppCompatActivity
         }
 
         if (fragment != null) {
-            FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             fragmentTransaction.setCustomAnimations(R.animator.bottom_in, R.animator.bottom_out, R.animator.bottom_in, R.animator.bottom_out);
             fragmentTransaction.add(R.id.drawer_layout, fragment);
             fragmentTransaction.addToBackStack(null);
@@ -448,7 +453,7 @@ public class MapsActivity extends AppCompatActivity
                 break;
 
             case R.id.filterMaps:
-                ADfilterSpotsByCategory();
+                BSfilterMapType();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -778,6 +783,22 @@ public class MapsActivity extends AppCompatActivity
                 .addApi(LocationServices.API)
                 .build();
         mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onFilterMapTypeSelected(String type) {
+        bottomSheetFilterMapType.dismiss();
+        bottomSheetFilterMapCategory = new BottomSheetFilterMapCategory();
+        Bundle bundle = new Bundle();
+        bundle.putString("type", type);
+        bottomSheetFilterMapCategory.setArguments(bundle);
+        bottomSheetFilterMapCategory.show(getSupportFragmentManager(), bottomSheetFilterMapCategory.getTag());
+    }
+
+    @Override
+    public void onFilterMapCategorySelected(String type, String category) {
+        bottomSheetFilterMapCategory.dismiss();
+        getAvailableSpots(type, category);
     }
 
     private void getMyLocation() {
@@ -1451,7 +1472,7 @@ public class MapsActivity extends AppCompatActivity
                 AddPaymentMethod addPaymentMethod = new AddPaymentMethod();
                 bundle.putString("from", "MapsActivity");
                 addPaymentMethod.setArguments(bundle);
-                FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.drawer_layout, addPaymentMethod);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
@@ -1528,32 +1549,9 @@ public class MapsActivity extends AppCompatActivity
         alertDialog.show();
     }
 
-    private void ADfilterSpotsByCategory(){
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setTitle(getResources().getString(R.string.Filter_Spots));
-        alertDialogBuilder.setItems(R.array.category_array, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which){
-                    case 0:
-                        categorySelected = "All";
-                        break;
-                    case 1:
-                        categorySelected = "Parking";
-                        break;
-                    case 2:
-                        categorySelected = "Line";
-                        break;
-                    case 3:
-                        categorySelected = "Other";
-                }
-
-                ADfilterSpotsByType();
-            }
-        });
-
-        final AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
+    private void BSfilterMapType(){
+        bottomSheetFilterMapType = new BottomSheetFilterMapType();
+        bottomSheetFilterMapType.show(getSupportFragmentManager(), bottomSheetFilterMapType.getTag());
     }
 
     private void ADfilterSpotsByType(){
@@ -1766,7 +1764,7 @@ public class MapsActivity extends AppCompatActivity
         bundle.putString("lid", lid);
         ViewOffers viewOffers = new ViewOffers();
         viewOffers.setArguments(bundle);
-        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.drawer_layout, viewOffers);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();

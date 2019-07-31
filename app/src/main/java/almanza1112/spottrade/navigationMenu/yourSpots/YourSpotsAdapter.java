@@ -1,7 +1,7 @@
 package almanza1112.spottrade.navigationMenu.yourSpots;
 
 import android.app.Activity;
-import android.app.FragmentTransaction;
+import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
@@ -111,12 +111,12 @@ class YourSpotsAdapter extends RecyclerView.Adapter<YourSpotsAdapter.RecyclerVie
                     bundle.putString("description", description.get(getAdapterPosition()));
                     bundle.putInt("offerTotal", offerTotal.get(getAdapterPosition()));
                     EditSpot editSpot = new EditSpot();
-                    editSpot.setArguments(bundle);
+                    editSpot.setArguments(bundle);/*
                     FragmentTransaction fragmentTransaction = activity.getFragmentManager().beginTransaction();
                     fragmentTransaction.setCustomAnimations(R.animator.right_in, R.animator.right_out, R.animator.right_in, R.animator.right_out);
                     fragmentTransaction.replace(R.id.your_spots, editSpot);
                     fragmentTransaction.addToBackStack(null);
-                    fragmentTransaction.commit();
+                    fragmentTransaction.commit(); */
                 }
             });
 

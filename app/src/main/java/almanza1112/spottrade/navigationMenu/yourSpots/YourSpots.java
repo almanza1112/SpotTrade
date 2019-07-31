@@ -4,7 +4,7 @@ package almanza1112.spottrade.navigationMenu.yourSpots;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -179,9 +179,7 @@ public class YourSpots extends Fragment {
                                 offerTotalString.add("0");
                             }
                         }
-                        adapter = new YourSpotsAdapter(getActivity(), lid, locationName,
-                                locationAddress, type, category, quantity, price, dateTimeStart, offerAllowed, offerTotal,
-                                offerTotalString, description);
+                        adapter = new YourSpotsAdapter(getActivity(), lid, locationName, locationAddress, type, category, quantity, price, dateTimeStart, offerAllowed, offerTotal, offerTotalString, description);
                         layoutManager = new LinearLayoutManager(getActivity());
                         rvYourSpots.setLayoutManager(layoutManager);
                         rvYourSpots.setAdapter(adapter);

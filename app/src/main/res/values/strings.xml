@@ -119,6 +119,10 @@
     <string name="Field_cant_be_empty">Field can\'t be empty</string>
     <string name="Filter">Filter</string>
     <string name="Filter_Spots">Filter Spots</string>
+    <string name="FILTER_SPOTS_BY">FILTER SPOTS BY</string>
+    <string name="FILTER_ALL_SPOTS">FILTER ALL SPOTS</string>
+    <string name="FILTER_REQUESTING_SPOTS">FILTER REQUESTING SPOTS</string>
+    <string name="FILTER_SELLING_SPOTS">FILTER SELLING SPOTS</string>
     <string name="Filter_Star_Rating">Filter Star Rating</string>
     <string name="Filter_All_Spots">Filter All Spots</string>
     <string name="Filter_Parking_Spots">Filter Parking Spots</string>

@@ -5,7 +5,7 @@ android {
     buildToolsVersion "28.0.3"
     defaultConfig {
         applicationId "almanza1112.spottrade"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 28
         multiDexEnabled true
 
