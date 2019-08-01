@@ -5,15 +5,20 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialogFragment;
+import android.support.design.widget.TextInputEditText;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class BottomSheetFilterMapCategory extends BottomSheetDialogFragment implements View.OnClickListener {
 
     private String type;
     private TextView tvCategoryTitle;
+    private TextInputEditText tietOther;
 
     public BottomSheetFilterMapCategory(){
         // Required empty public constructor
@@ -28,6 +33,32 @@ public class BottomSheetFilterMapCategory extends BottomSheetDialogFragment impl
         view.findViewById(R.id.tvAll).setOnClickListener(this);
         view.findViewById(R.id.tvParking).setOnClickListener(this);
         view.findViewById(R.id.tvLine).setOnClickListener(this);
+        final Button bSearch = view.findViewById(R.id.bSearch);
+        bSearch.setOnClickListener(this);
+        tietOther = view.findViewById(R.id.tietOther);
+        tietOther.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (count > 0){
+                    bSearch.setTextColor(getResources().getColor(R.color.colorAccent));
+                    bSearch.setClickable(true);
+                } else {
+                    bSearch.setTextColor(getResources().getColor(R.color.grey600));
+                    bSearch.setClickable(false);
+                }
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
 
         setTitle(type);
 
@@ -59,8 +90,11 @@ public class BottomSheetFilterMapCategory extends BottomSheetDialogFragment impl
             case R.id.tvLine:
                 filterMapCategorySelectedListener.onFilterMapCategorySelected(type, "Line");
                 break;
-        }
 
+            case R.id.bSearch:
+                filterMapCategorySelectedListener.onFilterMapCategorySelected(type, tietOther.getText().toString());
+                break;
+        }
     }
 
     private void setTitle(String type){
@@ -77,7 +111,6 @@ public class BottomSheetFilterMapCategory extends BottomSheetDialogFragment impl
                 tvCategoryTitle.setText(R.string.FILTER_SELLING_SPOTS);
                 break;
         }
-
     }
 
     FilterMapCategorySelectedListener filterMapCategorySelectedListener = filterMapCategorySelectedCallback;

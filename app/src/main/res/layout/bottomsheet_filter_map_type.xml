@@ -3,13 +3,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/contentPadding"
     android:orientation="vertical">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/contentPadding"
+        android:layout_margin="@dimen/contentPadding"
         android:text="@string/FILTER_SPOTS_BY"
         android:textAppearance="@android:style/TextAppearance.Small"
         android:textStyle="bold"/>
@@ -17,16 +16,19 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginBottom="@dimen/contentPadding"
+        android:layout_marginLeft="@dimen/contentPadding"
+        android:layout_marginRight="@dimen/contentPadding"
         android:background="@color/LightGrayAndroid"/>
 
     <TextView
         android:id="@+id/tvAll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/contentPadding"
+        android:padding="@dimen/contentPadding"
         android:text="@string/All"
         android:textAppearance="@android:style/TextAppearance.Medium"
+        android:textColor="@color/grey600"
+        android:background="?attr/selectableItemBackground"
         android:drawableLeft="@mipmap/ic_public_black_24dp"
         android:drawableTint="@color/grey600"
         android:drawablePadding="@dimen/contentPadding"/>
@@ -35,10 +37,11 @@
         android:id="@+id/tvRequesting"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/contentPadding"
-        android:layout_marginBottom="@dimen/contentPadding"
+        android:padding="@dimen/contentPadding"
         android:text="@string/Requesting"
         android:textAppearance="@android:style/TextAppearance.Medium"
+        android:textColor="@color/grey600"
+        android:background="?attr/selectableItemBackground"
         android:drawableLeft="@mipmap/ic_human_handsup_grey600_24dp"
         android:drawablePadding="@dimen/contentPadding"/>
 
@@ -47,10 +50,11 @@
         android:id="@+id/tvSelling"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/contentPadding"
-        android:layout_marginBottom="@dimen/contentPadding"
+        android:padding="@dimen/contentPadding"
         android:text="@string/Selling"
         android:textAppearance="@android:style/TextAppearance.Medium"
+        android:textColor="@color/grey600"
+        android:background="?attr/selectableItemBackground"
         android:drawableLeft="@mipmap/ic_currency_usd_grey600_24dp"
         android:drawablePadding="@dimen/contentPadding"/>
 

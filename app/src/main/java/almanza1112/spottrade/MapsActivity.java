@@ -148,6 +148,12 @@ public class MapsActivity extends AppCompatActivity
     private Marker marker;
     private GoogleApiClient mGoogleApiClient;
 
+    // for filter map tags
+    private View iFilterMapTags;
+    private CardView cvFilterMapType, cvFilterMapCategory;
+    private TextView tvFilterMapType, tvFilterMapCategory;
+    private ImageView ivCloseType, ivCloseCategory;
+
     private boolean isMarkerClicked;
     private double latitude = 0, longitude = 0;
     private String locationName = "empty", locationAddress = "empty";
@@ -183,7 +189,7 @@ public class MapsActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_activity);
 
-
+        // following is for the toolbar, status bar, and anything else associated in that top area
         final CardView cvToolbar = findViewById(R.id.cvToolbar);
         Toolbar toolbar = findViewById(R.id.toolbar);
 
@@ -198,8 +204,7 @@ public class MapsActivity extends AppCompatActivity
             }
         });
 
-        final TypedArray ta = getTheme().obtainStyledAttributes(
-                new int[] {android.R.attr.actionBarSize});
+        final TypedArray ta = getTheme().obtainStyledAttributes(new int[] {android.R.attr.actionBarSize});
         int actionBarHeight = (int) ta.getDimension(0, 0);
         SharedPref.setSharedPreferences(this, getResources().getString(R.string.action_bar_height), String.valueOf(actionBarHeight));
 
@@ -207,6 +212,22 @@ public class MapsActivity extends AppCompatActivity
 
         pd = new ProgressDialog(this);
         progressBar = findViewById(R.id.progressBar);
+
+        iFilterMapTags = findViewById(R.id.iFilterMapTags);
+        cvFilterMapType = iFilterMapTags.findViewById(R.id.cvFilterMapType);
+        cvFilterMapType.setOnClickListener(this);
+        cvFilterMapCategory = iFilterMapTags.findViewById(R.id.cvFilterMapCategory);
+        cvFilterMapCategory.setOnClickListener(this);
+        tvFilterMapType = iFilterMapTags.findViewById(R.id.tvFilterMapType);
+        tvFilterMapCategory = iFilterMapTags.findViewById(R.id.tvFilterMapCategory);
+        ivCloseType = iFilterMapTags.findViewById(R.id.ivCloseType);
+        ivCloseType.setOnClickListener(this);
+        ivCloseCategory = iFilterMapTags.findViewById(R.id.ivCloseCategory);
+        ivCloseCategory.setOnClickListener(this);
+
+        //---------------------------------------------------------------------------
+
+
         // Check for existing Google Sign In account, if the user is already signed in
         // the GoogleSignInAccount will be non-null.
         // GoogleSignInAccount googleSignInAccount = GoogleSignIn.getLastSignedInAccount(this);
@@ -370,6 +391,22 @@ public class MapsActivity extends AppCompatActivity
 
             case R.id.bCancelOffer:
                 transactionCancelOffer();
+                break;
+
+            case R.id.cvFilterMapType:
+
+                break;
+
+            case R.id.cvFilterMapCategory:
+
+                break;
+
+            case R.id.ivCloseType:
+                getAvailableSpots("All", categorySelected);
+                break;
+
+            case R.id.ivCloseCategory:
+                getAvailableSpots(typeSelected, "All");
                 break;
         }
     }
@@ -853,10 +890,10 @@ public class MapsActivity extends AppCompatActivity
         }
     };
 
-    private void getAvailableSpots(String typeSelected, String categorySelected){
+    private void getAvailableSpots(final String type, final String category){
         progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/maps?type=" + typeSelected + "&category=" + categorySelected, null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/maps?type=" + type + "&category=" + category, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -877,6 +914,30 @@ public class MapsActivity extends AppCompatActivity
                             marker.setTag(locationObj.getString("_id"));
                         }
                         progressBar.setVisibility(View.GONE);
+                        // Following is for the filtered tags
+                        if (type.equals("All") && category.equals("All")){
+                            iFilterMapTags.setVisibility(View.GONE);
+                            cvFilterMapType.setVisibility(View.GONE);
+                            cvFilterMapCategory.setVisibility(View.GONE);
+                        } else {
+                            if (type.equals("All")){
+                                cvFilterMapType.setVisibility(View.GONE);
+                            } else {
+                                iFilterMapTags.setVisibility(View.VISIBLE);
+                                cvFilterMapType.setVisibility(View.VISIBLE);
+                                tvFilterMapType.setText(type);
+                            }
+                            if (category.equals("All")){
+                                cvFilterMapCategory.setVisibility(View.GONE);
+                            } else {
+                                iFilterMapTags.setVisibility(View.VISIBLE);
+                                cvFilterMapCategory.setVisibility(View.VISIBLE);
+                                tvFilterMapCategory.setText(category);
+                            }
+                        }
+
+                        typeSelected = type;
+                        categorySelected = category;
                     }
                 }
                 catch (JSONException e){
@@ -1552,51 +1613,6 @@ public class MapsActivity extends AppCompatActivity
     private void BSfilterMapType(){
         bottomSheetFilterMapType = new BottomSheetFilterMapType();
         bottomSheetFilterMapType.show(getSupportFragmentManager(), bottomSheetFilterMapType.getTag());
-    }
-
-    private void ADfilterSpotsByType(){
-        String title = "";
-        switch (categorySelected){
-            case "All":
-                title = getResources().getString(R.string.Filter_All_Spots);
-                break;
-
-            case "Parking":
-                title = getResources().getString(R.string.Filter_Parking_Spots);
-                break;
-
-            case "Line":
-                title = getResources().getString(R.string.Filter_Line_Spots);
-                break;
-
-            case "Other":
-                title = getResources().getString(R.string.Filter_Spots);
-                break;
-        }
-
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setTitle(title);
-        alertDialogBuilder.setItems(R.array.type_array, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which){
-                    case 0:
-                        typeSelected = "All";
-                        break;
-                    case 1:
-                        typeSelected = "Sell";
-                        break;
-                    case 2:
-                        typeSelected = "Request";
-                        break;
-                }
-
-                getAvailableSpots(typeSelected, categorySelected);
-            }
-        });
-
-        final AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
     }
 
     private void refreshMap(){
