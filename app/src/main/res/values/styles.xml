@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="android:windowBackground">@color/LightGrayAndroid</item>
         <item name="colorPrimary">@color/colorPrimary</item>
@@ -13,6 +13,18 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="TextTitle" parent="TextAppearance.AppCompat.Widget.ActionBar.Menu">
+        <item name="android:textColor">@android:color/darker_gray</item>
+    </style>
+
+    <style name="AlertDialogCustomTheme" parent="Theme.MaterialComponents.Light.Dialog.Alert">
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/Widget.MaterialComponents.Button</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/Widget.MaterialComponents.Button.TextButton.Dialog</item>
+        <item name="android:layout_width">match_parent</item>
+    </style>
+
+    <dimen name="doubleContentPadding">32dp</dimen>
     <dimen name="contentPadding">16dp</dimen>
     <dimen name="halfContentPadding">8dp</dimen>
     <dimen name="quarterContentPadding">4dp</dimen>

@@ -64,6 +64,7 @@
                 android:layout_marginTop="1dp"
                 android:visibility="gone"/>
         </RelativeLayout>
+
         <android.support.v7.widget.CardView
             android:id="@+id/hidden_panel"
             android:layout_width="match_parent"
@@ -236,6 +237,9 @@
                 </LinearLayout>
             </LinearLayout>
         </android.support.v7.widget.CardView>
+
+        <include android:id="@+id/iBottomSheetMarker"
+            layout="@layout/bottomsheet_marker" />
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fabMyLocation"
             android:layout_width="wrap_content"

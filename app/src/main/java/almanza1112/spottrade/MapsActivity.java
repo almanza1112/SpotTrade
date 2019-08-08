@@ -26,6 +26,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -47,10 +48,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
@@ -101,9 +99,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import almanza1112.spottrade.navigationMenu.About;
@@ -140,10 +141,7 @@ public class MapsActivity extends AppCompatActivity
     NavigationView navigationView;
     DrawerLayout drawer;
     LatLng currentLocation, spotLocation;
-    private ViewGroup hiddenPanel;
-    private Animation bottomUp, bottomDown;
-    private TextView tvFullName, tvUserRating, tvTotalRating, tvLocationName, tvLocationAddress, tvTransaction, tvDescription, tvQuantity;
-    private ImageView ivSellerProfilePhoto, ivProfilePhoto;
+    private ImageView ivProfilePhoto;
     private Button bBuyNow, bMakeOffer, bCancelOffer, bDelete;
     private Marker marker;
     private GoogleApiClient mGoogleApiClient;
@@ -154,11 +152,19 @@ public class MapsActivity extends AppCompatActivity
     private TextView tvFilterMapType, tvFilterMapCategory;
     private ImageView ivCloseType, ivCloseCategory;
 
+    // for marker persistent bottom sheet
+    private BottomSheetBehavior bottomSheetBehavior;
+    private View iBottomSheetMarker;
+    private RelativeLayout.LayoutParams rlToolbarLayoutParams;
+    private RelativeLayout rlToolbar, bsToolbar;
+    private TextView tvDescription, tvTimeAndDateAvailable, tvQuantityAvailable, tvSellerRequesterFirstNameAndRating, tvLocationName, tvLocationAddress, tvCategory, tvType, tvPrice;
+    private ImageView ivSellerRequesterProfilePhoto, ivCloseBottomSheet;
+    private int quantityAvailable;
+
     private boolean isMarkerClicked;
     private double latitude = 0, longitude = 0;
     private String locationName = "empty", locationAddress = "empty";
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
-    private int quantity;
     private String lid, price, type;
     private String typeSelected = "All";
     private String categorySelected = "All";
@@ -189,9 +195,57 @@ public class MapsActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_activity);
 
-        // following is for the toolbar, status bar, and anything else associated in that top area
+        iBottomSheetMarker = findViewById(R.id.iBottomSheetMarker);
+        rlToolbar = iBottomSheetMarker.findViewById(R.id.rlToolbar);
+        bsToolbar = iBottomSheetMarker.findViewById(R.id.bsToolBar);
+        rlToolbarLayoutParams = (RelativeLayout.LayoutParams) bsToolbar.getLayoutParams();
+        ivCloseBottomSheet = iBottomSheetMarker.findViewById(R.id.ivCloseBottomSheet);
+        ivCloseBottomSheet.setOnClickListener(this);
+        tvCategory = iBottomSheetMarker.findViewById(R.id.tvCategory);
+        tvType = iBottomSheetMarker.findViewById(R.id.tvType);
+        tvPrice = iBottomSheetMarker.findViewById(R.id.tvPrice);
+        tvLocationName = iBottomSheetMarker.findViewById(R.id.tvLocationName);
+        tvLocationAddress = iBottomSheetMarker.findViewById(R.id.tvLocationAddress);
+        ivSellerRequesterProfilePhoto = iBottomSheetMarker.findViewById(R.id.ivSellerRequesterProfilePhoto);
+        tvSellerRequesterFirstNameAndRating = iBottomSheetMarker.findViewById(R.id.tvSellerRequesterFirstNameAndRating);
+        tvQuantityAvailable = iBottomSheetMarker.findViewById(R.id.tvQuantityAvailable);
+        tvTimeAndDateAvailable = iBottomSheetMarker.findViewById(R.id.tvStartTimeAndDate);
+        tvDescription = iBottomSheetMarker.findViewById(R.id.tvDescription);
+        bottomSheetBehavior = BottomSheetBehavior.from(iBottomSheetMarker);
+        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View view, int i) {
+                switch (i){
+                    case BottomSheetBehavior.STATE_HIDDEN:
+
+                        break;
+                    case BottomSheetBehavior.STATE_EXPANDED:
+                        rlToolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                        break;
+
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                        rlToolbar.setBackgroundColor(Color.TRANSPARENT);
+                        break;
+
+                    case BottomSheetBehavior.STATE_DRAGGING:
+                        rlToolbar.setBackgroundColor(Color.TRANSPARENT);
+                        break;
+
+                    case BottomSheetBehavior.STATE_SETTLING:
+
+                        break;
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View view, float v) {
+
+            }
+        });
+
         final CardView cvToolbar = findViewById(R.id.cvToolbar);
         Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), new OnApplyWindowInsetsListener() {
             @Override
@@ -200,6 +254,7 @@ public class MapsActivity extends AppCompatActivity
                 SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.status_bar_height), String.valueOf(statusBarHeight));
                 tb = (RelativeLayout.LayoutParams) cvToolbar.getLayoutParams();
                 tb.setMargins(20, statusBarHeight + 20, 20, 0);
+                rlToolbarLayoutParams.setMargins(0, statusBarHeight, 0, 0); // for persistent bottom sheet marker
                 return insets;
             }
         });
@@ -241,7 +296,6 @@ public class MapsActivity extends AppCompatActivity
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        setSupportActionBar(toolbar);
 
         // For notifications
         try {
@@ -277,19 +331,7 @@ public class MapsActivity extends AppCompatActivity
             e.printStackTrace();
         }
 
-        bottomUp = AnimationUtils.loadAnimation(this, R.anim.bottom_up);
-        bottomDown = AnimationUtils.loadAnimation(this, R.anim.bottom_down);
-        hiddenPanel = findViewById(R.id.hidden_panel);
 
-        tvQuantity = findViewById(R.id.tvQuantity);
-        ivSellerProfilePhoto = findViewById(R.id.ivProfilePhoto);
-        tvFullName = findViewById(R.id.tvFullName);
-        tvUserRating = findViewById(R.id.tvUserRating);
-        tvTotalRating = findViewById(R.id.tvTotalRating);
-        tvTransaction = findViewById(R.id.tvTransaction);
-        tvDescription = findViewById(R.id.tvDescription);
-        tvLocationAddress = findViewById(R.id.tvLocationAddress);
-        tvLocationName = findViewById(R.id.tvLocationName);
         bBuyNow = findViewById(R.id.bBuyNow);
         bBuyNow.setOnClickListener(this);
         bMakeOffer = findViewById(R.id.bMakeOffer);
@@ -382,7 +424,7 @@ public class MapsActivity extends AppCompatActivity
                 break;
 
             case R.id.bMakeOffer:
-                if (quantity == 1) {
+                if (quantityAvailable == 1) {
                     ADmakeOfferPrice(false, 1);
                 } else {
                     ADmakeOfferQuantity();
@@ -407,6 +449,10 @@ public class MapsActivity extends AppCompatActivity
 
             case R.id.ivCloseCategory:
                 getAvailableSpots(typeSelected, "All");
+                break;
+
+            case R.id.ivCloseBottomSheet:
+                onBackPressed();
                 break;
         }
     }
@@ -507,8 +553,7 @@ public class MapsActivity extends AppCompatActivity
                 getFragmentManager().popBackStack();
             } else if (isMarkerClicked) {
                 isMarkerClicked = false;
-                hiddenPanel.startAnimation(bottomDown);
-                hiddenPanel.setVisibility(View.INVISIBLE);
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
             } else {
                 super.onBackPressed();
             }
@@ -665,13 +710,9 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
         this.marker = marker;
         isMarkerClicked = true;
-        tvDescription.setVisibility(View.VISIBLE);
-        bCancelOffer.setVisibility(View.VISIBLE);
-        bMakeOffer.setVisibility(View.VISIBLE);
-        bBuyNow.setVisibility(View.VISIBLE);
-        bDelete.setVisibility(View.VISIBLE);
 
         RequestQueue queue = Volley.newRequestQueue(this);
 
@@ -679,48 +720,29 @@ public class MapsActivity extends AppCompatActivity
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    Log.e("onMarker", response + "");
                     lid = response.getString("_id");
-                    tvLocationName.setText(response.getString("name"));
                     price = response.getString("price");
-                    quantity = response.getInt("quantity");
+                    quantityAvailable = response.getInt("quantity");
 
+                    tvCategory.setText(response.getString("category"));
+                    tvLocationName.setText(response.getString("name"));
                     tvLocationAddress.setText(response.getString("address"));
                     JSONObject sellerInfoObj = response.getJSONObject("sellerInfo");
-                    tvFullName.setText(sellerInfoObj.getString("sellerFirstName") + " " + sellerInfoObj.getString("sellerLastName"));
-                    tvUserRating.setText(" - " + sellerInfoObj.getString("sellerOverallRating"));
-                    tvTotalRating.setText("(" + sellerInfoObj.getString("sellerTotalRatings") + ")");
-                    tvQuantity.setText(quantity + " " + getResources().getString(R.string.available));
+                    tvSellerRequesterFirstNameAndRating.setText(sellerInfoObj.getString("sellerFirstName") + " " + sellerInfoObj.getString("sellerOverallRating") + "(" + sellerInfoObj.getString("sellerTotalRatings") + ")");
+                    tvQuantityAvailable.setText(String.valueOf(quantityAvailable));
+                    tvPrice.setText("$"+price);
+                    tvTimeAndDateAvailable.setText(epochToDateString(response.getLong("dateTimeStart")));
+                    Picasso.get().load(sellerInfoObj.getString("sellerProfilePhotoUrl")).fit().centerCrop().into(ivSellerRequesterProfilePhoto);
 
-                    if (sellerInfoObj.has("sellerProfilePhotoUrl")) {
-                        Picasso.get().load(sellerInfoObj.getString("sellerProfilePhotoUrl")).fit().centerCrop().into(ivSellerProfilePhoto);
-                    }
                     type = response.getString("type");
                     if (type.equals("Sell")) {
-                        tvTransaction.setText(getResources().getString(R.string.Selling) + " - $" + response.getString("price"));
+                        tvType.setText(getResources().getString(R.string.Selling));
+                        //tvTypeAndPrice.setText(getResources().getString(R.string.Selling) + " - $" + response.getString("price"));
                         bBuyNow.setText(getResources().getString(R.string.Buy_Now));
                     } else if (type.equals("Request")) {
-                        tvTransaction.setText(getResources().getString(R.string.Requesting) + " - $" + response.getString("price"));
+                        tvType.setText(getResources().getString(R.string.Requesting));
+                        //tvTypeAndPrice.setText(getResources().getString(R.string.Requesting) + " - $" + response.getString("price"));
                         bBuyNow.setText(getResources().getString(R.string.Accept));
-                    }
-
-                    if (sellerInfoObj.getString("sellerID").equals(SharedPref.getSharedPreferences(MapsActivity.this, getResources().getString(R.string.logged_in_user_id)))) {
-                        bMakeOffer.setVisibility(View.GONE);
-                        bCancelOffer.setVisibility(View.GONE);
-                        bBuyNow.setVisibility(View.GONE);
-                    } else {
-                        bDelete.setVisibility(View.GONE);
-                        if (!response.getBoolean("offerAllowed")) {
-                            bMakeOffer.setVisibility(View.GONE);
-                            bCancelOffer.setVisibility(View.GONE);
-                        } else {
-                            if (response.getBoolean("offered")) {
-                                bMakeOffer.setVisibility(View.GONE);
-                                bCancelOffer.setText(getResources().getString(R.string.Cancel) + " " + getResources().getString(R.string.Offer));
-                            } else {
-                                bCancelOffer.setVisibility(View.GONE);
-                            }
-                        }
                     }
 
                     if (!response.getString("description").isEmpty()) {
@@ -744,11 +766,6 @@ public class MapsActivity extends AppCompatActivity
         }
         );
         queue.add(jsonObjectRequest);
-
-        hiddenPanel.startAnimation(bottomUp);
-        hiddenPanel.setVisibility(View.VISIBLE);
-        hiddenPanel.setElevation(20);
-
         return false;
     }
 
@@ -964,8 +981,8 @@ public class MapsActivity extends AppCompatActivity
                 try{
                     if (response.getString("status").equals("success")){
                         marker.remove();
-                        hiddenPanel.startAnimation(bottomDown);
-                        hiddenPanel.setVisibility(View.INVISIBLE);
+                        //hiddenPanel.startAnimation(bottomDown);
+                        //hiddenPanel.setVisibility(View.INVISIBLE);
                     }
                 }
                 catch (JSONException e){
@@ -986,7 +1003,7 @@ public class MapsActivity extends AppCompatActivity
         final JSONObject jObject = new JSONObject();
         try {
             jObject.put("buyerID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
-            jObject.put("quantity", quantity);
+            jObject.put("quantityAvailable", quantity);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -1094,8 +1111,8 @@ public class MapsActivity extends AppCompatActivity
             public void onResponse(JSONObject response) {
                 try{
                     if (response.getString("status").equals("success")){
-                        hiddenPanel.startAnimation(bottomDown);
-                        hiddenPanel.setVisibility(View.INVISIBLE);
+                        //hiddenPanel.startAnimation(bottomDown);
+                        //hiddenPanel.setVisibility(View.INVISIBLE);
                         Toast.makeText(MapsActivity.this, getResources().getString(R.string.Offer_canceled), Toast.LENGTH_SHORT).show();
                     }
                     else {
@@ -1122,7 +1139,7 @@ public class MapsActivity extends AppCompatActivity
 
         final NumberPicker numberPicker = alertLayout.findViewById(R.id.npQuantity);
         numberPicker.setMinValue(1);
-        numberPicker.setMaxValue(this.quantity);
+        numberPicker.setMaxValue(this.quantityAvailable);
         numberPicker.setValue(1);
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setView(alertLayout);
@@ -1229,7 +1246,7 @@ public class MapsActivity extends AppCompatActivity
     }
 
     private void ADlogOut(){
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this, R.style.AlertDialogCustomTheme);
         alertDialogBuilder.setTitle(R.string.Log_Out);
         alertDialogBuilder.setMessage(R.string.Are_you_sure_you_want_to_log_out);
         alertDialogBuilder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
@@ -1280,7 +1297,7 @@ public class MapsActivity extends AppCompatActivity
                                                     astr += "*";
                                                 }
                                                 String last4 = astr + jsonArray.getJSONObject(i).getString("last4");
-                                                if (quantity > 1){
+                                                if (quantityAvailable > 1){
                                                     ADselectQuantity(
                                                             jsonArray.getJSONObject(i).getString("cardType"),
                                                             last4,
@@ -1298,7 +1315,7 @@ public class MapsActivity extends AppCompatActivity
                                             }
                                             else{
                                                 //means the default payment is PayPal
-                                                if (quantity > 1){
+                                                if (quantityAvailable > 1){
                                                     ADselectQuantity(
                                                             "PayPal",
                                                             jsonArray.getJSONObject(i).getString("email"),
@@ -1350,7 +1367,7 @@ public class MapsActivity extends AppCompatActivity
 
         final NumberPicker npQuantity = alertLayout.findViewById(R.id.npQuantity);
         npQuantity.setMinValue(1);
-        npQuantity.setMaxValue(quantity);
+        npQuantity.setMaxValue(quantityAvailable);
 
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setView(alertLayout);
@@ -1784,6 +1801,13 @@ public class MapsActivity extends AppCompatActivity
         fragmentTransaction.replace(R.id.drawer_layout, viewOffers);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
+    }
+
+    private String epochToDateString(long epochSeconds) {
+        // TODO: need to check this again in future
+        Date updatedate = new Date(epochSeconds);
+        SimpleDateFormat format = new SimpleDateFormat("EEE, d MMM yyyy 'at' H:mm a", Locale.getDefault());
+        return format.format(updatedate);
     }
 
     public void setSnackBar(String snackBarText){

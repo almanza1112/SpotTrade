@@ -23,8 +23,8 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -63,21 +63,19 @@ import static android.app.Activity.RESULT_OK;
  */
 
 public class CreateSpot extends Fragment implements View.OnClickListener{
-    private TextView tvType, tvCategory, tvLocationName, tvLocationAddress, tvAddLocation,
-            tvDate, tvTime, tvQuantity;
+    private TextView tvLocationName, tvLocationAddress, tvAddLocation,
+            tvStartDate, tvStartTime, tvEndDate, tvEndTime, tvQuantity;
     private TextInputLayout tilPrice;
     private TextInputEditText tietDescription, tietPrice;
-    private CheckBox cbOffers, cbNow;
+    private CheckBox cbOffers, cbNow, cbUntilBought;
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private double latitude, longitude;
-    private String locationName, locationAddress, type, category;
+    private String type, category, locationName, locationAddress;
     private int quantity = 1;
-    int year, month, day, hour, minute;
+    int startYear, startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay, endHour, endMinute;
 
     private ProgressDialog pd = null;
-    final int[] posType = {0};
-    final int[] posCategory = {0};
-    private Calendar calendar;
+    private Calendar startCalendar, endCalendar;
 
     @Nullable
     @Override
@@ -92,7 +90,7 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
         longitude = getArguments().getDouble("longitude", 0);
 
         final Toolbar toolbar = view.findViewById(R.id.toolbar);
-        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) toolbar.getLayoutParams();
+        LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) toolbar.getLayoutParams();
         int statusBarHeight = Integer.valueOf(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.status_bar_height)));
         int actionBarHeight = Integer.valueOf(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.action_bar_height)));
         layoutParams.height = actionBarHeight + statusBarHeight;
@@ -104,31 +102,45 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setTitle(getResources().getString(R.string.Create_Spot));
 
-        tvType = view.findViewById(R.id.tvType);
-        tvType.setOnClickListener(this);
-        tvCategory = view.findViewById(R.id.tvCategory);
-        tvCategory.setOnClickListener(this);
         tvLocationName = view.findViewById(R.id.tvLocationName);
         tvLocationName.setOnClickListener(this);
         tvLocationAddress = view.findViewById(R.id.tvLocationAddress);
         tvLocationAddress.setOnClickListener(this);
         tvAddLocation = view.findViewById(R.id.tvAddLocation);
         tvAddLocation.setOnClickListener(this);
-        tvDate = view.findViewById(R.id.tvDate);
-        tvDate.setOnClickListener(this);
-        tvTime = view.findViewById(R.id.tvTime);
-        tvTime.setOnClickListener(this);
+        tvStartDate = view.findViewById(R.id.tvStartDate);
+        tvStartDate.setOnClickListener(this);
+        tvStartTime = view.findViewById(R.id.tvStartTime);
+        tvStartTime.setOnClickListener(this);
+        tvEndDate = view.findViewById(R.id.tvEndDate);
+        tvEndDate.setOnClickListener(this);
+        tvEndTime = view.findViewById(R.id.tvEndTime);
+        tvEndTime.setOnClickListener(this);
         cbNow = view.findViewById(R.id.cbNow);
         cbNow.setChecked(true);
         cbNow.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked){
-                    tvDate.setTextColor(getActivity().getColor(R.color.grey600));
-                    tvTime.setTextColor(getActivity().getColor(R.color.grey600));
+                    tvStartDate.setTextColor(getActivity().getColor(R.color.grey600));
+                    tvStartTime.setTextColor(getActivity().getColor(R.color.grey600));
                 } else {
-                    tvDate.setTextColor(getActivity().getColor(R.color.colorAccent));
-                    tvTime.setTextColor(getActivity().getColor(R.color.colorAccent));
+                    tvStartDate.setTextColor(getActivity().getColor(R.color.colorAccent));
+                    tvStartTime.setTextColor(getActivity().getColor(R.color.colorAccent));
+                }
+            }
+        });
+        cbUntilBought = view.findViewById(R.id.cbUntilBought);
+        cbUntilBought.setChecked(true);
+        cbUntilBought.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    tvEndDate.setTextColor(getActivity().getColor(R.color.grey600));
+                    tvEndTime.setTextColor(getActivity().getColor(R.color.grey600));
+                } else {
+                    tvEndDate.setTextColor(getActivity().getColor(R.color.colorAccent));
+                    tvEndTime.setTextColor(getActivity().getColor(R.color.colorAccent));
                 }
             }
         });
@@ -150,18 +162,19 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
         tietPrice = view.findViewById(R.id.tietPrice);
         cbOffers = view.findViewById(R.id.cbOffers);
 
-        view.findViewById(R.id.bCreateSpot).setOnClickListener(this);
+        view.findViewById(R.id.mbCreateSpot).setOnClickListener(this);
 
-        calendar = Calendar.getInstance();
-        day = calendar.get(Calendar.DAY_OF_MONTH);
-        month = calendar.get(Calendar.MONTH);
-        year = calendar.get(Calendar.YEAR);
+        startCalendar = Calendar.getInstance();
+        startDay = startCalendar.get(Calendar.DAY_OF_MONTH);
+        startMonth = startCalendar.get(Calendar.MONTH);
+        startYear = startCalendar.get(Calendar.YEAR);
         return view;
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
+            /*
             case R.id.tvType:
                 final CharSequence[] itemsType = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request)};
                 final AlertDialog.Builder alertDBType = new AlertDialog.Builder(getActivity());
@@ -230,8 +243,9 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
                 final AlertDialog adCategory = alertDB.create();
                 adCategory.show();
                 break;
+                */
 
-            case R.id.bCreateSpot:
+            case R.id.mbCreateSpot:
                 boolean price = validatePrice();
                 boolean cat = validateCategory();
                 boolean loc = validateLocation();
@@ -258,7 +272,7 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
                 npQuantity.setMaxValue(100);
                 npQuantity.setValue(quantity);
 
-                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity(), R.style.AlertDialogCustomTheme);
                 alertDialogBuilder.setView(alertLayout);
                 alertDialogBuilder.setTitle(R.string.Quantity);
                 alertDialogBuilder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
@@ -279,7 +293,11 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
                 alertDialog.show();
                 break;
 
-            case R.id.tvDate:
+            case R.id.tvStartDate:
+                startCalendar = Calendar.getInstance();
+                startDay = startCalendar.get(Calendar.DAY_OF_MONTH); //this is set the most current time and date
+                startMonth = startCalendar.get(Calendar.MONTH);
+                startYear = startCalendar.get(Calendar.YEAR);
                 DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
@@ -288,21 +306,21 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
                         cDate.set(Calendar.YEAR, year);
                         cDate.set(Calendar.MONTH, month);
                         cDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                        tvDate.setText(epochToDateString(cDate.getTimeInMillis()));
+                        tvStartDate.setText(epochToDateString(cDate.getTimeInMillis()));
 
                         cbNow.setChecked(false);
-                        tvTime.setTextColor(getActivity().getColor(R.color.colorAccent));
-                        tvDate.setTextColor(getActivity().getColor(R.color.colorAccent));
+                        tvStartTime.setTextColor(getActivity().getColor(R.color.colorAccent));
+                        tvStartDate.setTextColor(getActivity().getColor(R.color.colorAccent));
                     }
-                }, year, month , day);
-                datePickerDialog.getDatePicker().setMinDate(calendar.getTimeInMillis());
+                }, startYear, startMonth, startDay);
+                datePickerDialog.getDatePicker().setMinDate(startCalendar.getTimeInMillis());
                 datePickerDialog.show();
                 break;
 
-            case R.id.tvTime:
-                Calendar c = Calendar.getInstance();
-                hour = c.get(Calendar.HOUR_OF_DAY);
-                minute = c.get(Calendar.MINUTE);
+            case R.id.tvStartTime:
+                startCalendar = Calendar.getInstance();
+                startHour = startCalendar.get(Calendar.HOUR_OF_DAY); //this is set the most current time and date
+                startMinute = startCalendar.get(Calendar.MINUTE);
                 TimePickerDialog timePickerDialog = new TimePickerDialog(getActivity(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
@@ -310,14 +328,59 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
                         Calendar calendarTime = Calendar.getInstance();
                         calendarTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
                         calendarTime.set(Calendar.MINUTE, minute);
-                        tvTime.setText(epochToTimeString(calendarTime.getTimeInMillis()));
+                        tvStartTime.setText(epochToTimeString(calendarTime.getTimeInMillis()));
 
                         cbNow.setChecked(false);
-                        tvTime.setTextColor(getActivity().getColor(R.color.colorAccent));
-                        tvDate.setTextColor(getActivity().getColor(R.color.colorAccent));
+                        tvStartTime.setTextColor(getActivity().getColor(R.color.colorAccent));
+                        tvStartDate.setTextColor(getActivity().getColor(R.color.colorAccent));
                     }
-                }, hour, minute, false);
+                }, startHour, startMinute, false);
                 timePickerDialog.show();
+                break;
+
+            case R.id.tvEndDate:
+                endCalendar = Calendar.getInstance();
+                endDay = endCalendar.get(Calendar.DAY_OF_MONTH); //this is set the most current time and date
+                endMonth = endCalendar.get(Calendar.MONTH);
+                endYear = endCalendar.get(Calendar.YEAR);
+                DatePickerDialog endDatePickerDialog = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                        setDate(year, month, dayOfMonth);
+                        Calendar cDate = Calendar.getInstance();
+                        cDate.set(Calendar.YEAR, year);
+                        cDate.set(Calendar.MONTH, month);
+                        cDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                        tvEndDate.setText(epochToDateString(cDate.getTimeInMillis()));
+
+                        cbUntilBought.setChecked(false);
+                        tvEndTime.setTextColor(getActivity().getColor(R.color.colorAccent));
+                        tvEndDate.setTextColor(getActivity().getColor(R.color.colorAccent));
+                    }
+                }, endYear, endMonth, endDay);
+                endDatePickerDialog.getDatePicker().setMinDate(endCalendar.getTimeInMillis());
+                endDatePickerDialog.show();
+                break;
+
+            case R.id.tvEndTime:
+                endCalendar = Calendar.getInstance();
+                endHour = endCalendar.get(Calendar.HOUR_OF_DAY); //this is set the most current time and date
+                endMinute = endCalendar.get(Calendar.MINUTE);
+                TimePickerDialog endTimePickerDialog = new TimePickerDialog(getActivity(), new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        setTime(hourOfDay, minute);
+                        Calendar calendarTime = Calendar.getInstance();
+                        calendarTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                        calendarTime.set(Calendar.MINUTE, minute);
+                        tvEndTime.setText(epochToTimeString(calendarTime.getTimeInMillis()));
+
+                        cbUntilBought.setChecked(false);
+                        tvEndTime.setTextColor(getActivity().getColor(R.color.colorAccent));
+                        tvEndTime.setTextColor(getActivity().getColor(R.color.colorAccent));
+                    }
+                }, endHour, endMinute, false);
+                endTimePickerDialog.show();
                 break;
 
             default:
@@ -403,23 +466,11 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
     }
 
     private boolean validateType(){
-        if (type == null){
-            tvType.setError(getString(R.string.No_Type_selected));
-            return false;
-        } else {
-            tvType.setError(null);
-            return true;
-        }
+        return true;
     }
 
     private boolean validateCategory(){
-        if (category == null){
-            tvCategory.setError(getString(R.string.No_Category_selected));
-            return false;
-        } else {
-            tvCategory.setError(null);
-            return true;
-        }
+        return true;
     }
 
     private boolean validateLocation(){
@@ -436,16 +487,16 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
         if (cbNow.isChecked()){
             return true;
         } else {
-            tvDate.setError(null);
-            tvTime.setError(null);
-            boolean bDate = tvDate.getText().toString().equals(getString(R.string.Date));
-            boolean bTime = tvTime.getText().toString().equals(getString(R.string.Time));
+            tvStartDate.setError(null);
+            tvStartTime.setError(null);
+            boolean bDate = tvStartDate.getText().toString().equals(getString(R.string.Date));
+            boolean bTime = tvStartTime.getText().toString().equals(getString(R.string.Time));
             if (bDate || bTime){
                 if (bDate){
-                    tvDate.setError(getString(R.string.No_date_selected));
+                    tvStartDate.setError(getString(R.string.No_date_selected));
                 }
                 if (bTime){
-                    tvTime.setError(getString(R.string.No_time_selected));
+                    tvStartTime.setError(getString(R.string.No_time_selected));
                 }
                 return false;
             } else{
@@ -553,11 +604,11 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
 
             Calendar calendar = Calendar.getInstance();
             if (!cbNow.isChecked()){
-                calendar.set(Calendar.YEAR, year);
-                calendar.set(Calendar.MONTH, month);
-                calendar.set(Calendar.DAY_OF_MONTH, day);
-                calendar.set(Calendar.HOUR_OF_DAY, hour);
-                calendar.set(Calendar.MINUTE, minute);
+                calendar.set(Calendar.YEAR, startYear);
+                calendar.set(Calendar.MONTH, startMonth);
+                calendar.set(Calendar.DAY_OF_MONTH, startDay);
+                calendar.set(Calendar.HOUR_OF_DAY, startHour);
+                calendar.set(Calendar.MINUTE, startMinute);
             }
             jsonObject.put("dateTimeStart", calendar.getTimeInMillis());
         } catch (JSONException e) {
@@ -622,13 +673,13 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
     }
 
     private void setDate(int year, int month, int day){
-        this.year = year;
-        this.month = month;
-        this.day = day;
+        this.startYear = year;
+        this.startMonth = month;
+        this.startDay = day;
     }
 
     private void setTime(int hour, int minute){
-        this.hour = hour;
-        this.minute = minute;
+        this.startHour = hour;
+        this.startMinute = minute;
     }
 }
