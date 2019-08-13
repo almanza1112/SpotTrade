@@ -199,6 +199,8 @@ public class CreateSpot extends Fragment implements View.OnClickListener, Compou
         endDay = endCalendar.get(Calendar.DAY_OF_MONTH);
         endMonth = endCalendar.get(Calendar.MONTH);
         endYear = endCalendar.get(Calendar.YEAR);
+        endHour = endCalendar.get(Calendar.HOUR);
+        endMinute = endCalendar.get(Calendar.MINUTE);
         return view;
     }
 
