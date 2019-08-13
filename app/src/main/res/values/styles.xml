@@ -24,6 +24,11 @@
         <item name="android:layout_width">match_parent</item>
     </style>
 
+    <style name="CustomChipChoice" parent="@style/Widget.MaterialComponents.Chip.Choice">
+        <item name="chipBackgroundColor">@color/background_color_chip_state_list</item>
+        <item name="android:textColor">@color/text_color_chip_state_list</item>
+    </style>
+
     <dimen name="doubleContentPadding">32dp</dimen>
     <dimen name="contentPadding">16dp</dimen>
     <dimen name="halfContentPadding">8dp</dimen>

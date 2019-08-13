@@ -94,20 +94,21 @@
                     android:layout_marginBottom="@dimen/halfContentPadding"
                     android:text="@string/Type"/>
                 <android.support.design.chip.ChipGroup
+                    android:id="@+id/cgType"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/contentPadding"
                     app:singleSelection="true">
                     <android.support.design.chip.Chip
                         android:id="@+id/cSell"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        style="@style/CustomChipChoice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/Sell"
                         android:checkable="true"/>
                     <android.support.design.chip.Chip
                         android:id="@+id/cRequest"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        style="@style/CustomChipChoice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/Request"
@@ -121,26 +122,27 @@
                     android:layout_marginBottom="@dimen/halfContentPadding"
                     android:text="@string/Category"/>
                 <android.support.design.chip.ChipGroup
+                    android:id="@+id/cgCategory"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:singleSelection="true">
                     <android.support.design.chip.Chip
                         android:id="@+id/cParking"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        style="@style/CustomChipChoice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/Parking"
                         android:checkable="true"/>
                     <android.support.design.chip.Chip
                         android:id="@+id/cLine"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        style="@style/CustomChipChoice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/Line"
                         android:checkable="true"/>
                     <android.support.design.chip.Chip
                         android:id="@+id/cOther"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        style="@style/CustomChipChoice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/Other"

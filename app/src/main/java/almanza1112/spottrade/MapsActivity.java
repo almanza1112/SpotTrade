@@ -544,13 +544,13 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        int count = getFragmentManager().getBackStackEntryCount();
+        int count = getSupportFragmentManager().getBackStackEntryCount();
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
             if (count > 0) {
-                getFragmentManager().popBackStack();
+                getSupportFragmentManager().popBackStack();
             } else if (isMarkerClicked) {
                 isMarkerClicked = false;
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
@@ -773,16 +773,17 @@ public class MapsActivity extends AppCompatActivity
     public void onCreditCardAdded(String from) {
         switch (from){
             case "Payment":
-                getFragmentManager().popBackStack();
-                getFragmentManager().popBackStack();
+                getSupportFragmentManager().popBackStack();
+                getSupportFragmentManager().popBackStack();
                 paymentFragment.getCustomer();
                 paymentFragment.setSnackbar(getString(R.string.Payment_method_added));
                 break;
 
             case "CreateSpot":
-                getFragmentManager().popBackStack();
-                getFragmentManager().popBackStack();
-                createSpotFragment.validatePaymentMethod();
+                getSupportFragmentManager().popBackStack();
+                getSupportFragmentManager().popBackStack();
+                // TODO: find out what the hell this last line is doing
+                //createSpotFragment.validatePaymentMethod();
                 break;
             case "MapsActivity":
 
@@ -794,13 +795,14 @@ public class MapsActivity extends AppCompatActivity
     public void onPaymentMethodAdded(String from) {
         switch (from){
             case "Payment":
-                getFragmentManager().popBackStack();
+                getSupportFragmentManager().popBackStack();
                 paymentFragment.getCustomer();
                 paymentFragment.setSnackbar(getString(R.string.Payment_method_added));
                 break;
             case "CreateSpot":
-                getFragmentManager().popBackStack();
-                createSpotFragment.validatePaymentMethod();
+                getSupportFragmentManager().popBackStack();
+                // TODO: find out what the hell this last line is doing
+                //createSpotFragment.validatePaymentMethod();
                 break;
             case "MapsActivity":
                 validatePaymentMethod();
@@ -810,8 +812,7 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     public void onSpotCreated(Double lat, Double lng, String name, String id) {
-        Log.e("hi", "works");
-        getFragmentManager().popBackStack();
+        getSupportFragmentManager().popBackStack();
         LatLng locash = new LatLng(lat, lng);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(locash, 16));
         marker = mMap.addMarker(new MarkerOptions().position(locash).title(name));

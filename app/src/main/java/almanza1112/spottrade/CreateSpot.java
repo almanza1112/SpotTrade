@@ -2,6 +2,8 @@ package almanza1112.spottrade;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.pm.PackageManager;
+import android.support.design.chip.Chip;
 import android.support.v4.app.Fragment;
 import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
@@ -20,9 +22,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
@@ -42,7 +46,6 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -62,15 +65,15 @@ import static android.app.Activity.RESULT_OK;
  * Created by almanza1112 on 6/29/17.
  */
 
-public class CreateSpot extends Fragment implements View.OnClickListener{
-    private TextView tvLocationName, tvLocationAddress, tvAddLocation,
-            tvStartDate, tvStartTime, tvEndDate, tvEndTime, tvQuantity;
+public class CreateSpot extends Fragment implements View.OnClickListener, CompoundButton.OnCheckedChangeListener{
+    private TextView tvLocationName, tvLocationAddress, tvAddLocation, tvStartDate, tvStartTime, tvEndDate, tvEndTime, tvQuantity;
     private TextInputLayout tilPrice;
     private TextInputEditText tietDescription, tietPrice;
+    private Chip cSell, cRequest, cParking, cLine, cOther;
     private CheckBox cbOffers, cbNow, cbUntilBought;
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private double latitude, longitude;
-    private String type, category, locationName, locationAddress;
+    private String otherString, type, category, locationName, locationAddress;
     private int quantity = 1;
     int startYear, startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay, endHour, endMinute;
 
@@ -161,105 +164,57 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
         tilPrice = view.findViewById(R.id.tilPrice);
         tietPrice = view.findViewById(R.id.tietPrice);
         cbOffers = view.findViewById(R.id.cbOffers);
+        cSell = view.findViewById(R.id.cSell);
+        cSell.setChecked(true);
+        cSell.setClickable(false);
+        type = getString(R.string.Sell);
+        cSell.setOnCheckedChangeListener(this);
+        cRequest = view.findViewById(R.id.cRequest);
+        cRequest.setOnCheckedChangeListener(this);
+        cParking = view.findViewById(R.id.cParking);
+        cParking.setChecked(true);
+        cParking.setClickable(false);
+        category = getString(R.string.Parking);
+        cParking.setOnCheckedChangeListener(this);
+        cLine = view.findViewById(R.id.cLine);
+        cLine.setOnCheckedChangeListener(this);
+        cOther = view.findViewById(R.id.cOther);
+        cOther.setOnCheckedChangeListener(this);
+        cOther.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ADaddOtherCategory();
+            }
+        });
 
         view.findViewById(R.id.mbCreateSpot).setOnClickListener(this);
-
         startCalendar = Calendar.getInstance();
         startDay = startCalendar.get(Calendar.DAY_OF_MONTH);
         startMonth = startCalendar.get(Calendar.MONTH);
         startYear = startCalendar.get(Calendar.YEAR);
+        startHour = startCalendar.get(Calendar.HOUR_OF_DAY);
+        startMinute = startCalendar.get(Calendar.MINUTE);
+
+        endCalendar = Calendar.getInstance();
+        endDay = endCalendar.get(Calendar.DAY_OF_MONTH);
+        endMonth = endCalendar.get(Calendar.MONTH);
+        endYear = endCalendar.get(Calendar.YEAR);
         return view;
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            /*
-            case R.id.tvType:
-                final CharSequence[] itemsType = {getResources().getString(R.string.Sell), getResources().getString(R.string.Request)};
-                final AlertDialog.Builder alertDBType = new AlertDialog.Builder(getActivity());
-                alertDBType.setTitle(R.string.Type);
-                alertDBType.setSingleChoiceItems(itemsType, posType[0], new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        posType[0] = which;
-                    }
-                });
-                alertDBType.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-                alertDBType.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        tvType.setError(null);
-                        if (posType[0] == 0){
-                            type = "Sell";
-                            tvType.setText(R.string.Sell);
-                        } else {
-                            type = "Request";
-                            tvType.setText(R.string.Request);
-                        }
-                    }
-                });
-                final AlertDialog adType = alertDBType.create();
-                adType.show();
-                break;
-
-            case R.id.tvCategory:
-                final CharSequence[] itemsCategory = {getString(R.string.Line), getString(R.string.Parking), getString(R.string.Other),};
-                final AlertDialog.Builder alertDB = new AlertDialog.Builder(getActivity());
-                alertDB.setTitle(R.string.Category);
-                alertDB.setSingleChoiceItems(itemsCategory, posCategory[0], new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        posCategory[0] = which;
-                    }
-                });
-                alertDB.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-                alertDB.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        tvCategory.setError(null);
-                        if (posCategory[0] == 0){
-                            category = "Line";
-                            tvCategory.setText(R.string.Line);
-                        } else if (posCategory[0] == 1){
-                            category = "Parking";
-                            tvCategory.setText(R.string.Parking);
-                        } else if (posCategory[0] == 2){
-                            category = "Other";
-                            tvCategory.setText(R.string.Other);
-                        }
-                    }
-                });
-                final AlertDialog adCategory = alertDB.create();
-                adCategory.show();
-                break;
-                */
-
             case R.id.mbCreateSpot:
                 boolean price = validatePrice();
-                boolean cat = validateCategory();
                 boolean loc = validateLocation();
-                boolean ty = validateType();
-                boolean dateTime = validateDateTime();
-                if (price && cat && loc && ty && dateTime){
+                boolean startDateTime = validateStartDateTime();
+                boolean endDateTime = validateEndDateTime();
+                if (price && loc && startDateTime && endDateTime){
                     pd.setTitle(R.string.Adding_Spot);
                     pd.setCancelable(false);
                     pd.show();
-                    if (type.equals("Request")){
-                        validatePaymentMethod();
-                    } else {
-                        postRequest();
-                    }
+                    postRequest();
                 }
                 break;
 
@@ -294,14 +249,12 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
                 break;
 
             case R.id.tvStartDate:
-                startCalendar = Calendar.getInstance();
-                startDay = startCalendar.get(Calendar.DAY_OF_MONTH); //this is set the most current time and date
-                startMonth = startCalendar.get(Calendar.MONTH);
-                startYear = startCalendar.get(Calendar.YEAR);
                 DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                        setDate(year, month, dayOfMonth);
+                        startYear = year;
+                        startMonth = month;
+                        startDay = dayOfMonth;
                         Calendar cDate = Calendar.getInstance();
                         cDate.set(Calendar.YEAR, year);
                         cDate.set(Calendar.MONTH, month);
@@ -318,13 +271,11 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
                 break;
 
             case R.id.tvStartTime:
-                startCalendar = Calendar.getInstance();
-                startHour = startCalendar.get(Calendar.HOUR_OF_DAY); //this is set the most current time and date
-                startMinute = startCalendar.get(Calendar.MINUTE);
                 TimePickerDialog timePickerDialog = new TimePickerDialog(getActivity(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        setTime(hourOfDay, minute);
+                        startHour = hourOfDay;
+                        startMinute = minute;
                         Calendar calendarTime = Calendar.getInstance();
                         calendarTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
                         calendarTime.set(Calendar.MINUTE, minute);
@@ -339,14 +290,12 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
                 break;
 
             case R.id.tvEndDate:
-                endCalendar = Calendar.getInstance();
-                endDay = endCalendar.get(Calendar.DAY_OF_MONTH); //this is set the most current time and date
-                endMonth = endCalendar.get(Calendar.MONTH);
-                endYear = endCalendar.get(Calendar.YEAR);
                 DatePickerDialog endDatePickerDialog = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                        setDate(year, month, dayOfMonth);
+                        endYear = year;
+                        endMonth = month;
+                        endDay = dayOfMonth;
                         Calendar cDate = Calendar.getInstance();
                         cDate.set(Calendar.YEAR, year);
                         cDate.set(Calendar.MONTH, month);
@@ -363,13 +312,11 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
                 break;
 
             case R.id.tvEndTime:
-                endCalendar = Calendar.getInstance();
-                endHour = endCalendar.get(Calendar.HOUR_OF_DAY); //this is set the most current time and date
-                endMinute = endCalendar.get(Calendar.MINUTE);
                 TimePickerDialog endTimePickerDialog = new TimePickerDialog(getActivity(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        setTime(hourOfDay, minute);
+                        endHour = hourOfDay;
+                        endMinute = minute;
                         Calendar calendarTime = Calendar.getInstance();
                         calendarTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
                         calendarTime.set(Calendar.MINUTE, minute);
@@ -391,6 +338,38 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
                     Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
                 }
                 break;
+        }
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (isChecked){
+            if (buttonView.getId() == cSell.getId()){
+                type = getString(R.string.Sell);
+                cSell.setClickable(false);
+                cRequest.setClickable(true);
+            }
+            if (buttonView.getId() == cRequest.getId()){
+                type = getString(R.string.Request);
+                cRequest.setClickable(false);
+                cSell.setClickable(true);
+            }
+            if (buttonView.getId() == cParking.getId()){
+                category = getString(R.string.Parking);
+                cParking.setClickable(false);
+                cLine.setClickable(true);
+                cOther.setText(getString(R.string.Other));
+            }
+            if (buttonView.getId() == cLine.getId()){
+                category = getString(R.string.Line);
+                cLine.setClickable(false);
+                cParking.setClickable(true);
+                cOther.setText(getString(R.string.Other));
+            }
+            if (buttonView.getId() == cOther.getId()){
+                cLine.setClickable(true);
+                cParking.setClickable(true);
+            }
         }
     }
 
@@ -455,6 +434,55 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
         }
     };
 
+    private void ADaddOtherCategory(){
+        LayoutInflater inflater = getLayoutInflater();
+        View alertLayout = inflater.inflate(R.layout.create_spot_add_other_category_alertdialog, null);
+        final TextInputLayout tilOtherCategory = alertLayout.findViewById(R.id.tilOtherCategory);
+        final TextInputEditText tietOtherCategory = alertLayout.findViewById(R.id.etOtherCategory);
+        if (!category.equals(getString(R.string.Parking)) && !category.equals(getString(R.string.Line))){
+            tietOtherCategory.setText(category);
+        }
+        final AlertDialog.Builder alertDB = new AlertDialog.Builder(getActivity(), R.style.AlertDialogCustomTheme);
+        alertDB.setView(alertLayout);
+        alertDB.setTitle(R.string.Add_Category);
+        alertDB.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDB.setPositiveButton(R.string.Confirm, null);
+
+        final AlertDialog adCategory = alertDB.create();
+
+        adCategory.setOnShowListener(new DialogInterface.OnShowListener() {
+
+            @Override
+            public void onShow(final DialogInterface dialogInterface) {
+
+                Button button = adCategory.getButton(AlertDialog.BUTTON_POSITIVE);
+                button.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+                        // TODO Do something
+                        if (tietOtherCategory.getText().toString().isEmpty()){
+                            tilOtherCategory.setError(getResources().getString(R.string.Field_cant_be_empty));
+
+                        } else {
+                            String otherCategory = tietOtherCategory.getText().toString();
+                            category = otherCategory;
+                            cOther.setChecked(true);
+                            cOther.setText(otherCategory);
+                            adCategory.dismiss();
+                        }
+                    }
+                });
+            }
+        });
+        adCategory.show();
+    }
+
     private boolean validatePrice(){
         if (tietPrice.getText().toString().isEmpty()){
             tilPrice.setError(getResources().getString(R.string.Must_have_price));
@@ -463,14 +491,6 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
             tilPrice.setErrorEnabled(false);
             return true;
         }
-    }
-
-    private boolean validateType(){
-        return true;
-    }
-
-    private boolean validateCategory(){
-        return true;
     }
 
     private boolean validateLocation(){
@@ -483,7 +503,7 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
         }
     }
 
-    private boolean validateDateTime(){
+    private boolean validateStartDateTime(){
         if (cbNow.isChecked()){
             return true;
         } else {
@@ -505,53 +525,30 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
         }
     }
 
-    public void validatePaymentMethod(){
-        if (!pd.isShowing()){
-            pd.setTitle(R.string.Adding_Spot);
-            pd.setCancelable(false);
-            pd.show();
-        }
-        pd.setMessage(getResources().getString(R.string.Checking_for_payment_methods));
-        RequestQueue queue = Volley.newRequestQueue(getActivity());
-
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                Request.Method.GET,
-                getString(R.string.URL) + "/payment/customer/" + SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)),
-                null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            if (response.getString("status").equals("success")) {
-                                if (new JSONArray(response.getJSONObject("customer").getString("paymentMethods")).length() != 0){
-                                    postRequest();
-                                } else {
-                                    pd.dismiss();
-                                    ADnoPaymentMethod();
-                                }
-                            } else if (response.getString("status").equals("fail")) {
-                                pd.dismiss();
-                                ADnoPaymentMethod();
-                            }
-                        } catch (JSONException e){
-                            pd.dismiss();
-                            Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        pd.dismiss();
-                        Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
-                    }
+    private boolean validateEndDateTime(){
+        if (cbUntilBought.isChecked()){
+            return true;
+        } else {
+            tvEndDate.setError(null);
+            tvEndTime.setError(null);
+            boolean bDate = tvEndDate.getText().toString().equals(getString(R.string.Date));
+            boolean bEnd = tvEndTime.getText().toString().equals(getString(R.string.Time));
+            if (bDate || bEnd) {
+                if (bDate) {
+                    tvEndDate.setError(getResources().getString(R.string.No_date_selected));
                 }
-        );
-        queue.add(jsonObjectRequest);
+                if (bEnd) {
+                    tvEndTime.setError(getResources().getString(R.string.No_time_selected));
+                }
+                return false;
+            } else {
+                return true;
+            }
+        }
     }
 
     private void ADnoPaymentMethod(){
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity(), R.style.AlertDialogCustomTheme);
         alertDialogBuilder.setTitle(R.string.No_Payment_Method);
         alertDialogBuilder.setMessage(R.string.You_have_no_payment_method);
         alertDialogBuilder.setNegativeButton(R.string.Not_Now, new DialogInterface.OnClickListener() {
@@ -602,15 +599,25 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
             sellerInfoObj.put("sellerID", SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)));
             jsonObject.put("sellerInfo", sellerInfoObj);
 
-            Calendar calendar = Calendar.getInstance();
+            Calendar startCalendar = Calendar.getInstance();
             if (!cbNow.isChecked()){
-                calendar.set(Calendar.YEAR, startYear);
-                calendar.set(Calendar.MONTH, startMonth);
-                calendar.set(Calendar.DAY_OF_MONTH, startDay);
-                calendar.set(Calendar.HOUR_OF_DAY, startHour);
-                calendar.set(Calendar.MINUTE, startMinute);
+                startCalendar.set(Calendar.YEAR, startYear);
+                startCalendar.set(Calendar.MONTH, startMonth);
+                startCalendar.set(Calendar.DAY_OF_MONTH, startDay);
+                startCalendar.set(Calendar.HOUR_OF_DAY, startHour);
+                startCalendar.set(Calendar.MINUTE, startMinute);
             }
-            jsonObject.put("dateTimeStart", calendar.getTimeInMillis());
+            jsonObject.put("dateTimeStart", startCalendar.getTimeInMillis());
+            jsonObject.put("hasEndDateTime", cbUntilBought.isChecked());
+            if (!cbUntilBought.isChecked()){
+                Calendar endCalendar = Calendar.getInstance();
+                endCalendar.set(Calendar.YEAR, endYear);
+                endCalendar.set(Calendar.MONTH, endMonth);
+                endCalendar.set(Calendar.DAY_OF_MONTH, endDay);
+                endCalendar.set(Calendar.HOUR_OF_DAY, endHour);
+                endCalendar.set(Calendar.MINUTE, endMinute);
+                jsonObject.put("dateTimeEnd", endCalendar.getTimeInMillis());
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -623,20 +630,20 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
                         try {
                             String status = response.getString("status");
                             if (status.equals("success")){
-                                pd.dismiss();
                                 spotCreatedListener.onSpotCreated(
                                         Double.valueOf(response.getString("latitude")),
                                         Double.valueOf(response.getString("longitude")),
                                         response.getString("_id"),
                                         response.getString("name"));
+                            } else if (status.equals("fail") && response.getString("reason").equals("user not found")){
+                                ADnoPaymentMethod();
                             } else {
-                                pd.dismiss();
                                 Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                             }
                         } catch (JSONException e){
-                            pd.dismiss();
                             Toast.makeText(getActivity(), getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                         }
+                        pd.dismiss();
                     }
                 }, new Response.ErrorListener() {
                     @Override
@@ -670,16 +677,5 @@ public class CreateSpot extends Fragment implements View.OnClickListener{
         Date updatedate = new Date(epochSeconds);
         SimpleDateFormat format = new SimpleDateFormat("h:mm a", Locale.getDefault());
         return format.format(updatedate);
-    }
-
-    private void setDate(int year, int month, int day){
-        this.startYear = year;
-        this.startMonth = month;
-        this.startDay = day;
-    }
-
-    private void setTime(int hour, int minute){
-        this.startHour = hour;
-        this.startMinute = minute;
     }
 }
