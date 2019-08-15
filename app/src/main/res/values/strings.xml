@@ -101,6 +101,7 @@
     <string name="Deleting">Deleting</string>
     <string name="Deleting_payment_method">Deleting payment method</string>
     <string name="Description">Description</string>
+    <string name="Done">Done</string>
     <string name="Edit_Description">Edit Description</string>
     <string name="Edit_Price">Edit Price</string>
     <string name="Edit_Type">Edit Type</string>
@@ -120,10 +121,6 @@
     <string name="Field_cant_be_empty">Field can\'t be empty</string>
     <string name="Filter">Filter</string>
     <string name="Filter_Spots">Filter Spots</string>
-    <string name="FILTER_SPOTS_BY">FILTER SPOTS BY</string>
-    <string name="FILTER_ALL_SPOTS">FILTER ALL SPOTS</string>
-    <string name="FILTER_REQUESTING_SPOTS">FILTER REQUESTING SPOTS</string>
-    <string name="FILTER_SELLING_SPOTS">FILTER SELLING SPOTS</string>
     <string name="Filter_Star_Rating">Filter Star Rating</string>
     <string name="Filter_All_Spots">Filter All Spots</string>
     <string name="Filter_Parking_Spots">Filter Parking Spots</string>
@@ -163,6 +160,7 @@
     <string name="offer">offer</string>
     <string name="_Offers">Offers</string>
     <string name="offers">offers</string>
+    <string name="Only_offers_allowed">Only offers allowed</string>
     <string name="OK">OK</string>
     <string name="Other_Method">Other Method</string>
     <string name="Parking">Parking</string>

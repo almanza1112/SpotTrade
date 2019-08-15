@@ -26,6 +26,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.design.chip.Chip;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -131,8 +132,7 @@ public class MapsActivity extends AppCompatActivity
         ViewOffers.OfferAcceptedListener ,
         CreateSpot.SpotCreatedListener,
         Personal.ProfilePhotoChangedListener,
-        BottomSheetFilterMapType.FilterMapTypeSelectedListener,
-        BottomSheetFilterMapCategory.FilterMapCategorySelectedListener{
+        BottomSheetFilterMap.FilterMapListener {
 
     private ProgressBar progressBar;
     private GoogleMap mMap;
@@ -142,15 +142,14 @@ public class MapsActivity extends AppCompatActivity
     DrawerLayout drawer;
     LatLng currentLocation, spotLocation;
     private ImageView ivProfilePhoto;
-    private Button bBuyNow, bMakeOffer, bCancelOffer, bDelete;
     private Marker marker;
     private GoogleApiClient mGoogleApiClient;
 
     // for filter map tags
-    private View iFilterMapTags;
-    private CardView cvFilterMapType, cvFilterMapCategory;
-    private TextView tvFilterMapType, tvFilterMapCategory;
-    private ImageView ivCloseType, ivCloseCategory;
+    private Chip cType, cCategory;
+    private String typeFilterSelected = "All", categoryFilterSelected = "All";
+    private boolean offersAllowed;
+
 
     // for marker persistent bottom sheet
     private BottomSheetBehavior bottomSheetBehavior;
@@ -165,9 +164,7 @@ public class MapsActivity extends AppCompatActivity
     private double latitude = 0, longitude = 0;
     private String locationName = "empty", locationAddress = "empty";
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
-    private String lid, price, type;
-    private String typeSelected = "All";
-    private String categorySelected = "All";
+    private String lidMarker, priceMarker, typeMarker;
 
     private final int ACCESS_FINE_LOCATION_PERMISSION_MAP = 5;
     private final int ACCESS_FINE_LOCATION_PERMISSION_TRACKING = 6;
@@ -178,8 +175,7 @@ public class MapsActivity extends AppCompatActivity
     Payment paymentFragment;
     CreateSpot createSpotFragment;
     Personal personalFragment;
-    BottomSheetFilterMapType bottomSheetFilterMapType;
-    BottomSheetFilterMapCategory bottomSheetFilterMapCategory;
+    BottomSheetFilterMap bottomSheetFilterMap;
 
     // For onOfferAccepted
     boolean isOfferAccepted;
@@ -194,6 +190,9 @@ public class MapsActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_activity);
+
+        cType = findViewById(R.id.cType);
+        cCategory = findViewById(R.id.cCategory);
 
         iBottomSheetMarker = findViewById(R.id.iBottomSheetMarker);
         rlToolbar = iBottomSheetMarker.findViewById(R.id.rlToolbar);
@@ -268,21 +267,6 @@ public class MapsActivity extends AppCompatActivity
         pd = new ProgressDialog(this);
         progressBar = findViewById(R.id.progressBar);
 
-        iFilterMapTags = findViewById(R.id.iFilterMapTags);
-        cvFilterMapType = iFilterMapTags.findViewById(R.id.cvFilterMapType);
-        cvFilterMapType.setOnClickListener(this);
-        cvFilterMapCategory = iFilterMapTags.findViewById(R.id.cvFilterMapCategory);
-        cvFilterMapCategory.setOnClickListener(this);
-        tvFilterMapType = iFilterMapTags.findViewById(R.id.tvFilterMapType);
-        tvFilterMapCategory = iFilterMapTags.findViewById(R.id.tvFilterMapCategory);
-        ivCloseType = iFilterMapTags.findViewById(R.id.ivCloseType);
-        ivCloseType.setOnClickListener(this);
-        ivCloseCategory = iFilterMapTags.findViewById(R.id.ivCloseCategory);
-        ivCloseCategory.setOnClickListener(this);
-
-        //---------------------------------------------------------------------------
-
-
         // Check for existing Google Sign In account, if the user is already signed in
         // the GoogleSignInAccount will be non-null.
         // GoogleSignInAccount googleSignInAccount = GoogleSignIn.getLastSignedInAccount(this);
@@ -301,12 +285,12 @@ public class MapsActivity extends AppCompatActivity
         try {
             String pendingData = getIntent().getExtras().getString("message");
             JSONObject dataObj = new JSONObject(pendingData);
-            String type = dataObj.getString("type");
+            String type = dataObj.getString("typeMarker");
             Log.e("message", pendingData);
             switch (type) {
                 // Offer received for the logged in user's spot
                 case "offerReceived":
-                    goToViewOffers(dataObj.getString("lid"));
+                    goToViewOffers(dataObj.getString("lidMarker"));
                     break;
                 // Offer declined for a spot the logged in user made
                 case "offerDeclined":
@@ -316,11 +300,11 @@ public class MapsActivity extends AppCompatActivity
                 // Offer accepted for a spot the logged in user made
                 case "offerAccepted":
                     startTrackingService(
-                            dataObj.getString("lid"),
+                            dataObj.getString("lidMarker"),
                             dataObj.getString("latitude"),
                             dataObj.getString("longitude"),
                             false);
-                    getFirebaseData(lid);
+                    getFirebaseData(lidMarker);
                     break;
                 // A spot the logged in user owns that is bought
                 case "buy":
@@ -330,16 +314,6 @@ public class MapsActivity extends AppCompatActivity
         } catch (JSONException | NullPointerException e) {
             e.printStackTrace();
         }
-
-
-        bBuyNow = findViewById(R.id.bBuyNow);
-        bBuyNow.setOnClickListener(this);
-        bMakeOffer = findViewById(R.id.bMakeOffer);
-        bMakeOffer.setOnClickListener(this);
-        bCancelOffer = findViewById(R.id.bCancelOffer);
-        bCancelOffer.setOnClickListener(this);
-        bDelete = findViewById(R.id.bDelete);
-        bDelete.setOnClickListener(this);
 
         findViewById(R.id.fabMyLocation).setOnClickListener(this);
         findViewById(R.id.fabSpot).setOnClickListener(this);
@@ -398,31 +372,32 @@ public class MapsActivity extends AppCompatActivity
                 ADdeleteSpot();
                 break;
 
-            case R.id.bBuyNow:
                 /*
-                TODO: MAJOR ISSUE REGARDING REQUEST
-                For when a user that purchases a spot that is selling, code is easy to reject buyer
-                if card gets rejected etc. Need to verify the requester's payment as well as not
-                allowing them to delete their default payment if they have a spot up for Request
-                and if upon purchase of the person accepting the request, throw any errors Gateway,
-                card validation etc.
-                 */
+            case R.id.bBuyNow:
+
+                // TODO: MAJOR ISSUE REGARDING REQUEST
+                // For when a user that purchases a spot that is selling, code is easy to reject buyer
+                // if card gets rejected etc. Need to verify the requester's payment as well as not
+                // allowing them to delete their default payment if they have a spot up for Request
+                // and if upon purchase of the person accepting the request, throw any errors Gateway,
+                // card validation etc.
+
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION_PERMISSION_TRACKING);
                 } else {
-                    if (type.equals("Sell")) {
+                    if (typeMarker.equals("Sell")) {
                         validatePaymentMethod();
-                    } else if (type.equals("Request")) {
-                        /*
-                         * TODO
-                         * need to validate received payment form, PAYPAL!
-                         * */
+                    } else if (typeMarker.equals("Request")) {
+
+                          //TODO: need to validate received payment form, PAYPAL!
+
                         transactionBuyNow(1);
                     }
                 }
-                break;
+                break; */
 
+                /*
             case R.id.bMakeOffer:
                 if (quantityAvailable == 1) {
                     ADmakeOfferPrice(false, 1);
@@ -434,23 +409,25 @@ public class MapsActivity extends AppCompatActivity
             case R.id.bCancelOffer:
                 transactionCancelOffer();
                 break;
+                */
 
-            case R.id.cvFilterMapType:
-
-                break;
-
-            case R.id.cvFilterMapCategory:
+            case R.id.cType:
 
                 break;
 
+            case R.id.cCategory:
+
+                break;
+
+                /*
             case R.id.ivCloseType:
-                getAvailableSpots("All", categorySelected);
+                getAvailableSpots("All", categoryFilterSelected);
                 break;
 
             case R.id.ivCloseCategory:
-                getAvailableSpots(typeSelected, "All");
+                getAvailableSpots(typeFilterSelected, "All");
                 break;
-
+                */
             case R.id.ivCloseBottomSheet:
                 onBackPressed();
                 break;
@@ -694,9 +671,9 @@ public class MapsActivity extends AppCompatActivity
                     break;
 
                 case ACCESS_FINE_LOCATION_PERMISSION_TRACKING:
-                    if (type.equals("Sell")) {
+                    if (typeMarker.equals("Sell")) {
                         validatePaymentMethod();
-                    } else if (type.equals("Request")) {
+                    } else if (typeMarker.equals("Request")) {
                         transactionBuyNow(1);
                     }
                     break;
@@ -720,8 +697,8 @@ public class MapsActivity extends AppCompatActivity
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    lid = response.getString("_id");
-                    price = response.getString("price");
+                    lidMarker = response.getString("_id");
+                    priceMarker = response.getString("priceMarker");
                     quantityAvailable = response.getInt("quantity");
 
                     tvCategory.setText(response.getString("category"));
@@ -730,19 +707,19 @@ public class MapsActivity extends AppCompatActivity
                     JSONObject sellerInfoObj = response.getJSONObject("sellerInfo");
                     tvSellerRequesterFirstNameAndRating.setText(sellerInfoObj.getString("sellerFirstName") + " " + sellerInfoObj.getString("sellerOverallRating") + "(" + sellerInfoObj.getString("sellerTotalRatings") + ")");
                     tvQuantityAvailable.setText(String.valueOf(quantityAvailable));
-                    tvPrice.setText("$"+price);
+                    tvPrice.setText("$"+ priceMarker);
                     tvTimeAndDateAvailable.setText(epochToDateString(response.getLong("dateTimeStart")));
                     Picasso.get().load(sellerInfoObj.getString("sellerProfilePhotoUrl")).fit().centerCrop().into(ivSellerRequesterProfilePhoto);
 
-                    type = response.getString("type");
-                    if (type.equals("Sell")) {
+                    typeMarker = response.getString("typeMarker");
+                    if (typeMarker.equals("Sell")) {
                         tvType.setText(getResources().getString(R.string.Selling));
-                        //tvTypeAndPrice.setText(getResources().getString(R.string.Selling) + " - $" + response.getString("price"));
-                        bBuyNow.setText(getResources().getString(R.string.Buy_Now));
-                    } else if (type.equals("Request")) {
+                        // tvTypeAndPrice.setText(getResources().getString(R.string.Selling) + " - $" + response.getString("priceMarker"));
+                        // bBuyNow.setText(getResources().getString(R.string.Buy_Now));
+                    } else if (typeMarker.equals("Request")) {
                         tvType.setText(getResources().getString(R.string.Requesting));
-                        //tvTypeAndPrice.setText(getResources().getString(R.string.Requesting) + " - $" + response.getString("price"));
-                        bBuyNow.setText(getResources().getString(R.string.Accept));
+                        // tvTypeAndPrice.setText(getResources().getString(R.string.Requesting) + " - $" + response.getString("priceMarker"));
+                        // bBuyNow.setText(getResources().getString(R.string.Accept));
                     }
 
                     if (!response.getString("description").isEmpty()) {
@@ -841,18 +818,11 @@ public class MapsActivity extends AppCompatActivity
     }
 
     @Override
-    public void onFilterMapTypeSelected(String type) {
-        bottomSheetFilterMapType.dismiss();
-        bottomSheetFilterMapCategory = new BottomSheetFilterMapCategory();
-        Bundle bundle = new Bundle();
-        bundle.putString("type", type);
-        bottomSheetFilterMapCategory.setArguments(bundle);
-        bottomSheetFilterMapCategory.show(getSupportFragmentManager(), bottomSheetFilterMapCategory.getTag());
-    }
-
-    @Override
-    public void onFilterMapCategorySelected(String type, String category) {
-        bottomSheetFilterMapCategory.dismiss();
+    public void onFilterMap(String type, String category, boolean offersAllowed) {
+        bottomSheetFilterMap.dismiss();
+        typeFilterSelected = type;
+        categoryFilterSelected = category;
+        this.offersAllowed = offersAllowed;
         getAvailableSpots(type, category);
     }
 
@@ -911,7 +881,7 @@ public class MapsActivity extends AppCompatActivity
     private void getAvailableSpots(final String type, final String category){
         progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/maps?type=" + type + "&category=" + category, null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/maps?typeMarker=" + type + "&category=" + category, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -927,35 +897,32 @@ public class MapsActivity extends AppCompatActivity
                             LatLng locash = new LatLng(lat, lng);
                             marker = mMap.addMarker(new MarkerOptions()
                                     .position(locash)
-                                    .icon(BitmapDescriptorFactory.fromBitmap(customMarkerPrice("$"+locationObj.getString("price"), locationObj.getString("type"))))
+                                    .icon(BitmapDescriptorFactory.fromBitmap(customMarkerPrice("$"+locationObj.getString("priceMarker"), locationObj.getString("typeMarker"))))
                                     .title(locationObj.getString("name")));
                             marker.setTag(locationObj.getString("_id"));
                         }
                         progressBar.setVisibility(View.GONE);
                         // Following is for the filtered tags
                         if (type.equals("All") && category.equals("All")){
-                            iFilterMapTags.setVisibility(View.GONE);
-                            cvFilterMapType.setVisibility(View.GONE);
-                            cvFilterMapCategory.setVisibility(View.GONE);
+                            cType.setVisibility(View.GONE);
+                            cCategory.setVisibility(View.GONE);
                         } else {
                             if (type.equals("All")){
-                                cvFilterMapType.setVisibility(View.GONE);
+                                cType.setVisibility(View.GONE);
                             } else {
-                                iFilterMapTags.setVisibility(View.VISIBLE);
-                                cvFilterMapType.setVisibility(View.VISIBLE);
-                                tvFilterMapType.setText(type);
+                                cType.setVisibility(View.VISIBLE);
+                                cType.setText(type);
                             }
                             if (category.equals("All")){
-                                cvFilterMapCategory.setVisibility(View.GONE);
+                                cCategory.setVisibility(View.GONE);
                             } else {
-                                iFilterMapTags.setVisibility(View.VISIBLE);
-                                cvFilterMapCategory.setVisibility(View.VISIBLE);
-                                tvFilterMapCategory.setText(category);
+                                cCategory.setVisibility(View.VISIBLE);
+                                cCategory.setText(category);
                             }
                         }
 
-                        typeSelected = type;
-                        categorySelected = category;
+                        typeFilterSelected = type;
+                        categoryFilterSelected = category;
                     }
                 }
                 catch (JSONException e){
@@ -976,7 +943,7 @@ public class MapsActivity extends AppCompatActivity
     private void transactionDeleteSpot(){
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.DELETE, getString(R.string.URL) + "/location/delete/" + lid, null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.DELETE, getString(R.string.URL) + "/location/delete/" + lidMarker, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -1010,7 +977,7 @@ public class MapsActivity extends AppCompatActivity
         }
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/location/transaction/buy/" + lid, jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/location/transaction/buy/" + lidMarker, jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 pd.dismiss();
@@ -1077,15 +1044,15 @@ public class MapsActivity extends AppCompatActivity
         }
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/location/transaction/offer/" + lid, jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/location/transaction/offer/" + lidMarker, jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
                     if (response.getString("status").equals("success")){
                         Toast.makeText(MapsActivity.this, "Offer Made", Toast.LENGTH_SHORT).show();
-                        bMakeOffer.setVisibility(View.GONE);
-                        bCancelOffer.setText(getResources().getString(R.string.Cancel) + " $" + offerAmount + " " + getResources().getString(R.string.Offer));
-                        bCancelOffer.setVisibility(View.VISIBLE);
+                        // bMakeOffer.setVisibility(View.GONE);
+                        // bCancelOffer.setText(getResources().getString(R.string.Cancel) + " $" + offerAmount + " " + getResources().getString(R.string.Offer));
+                        // bCancelOffer.setVisibility(View.VISIBLE);
                     }
                 }
                 catch (JSONException e){
@@ -1107,7 +1074,7 @@ public class MapsActivity extends AppCompatActivity
 
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/location/transaction/offer/cancel/" + lid + "?user=" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/location/transaction/offer/cancel/" + lidMarker + "?user=" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -1400,11 +1367,11 @@ public class MapsActivity extends AppCompatActivity
         View alertLayout = inflater.inflate(R.layout.maps_activity_transaction_are_you_sure__alertdialog, null);
 
 
-        final float totalPrice = Float.valueOf(price) * quantity;
+        final float totalPrice = Float.valueOf(priceMarker) * quantity;
         TextView tvCompleteTransactionDialog = alertLayout.findViewById(R.id.tvCompleteTransactionDialog);
         String completeTransactionText;
         if (quantity > 1){
-            completeTransactionText = getResources().getString(R.string.You_will_be_charged) + " $" + totalPrice + " ($" + price + " x " + quantity + ") " + getResources().getString(R.string.with_the_following_payment_method);
+            completeTransactionText = getResources().getString(R.string.You_will_be_charged) + " $" + totalPrice + " ($" + priceMarker + " x " + quantity + ") " + getResources().getString(R.string.with_the_following_payment_method);
         }
         else {
             completeTransactionText = getResources().getString(R.string.You_will_be_charged) + " $" + totalPrice + " " + getResources().getString(R.string.with_the_following_payment_method);
@@ -1629,14 +1596,18 @@ public class MapsActivity extends AppCompatActivity
     }
 
     private void BSfilterMapType(){
-        bottomSheetFilterMapType = new BottomSheetFilterMapType();
-        bottomSheetFilterMapType.show(getSupportFragmentManager(), bottomSheetFilterMapType.getTag());
+        Bundle bundle = new Bundle();
+        bundle.putString("type", typeFilterSelected);
+        bundle.putString("category", categoryFilterSelected);
+        bottomSheetFilterMap = new BottomSheetFilterMap();
+        bottomSheetFilterMap.setArguments(bundle);
+        bottomSheetFilterMap.show(getSupportFragmentManager(), bottomSheetFilterMap.getTag());
     }
 
     private void refreshMap(){
         if (mMap != null){
             mMap.clear();
-            getAvailableSpots(typeSelected, categorySelected);
+            getAvailableSpots(typeFilterSelected, categoryFilterSelected);
         }
     }
 
@@ -1645,7 +1616,7 @@ public class MapsActivity extends AppCompatActivity
         ComponentName componentName = new ComponentName("almanza1112.spottrade", "almanza1112.spottrade.nonActivity.tracking.TrackerService");
         pm.setComponentEnabledSetting(componentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
         Intent serviceIntent = new Intent(this, TrackerService.class);
-        serviceIntent.putExtra("lid", lid);
+        serviceIntent.putExtra("lidMarker", lid);
         serviceIntent.putExtra("lat", lat);
         serviceIntent.putExtra("lng", lng);
         serviceIntent.putExtra("isSeller", isSeller);
@@ -1673,14 +1644,14 @@ public class MapsActivity extends AppCompatActivity
         progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/transaction/check?uid="+ SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/transaction/check?uid="+ SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)) + "&offersAllowed=" + offersAllowed, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
                     Log.e("onGoing", response + "");
                     if (response.getString("status").equals("success")){
                         JSONArray jsonArray = new JSONArray(response.getString("onGoingTransactions"));
-                        String lidBought = jsonArray.getJSONObject(0).getString("lid");
+                        String lidBought = jsonArray.getJSONObject(0).getString("lidMarker");
                         Map<String, String> userInfo = new HashMap<>();
                         List<String> ids = new ArrayList<>();
                         for (int i = 0; i < jsonArray.length(); i++){
@@ -1694,7 +1665,7 @@ public class MapsActivity extends AppCompatActivity
                         progressBar.setVisibility(View.GONE);
                         //startTrackingService();
                     } else if (response.getString("status").equals("fail") && response.getString("reason").equals("no onGoingTransactions")){
-                        getAvailableSpots(typeSelected, categorySelected);
+                        getAvailableSpots(typeFilterSelected, categoryFilterSelected);
                         progressBar.setVisibility(View.GONE);
                     }
                 } catch (JSONException e){
@@ -1795,7 +1766,7 @@ public class MapsActivity extends AppCompatActivity
 
     private void goToViewOffers(String lid){
         Bundle bundle = new Bundle();
-        bundle.putString("lid", lid);
+        bundle.putString("lidMarker", lid);
         ViewOffers viewOffers = new ViewOffers();
         viewOffers.setArguments(bundle);
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
