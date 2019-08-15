@@ -150,7 +150,6 @@ public class MapsActivity extends AppCompatActivity
     private String typeFilterSelected = "All", categoryFilterSelected = "All";
     private boolean offersAllowed;
 
-
     // for marker persistent bottom sheet
     private BottomSheetBehavior bottomSheetBehavior;
     private View iBottomSheetMarker;
@@ -581,8 +580,7 @@ public class MapsActivity extends AppCompatActivity
             if (!success) {
                 Log.e("raw", "Style parsing failed.");
             }
-        }
-        catch (Resources.NotFoundException e) {
+        } catch (Resources.NotFoundException e) {
             Log.e("raw", "Can't find style. Error: ", e);
         }
 
@@ -599,19 +597,12 @@ public class MapsActivity extends AppCompatActivity
 
         myLocation = null;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                ContextCompat.checkSelfPermission(
-                        this,
-                        Manifest.permission.ACCESS_FINE_LOCATION)
-                        != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    ACCESS_FINE_LOCATION_PERMISSION_MAP);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION_PERMISSION_MAP);
         } else {
             // Get Current Location
             myLocation = locationManager.getLastKnownLocation(provider);
-            mMap.setMyLocationEnabled(true);
+            //mMap.setMyLocationEnabled(true);
             double latitude = 0;
             double longitude = 0;
 
@@ -629,7 +620,6 @@ public class MapsActivity extends AppCompatActivity
 
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.getUiSettings().setMyLocationButtonEnabled(false);
-
 
         mMap.getUiSettings().setMapToolbarEnabled(false); //disables the bottom right buttons that appear when you click on a marker
         mMap.getUiSettings().setRotateGesturesEnabled(false);
@@ -696,9 +686,10 @@ public class MapsActivity extends AppCompatActivity
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/" + marker.getTag() + "?user=" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
+                Log.e("Maker", response + "");
                 try {
                     lidMarker = response.getString("_id");
-                    priceMarker = response.getString("priceMarker");
+                    priceMarker = response.getString("price");
                     quantityAvailable = response.getInt("quantity");
 
                     tvCategory.setText(response.getString("category"));
@@ -711,7 +702,7 @@ public class MapsActivity extends AppCompatActivity
                     tvTimeAndDateAvailable.setText(epochToDateString(response.getLong("dateTimeStart")));
                     Picasso.get().load(sellerInfoObj.getString("sellerProfilePhotoUrl")).fit().centerCrop().into(ivSellerRequesterProfilePhoto);
 
-                    typeMarker = response.getString("typeMarker");
+                    typeMarker = response.getString("type");
                     if (typeMarker.equals("Sell")) {
                         tvType.setText(getResources().getString(R.string.Selling));
                         // tvTypeAndPrice.setText(getResources().getString(R.string.Selling) + " - $" + response.getString("priceMarker"));
@@ -881,10 +872,12 @@ public class MapsActivity extends AppCompatActivity
     private void getAvailableSpots(final String type, final String category){
         progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/maps?typeMarker=" + type + "&category=" + category, null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/maps?type=" + type + "&category=" + category, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
+                    Log.e("getSpots", response.getString("location") + "");
+
                     if (response.getString("status").equals("success")){
                         mMap.clear();
                         String locations = response.getString("location");
@@ -895,9 +888,10 @@ public class MapsActivity extends AppCompatActivity
                             Double lat = Double.valueOf(locationObj.getString("latitude"));
                             Double lng = Double.valueOf(locationObj.getString("longitude"));
                             LatLng locash = new LatLng(lat, lng);
+
                             marker = mMap.addMarker(new MarkerOptions()
                                     .position(locash)
-                                    .icon(BitmapDescriptorFactory.fromBitmap(customMarkerPrice("$"+locationObj.getString("priceMarker"), locationObj.getString("typeMarker"))))
+                                    .icon(BitmapDescriptorFactory.fromBitmap(customMarkerPrice("$"+locationObj.getString("price"), locationObj.getString("type"))))
                                     .title(locationObj.getString("name")));
                             marker.setTag(locationObj.getString("_id"));
                         }

@@ -2,7 +2,6 @@ package almanza1112.spottrade;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.content.pm.PackageManager;
 import android.support.design.chip.Chip;
 import android.support.v4.app.Fragment;
 import android.app.ProgressDialog;
@@ -26,7 +25,6 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
@@ -73,7 +71,7 @@ public class CreateSpot extends Fragment implements View.OnClickListener, Compou
     private CheckBox cbOffers, cbNow, cbUntilBought;
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private double latitude, longitude;
-    private String otherString, type, category, locationName, locationAddress;
+    private String type, category, locationName, locationAddress;
     private int quantity = 1;
     int startYear, startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay, endHour, endMinute;
 
@@ -610,7 +608,7 @@ public class CreateSpot extends Fragment implements View.OnClickListener, Compou
                 startCalendar.set(Calendar.MINUTE, startMinute);
             }
             jsonObject.put("dateTimeStart", startCalendar.getTimeInMillis());
-            jsonObject.put("hasEndDateTime", cbUntilBought.isChecked());
+            jsonObject.put("hasEndDateTime", !cbUntilBought.isChecked());
             if (!cbUntilBought.isChecked()){
                 Calendar endCalendar = Calendar.getInstance();
                 endCalendar.set(Calendar.YEAR, endYear);
