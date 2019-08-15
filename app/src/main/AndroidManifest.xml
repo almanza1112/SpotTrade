@@ -89,6 +89,7 @@
 
         <!-- All activities in SpotTrade that I created -->
         <activity android:name=".MapsActivity"
+            android:windowSoftInputMode="adjustPan"
             android:hardwareAccelerated="true"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
