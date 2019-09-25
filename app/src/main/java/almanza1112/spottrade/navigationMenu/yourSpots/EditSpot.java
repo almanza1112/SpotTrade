@@ -245,16 +245,6 @@ public class EditSpot extends Fragment implements View.OnClickListener{
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem searchItem = menu.findItem(R.id.search);
-        searchItem.setVisible(false);
-        MenuItem filterMaps = menu.findItem(R.id.filterMaps);
-        filterMaps.setVisible(false);
-        MenuItem filterYourSpots = menu.findItem(R.id.filterYourSpots);
-        filterYourSpots.setVisible(false);
-    }
-
-    @Override
     public void onDestroy() {
         if (snackbar != null){
             snackbar.dismiss();

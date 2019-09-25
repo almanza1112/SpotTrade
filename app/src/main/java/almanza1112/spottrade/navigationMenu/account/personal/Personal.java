@@ -174,14 +174,6 @@ public class Personal extends Fragment implements View.OnClickListener {
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem searchItem = menu.findItem(R.id.search);
-        searchItem.setVisible(false);
-        MenuItem filterItem = menu.findItem(R.id.filterMaps);
-        filterItem.setVisible(false);
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GALLERY_CODE && resultCode == RESULT_OK){

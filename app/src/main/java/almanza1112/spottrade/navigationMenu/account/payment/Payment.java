@@ -102,14 +102,6 @@ public class Payment extends Fragment {
         super.onDestroy();
     }
 
-    @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem searchItem = menu.findItem(R.id.search);
-        searchItem.setVisible(false);
-        MenuItem filterItem = menu.findItem(R.id.filterMaps);
-        filterItem.setVisible(false);
-    }
-
     public void getCustomer(){
         progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(getActivity());

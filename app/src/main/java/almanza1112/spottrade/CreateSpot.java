@@ -404,14 +404,6 @@ public class CreateSpot extends Fragment implements View.OnClickListener, Compou
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem searchItem = menu.findItem(R.id.search);
-        searchItem.setVisible(false);
-        MenuItem filterItem = menu.findItem(R.id.filterMaps);
-        filterItem.setVisible(false);
-    }
-
-    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         try {

@@ -146,16 +146,6 @@ public class AddPaymentMethod extends Fragment implements
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        if (!from.equals("CreateSpot")){
-            MenuItem searchItem = menu.findItem(R.id.search);
-            searchItem.setVisible(false);
-            MenuItem filterItem = menu.findItem(R.id.filterMaps);
-            filterItem.setVisible(false);
-        }
-    }
-
-    @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.llCreditDebitCard:

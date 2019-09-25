@@ -92,14 +92,6 @@ public class ViewOffers extends Fragment {
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem searchItem = menu.findItem(R.id.search);
-        searchItem.setVisible(false);
-        MenuItem filterItem = menu.findItem(R.id.filterMaps);
-        filterItem.setVisible(false);
-    }
-
-    @Override
     public void onDestroy() {
         if (snackbar != null){
             snackbar.dismiss();

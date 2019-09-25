@@ -14,9 +14,11 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
+import android.os.ResultReceiver;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.content.Context;
@@ -44,6 +46,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -73,6 +76,7 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -88,6 +92,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -129,12 +134,11 @@ public class MapsActivity extends AppCompatActivity
         NavigationView.OnNavigationItemSelectedListener,
         AddPaymentMethod.PaymentMethodAddedListener,
         AddCreditDebitCard.CreditCardAddedListener,
-        ViewOffers.OfferAcceptedListener ,
+        ViewOffers.OfferAcceptedListener,
         CreateSpot.SpotCreatedListener,
         Personal.ProfilePhotoChangedListener,
         BottomSheetFilterMap.FilterMapListener {
 
-    private ProgressBar progressBar;
     private GoogleMap mMap;
     Location myLocation;
     private ProgressDialog pd = null;
@@ -144,6 +148,10 @@ public class MapsActivity extends AppCompatActivity
     private ImageView ivProfilePhoto;
     private Marker marker;
     private GoogleApiClient mGoogleApiClient;
+
+    // for toolbar
+    private RelativeLayout.LayoutParams tb;
+    private View iProgressBar;
 
     // for filter map tags
     private Chip cType, cCategory;
@@ -158,6 +166,20 @@ public class MapsActivity extends AppCompatActivity
     private TextView tvDescription, tvTimeAndDateAvailable, tvQuantityAvailable, tvSellerRequesterFirstNameAndRating, tvLocationName, tvLocationAddress, tvCategory, tvType, tvPrice;
     private ImageView ivSellerRequesterProfilePhoto, ivCloseBottomSheet;
     private int quantityAvailable;
+
+    // for fetching address service and receiver for appearing mid map
+    private TextView tvMidAddress;
+    private static final int SUCCESS_RESULT = 0;
+    private static final int SUCCESS_RESULT_USING_GOOGLE_MAPS = 2;
+    private static final String PACKAGE_NAME = "almanza1112.spottrade";
+    private static final String RECEIVER = PACKAGE_NAME + ".RECEIVER";
+    private static final String RESULT_DATA_KEY = PACKAGE_NAME + ".RESULT_DATA_KEY";
+    private static final String LOCATION_DATA_EXTRA = PACKAGE_NAME + ".LOCATION_DATA_EXTRA";
+    private FusedLocationProviderClient mFusedLocationClient;
+    protected Location mLastKnownLocation;
+    private AddressResultReceiver mResultReceiver;
+    private String mAddressOutput;
+
 
     private boolean isMarkerClicked;
     private double latitude = 0, longitude = 0;
@@ -180,15 +202,20 @@ public class MapsActivity extends AppCompatActivity
     boolean isOfferAccepted;
     String lidBought, idBought, latBought, lngBought, profilePhotoUrlBought;
 
-    // For the inflated menu in toolbar
-    private MenuItem searchMenuItem, filterMenuItem;
-
-    private RelativeLayout.LayoutParams tb;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_activity);
+
+        // for fetching address service and receiver
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        tvMidAddress = findViewById(R.id.tvMidAddress);
+
+        // for toolbar
+        iProgressBar = findViewById(R.id.iProgressBar);
+        findViewById(R.id.ivMenuIcon).setOnClickListener(this);
+        findViewById(R.id.ivFilterIcon).setOnClickListener(this);
+        findViewById(R.id.ivSearchIcon).setOnClickListener(this);
 
         cType = findViewById(R.id.cType);
         cCategory = findViewById(R.id.cCategory);
@@ -213,7 +240,7 @@ public class MapsActivity extends AppCompatActivity
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View view, int i) {
-                switch (i){
+                switch (i) {
                     case BottomSheetBehavior.STATE_HIDDEN:
 
                         break;
@@ -241,30 +268,29 @@ public class MapsActivity extends AppCompatActivity
             }
         });
 
-        final CardView cvToolbar = findViewById(R.id.cvToolbar);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        final RelativeLayout rlToolbar = findViewById(R.id.rlToolbar);
+        //Toolbar toolbar = findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), new OnApplyWindowInsetsListener() {
             @Override
             public WindowInsetsCompat onApplyWindowInsets(View v, WindowInsetsCompat insets) {
                 final int statusBarHeight = insets.getSystemWindowInsetTop();
                 SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.status_bar_height), String.valueOf(statusBarHeight));
-                tb = (RelativeLayout.LayoutParams) cvToolbar.getLayoutParams();
-                tb.setMargins(20, statusBarHeight + 20, 20, 0);
+                tb = (RelativeLayout.LayoutParams) rlToolbar.getLayoutParams();
+                tb.setMargins(0, statusBarHeight, 0, 0);
                 rlToolbarLayoutParams.setMargins(0, statusBarHeight, 0, 0); // for persistent bottom sheet marker
                 return insets;
             }
         });
 
-        final TypedArray ta = getTheme().obtainStyledAttributes(new int[] {android.R.attr.actionBarSize});
+        final TypedArray ta = getTheme().obtainStyledAttributes(new int[]{android.R.attr.actionBarSize});
         int actionBarHeight = (int) ta.getDimension(0, 0);
         SharedPref.setSharedPreferences(this, getResources().getString(R.string.action_bar_height), String.valueOf(actionBarHeight));
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
 
         pd = new ProgressDialog(this);
-        progressBar = findViewById(R.id.progressBar);
 
         // Check for existing Google Sign In account, if the user is already signed in
         // the GoogleSignInAccount will be non-null.
@@ -320,7 +346,9 @@ public class MapsActivity extends AppCompatActivity
         drawer = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
+
+        /*
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, ivMenu, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
@@ -334,7 +362,7 @@ public class MapsActivity extends AppCompatActivity
         };
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
+        */
         View navHeaderView = navigationView.getHeaderView(0);
         ivProfilePhoto = navHeaderView.findViewById(R.id.ivProfilePhoto);
         if (SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_photo_url)) != null) {
@@ -349,6 +377,24 @@ public class MapsActivity extends AppCompatActivity
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.ivMenuIcon:
+                drawer.openDrawer(Gravity.START);
+                break;
+
+            case R.id.ivFilterIcon:
+                BSfilterMapType();
+                break;
+
+            case R.id.ivSearchIcon:
+                try {
+                    Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN).build(this);
+                    startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
+                    e.printStackTrace();
+                    Toast.makeText(this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
+                }
+                break;
+
             case R.id.fabMyLocation:
                 getMyLocation();
                 break;
@@ -484,41 +530,6 @@ public class MapsActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.maps_activity_menu, menu);
-
-        searchMenuItem = menu.findItem(R.id.search);
-        filterMenuItem = menu.findItem(R.id.filterMaps);
-
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.search:
-                try {
-                    Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN).build(this);
-                    startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
-                } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
-                    e.printStackTrace();
-                    Toast.makeText(this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
-                }
-                break;
-
-            case android.R.id.home:
-                onBackPressed();
-                break;
-
-            case R.id.filterMaps:
-                BSfilterMapType();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public void onBackPressed() {
         int count = getSupportFragmentManager().getBackStackEntryCount();
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -534,6 +545,14 @@ public class MapsActivity extends AppCompatActivity
                 super.onBackPressed();
             }
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -624,14 +643,25 @@ public class MapsActivity extends AppCompatActivity
         mMap.getUiSettings().setMapToolbarEnabled(false); //disables the bottom right buttons that appear when you click on a marker
         mMap.getUiSettings().setRotateGesturesEnabled(false);
         mMap.setOnMarkerClickListener(this);
+
+        mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
+            @Override
+            public void onCameraIdle() {
+                LatLng midLatLng = mMap.getCameraPosition().target;
+                Location midLocation = new Location("");
+                midLocation.setLatitude(midLatLng.latitude);
+                midLocation.setLongitude(midLatLng.longitude);
+                startIntentService(midLocation);
+            }
+        });
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         // If request is cancelled, the result arrays are empty.
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-            switch (requestCode){
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            switch (requestCode) {
                 case ACCESS_FINE_LOCATION_PERMISSION_MAP:
                     LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                     Criteria criteria = new Criteria();
@@ -686,7 +716,6 @@ public class MapsActivity extends AppCompatActivity
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/" + marker.getTag() + "?user=" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Log.e("Maker", response + "");
                 try {
                     lidMarker = response.getString("_id");
                     priceMarker = response.getString("price");
@@ -698,7 +727,7 @@ public class MapsActivity extends AppCompatActivity
                     JSONObject sellerInfoObj = response.getJSONObject("sellerInfo");
                     tvSellerRequesterFirstNameAndRating.setText(sellerInfoObj.getString("sellerFirstName") + " " + sellerInfoObj.getString("sellerOverallRating") + "(" + sellerInfoObj.getString("sellerTotalRatings") + ")");
                     tvQuantityAvailable.setText(String.valueOf(quantityAvailable));
-                    tvPrice.setText("$"+ priceMarker);
+                    tvPrice.setText("$" + priceMarker);
                     tvTimeAndDateAvailable.setText(epochToDateString(response.getLong("dateTimeStart")));
                     Picasso.get().load(sellerInfoObj.getString("sellerProfilePhotoUrl")).fit().centerCrop().into(ivSellerRequesterProfilePhoto);
 
@@ -739,7 +768,7 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     public void onCreditCardAdded(String from) {
-        switch (from){
+        switch (from) {
             case "Payment":
                 getSupportFragmentManager().popBackStack();
                 getSupportFragmentManager().popBackStack();
@@ -761,7 +790,7 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     public void onPaymentMethodAdded(String from) {
-        switch (from){
+        switch (from) {
             case "Payment":
                 getSupportFragmentManager().popBackStack();
                 paymentFragment.getCustomer();
@@ -837,7 +866,7 @@ public class MapsActivity extends AppCompatActivity
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, request, new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
-                    if (isOfferAccepted){
+                    if (isOfferAccepted) {
                         Map<String, Object> latLng = new HashMap<>();
                         latLng.put("lat", location.getLatitude());
                         latLng.put("lng", location.getLongitude());
@@ -869,21 +898,19 @@ public class MapsActivity extends AppCompatActivity
         }
     };
 
-    private void getAvailableSpots(final String type, final String category){
-        progressBar.setVisibility(View.VISIBLE);
+    private void getAvailableSpots(final String type, final String category) {
+        iProgressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/maps?type=" + type + "&category=" + category, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                try{
-                    Log.e("getSpots", response.getString("location") + "");
-
-                    if (response.getString("status").equals("success")){
+                try {
+                    if (response.getString("status").equals("success")) {
                         mMap.clear();
                         String locations = response.getString("location");
                         JSONArray jsonArray = new JSONArray(locations);
 
-                        for (int i = 0; i < jsonArray.length(); i++){
+                        for (int i = 0; i < jsonArray.length(); i++) {
                             JSONObject locationObj = jsonArray.getJSONObject(i);
                             Double lat = Double.valueOf(locationObj.getString("latitude"));
                             Double lng = Double.valueOf(locationObj.getString("longitude"));
@@ -891,23 +918,23 @@ public class MapsActivity extends AppCompatActivity
 
                             marker = mMap.addMarker(new MarkerOptions()
                                     .position(locash)
-                                    .icon(BitmapDescriptorFactory.fromBitmap(customMarkerPrice("$"+locationObj.getString("price"), locationObj.getString("type"))))
+                                    .icon(BitmapDescriptorFactory.fromBitmap(customMarkerPrice("$" + locationObj.getString("price"), locationObj.getString("type"))))
                                     .title(locationObj.getString("name")));
                             marker.setTag(locationObj.getString("_id"));
                         }
-                        progressBar.setVisibility(View.GONE);
+                        iProgressBar.setVisibility(View.GONE);
                         // Following is for the filtered tags
-                        if (type.equals("All") && category.equals("All")){
+                        if (type.equals("All") && category.equals("All")) {
                             cType.setVisibility(View.GONE);
                             cCategory.setVisibility(View.GONE);
                         } else {
-                            if (type.equals("All")){
+                            if (type.equals("All")) {
                                 cType.setVisibility(View.GONE);
                             } else {
                                 cType.setVisibility(View.VISIBLE);
                                 cType.setText(type);
                             }
-                            if (category.equals("All")){
+                            if (category.equals("All")) {
                                 cCategory.setVisibility(View.GONE);
                             } else {
                                 cCategory.setVisibility(View.VISIBLE);
@@ -918,9 +945,8 @@ public class MapsActivity extends AppCompatActivity
                         typeFilterSelected = type;
                         categoryFilterSelected = category;
                     }
-                }
-                catch (JSONException e){
-                    progressBar.setVisibility(View.GONE);
+                } catch (JSONException e) {
+                    iProgressBar.setVisibility(View.GONE);
                     Toast.makeText(MapsActivity.this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
                 }
@@ -934,20 +960,19 @@ public class MapsActivity extends AppCompatActivity
         queue.add(jsonObjectRequest);
     }
 
-    private void transactionDeleteSpot(){
+    private void transactionDeleteSpot() {
         RequestQueue queue = Volley.newRequestQueue(this);
 
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.DELETE, getString(R.string.URL) + "/location/delete/" + lidMarker, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                try{
-                    if (response.getString("status").equals("success")){
+                try {
+                    if (response.getString("status").equals("success")) {
                         marker.remove();
                         //hiddenPanel.startAnimation(bottomDown);
                         //hiddenPanel.setVisibility(View.INVISIBLE);
                     }
-                }
-                catch (JSONException e){
+                } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
@@ -975,8 +1000,8 @@ public class MapsActivity extends AppCompatActivity
             @Override
             public void onResponse(JSONObject response) {
                 pd.dismiss();
-                try{
-                    if (response.getString("status").equals("success")){
+                try {
+                    if (response.getString("status").equals("success")) {
                         final String lidBought = response.getString("_id");
                         final String latBought = response.getString("latitude");
                         final String lngBought = response.getString("longitude");
@@ -997,11 +1022,10 @@ public class MapsActivity extends AppCompatActivity
                         databaseReference.child(lidBought).child(SharedPref.getSharedPreferences(MapsActivity.this, getResources().getString(R.string.logged_in_user_id))).setValue(latLng, new DatabaseReference.CompletionListener() {
                             @Override
                             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                                if (databaseError == null){
+                                if (databaseError == null) {
                                     // There is no error
                                     startTrackingService(lidBought, latBought, lngBought, false);
-                                }
-                                else {
+                                } else {
                                     // There is an error
                                     setSnackBar(getString(R.string.Server_error));
                                 }
@@ -1009,8 +1033,7 @@ public class MapsActivity extends AppCompatActivity
                         });
                         //startNavigationApp(response.getString("latitude"), response.getString("longitude"), response.getString("name"));
                     }
-                }
-                catch (JSONException e){
+                } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
@@ -1024,7 +1047,7 @@ public class MapsActivity extends AppCompatActivity
         queue.add(jsonObjectRequest);
     }
 
-    private void transactionMakeOffer(final String offerAmount, int quantity){
+    private void transactionMakeOffer(final String offerAmount, int quantity) {
         final JSONObject jObject = new JSONObject();
         try {
             jObject.put("offererID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
@@ -1032,8 +1055,7 @@ public class MapsActivity extends AppCompatActivity
             jObject.put("offerQuantity", quantity);
             jObject.put("offererFirstName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_first_name)));
             jObject.put("offererLastName", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_last_name)));
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         RequestQueue queue = Volley.newRequestQueue(this);
@@ -1041,15 +1063,14 @@ public class MapsActivity extends AppCompatActivity
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/location/transaction/offer/" + lidMarker, jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                try{
-                    if (response.getString("status").equals("success")){
+                try {
+                    if (response.getString("status").equals("success")) {
                         Toast.makeText(MapsActivity.this, "Offer Made", Toast.LENGTH_SHORT).show();
                         // bMakeOffer.setVisibility(View.GONE);
                         // bCancelOffer.setText(getResources().getString(R.string.Cancel) + " $" + offerAmount + " " + getResources().getString(R.string.Offer));
                         // bCancelOffer.setVisibility(View.VISIBLE);
                     }
-                }
-                catch (JSONException e){
+                } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
@@ -1063,7 +1084,7 @@ public class MapsActivity extends AppCompatActivity
         queue.add(jsonObjectRequest);
     }
 
-    private void transactionCancelOffer(){
+    private void transactionCancelOffer() {
         final JSONObject jObject = new JSONObject();
 
         RequestQueue queue = Volley.newRequestQueue(this);
@@ -1071,17 +1092,15 @@ public class MapsActivity extends AppCompatActivity
         final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/location/transaction/offer/cancel/" + lidMarker + "?user=" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                try{
-                    if (response.getString("status").equals("success")){
+                try {
+                    if (response.getString("status").equals("success")) {
                         //hiddenPanel.startAnimation(bottomDown);
                         //hiddenPanel.setVisibility(View.INVISIBLE);
                         Toast.makeText(MapsActivity.this, getResources().getString(R.string.Offer_canceled), Toast.LENGTH_SHORT).show();
-                    }
-                    else {
+                    } else {
                         Toast.makeText(MapsActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                     }
-                }
-                catch (JSONException e){
+                } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
@@ -1095,7 +1114,7 @@ public class MapsActivity extends AppCompatActivity
         queue.add(jsonObjectRequest);
     }
 
-    private void ADmakeOfferQuantity(){
+    private void ADmakeOfferQuantity() {
         LayoutInflater inflater = getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.number_picker, null);
 
@@ -1105,7 +1124,7 @@ public class MapsActivity extends AppCompatActivity
         numberPicker.setValue(1);
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setView(alertLayout);
-        alertDialogBuilder.setTitle(getResources().getString(R.string.Make_Offer)+ " - " + getResources().getString(R.string.Quantity));
+        alertDialogBuilder.setTitle(getResources().getString(R.string.Make_Offer) + " - " + getResources().getString(R.string.Quantity));
         alertDialogBuilder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
@@ -1122,10 +1141,10 @@ public class MapsActivity extends AppCompatActivity
         alertDialog.show();
     }
 
-    private void ADmakeOfferPrice(final boolean hasMoreThanOne, final int quantity){
+    private void ADmakeOfferPrice(final boolean hasMoreThanOne, final int quantity) {
         String title = getResources().getString(R.string.Make_Offer);
         String positiveButton = getResources().getString(R.string.Offer);
-        if (hasMoreThanOne){
+        if (hasMoreThanOne) {
             title += " - " + getResources().getString(R.string.Price);
             positiveButton = getResources().getString(R.string.OK);
         }
@@ -1140,10 +1159,9 @@ public class MapsActivity extends AppCompatActivity
         alertDialogBuilder.setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
-                if (hasMoreThanOne){
+                if (hasMoreThanOne) {
                     ADconfirmQuantityAndPrice(etOfferPrice.getText().toString(), quantity);
-                }
-                else {
+                } else {
                     transactionMakeOffer(etOfferPrice.getText().toString(), 1);
                 }
             }
@@ -1158,18 +1176,18 @@ public class MapsActivity extends AppCompatActivity
         alertDialog.show();
     }
 
-    private void ADconfirmQuantityAndPrice(final String offeredPrice, final int quantity){
+    private void ADconfirmQuantityAndPrice(final String offeredPrice, final int quantity) {
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         double price = Double.valueOf(offeredPrice);
         double totalPrice = price * quantity;
         alertDialogBuilder.setMessage(
                 getResources().getString(R.string.Your_offer_is) + " $" +
-                offeredPrice + " " +
-                getResources().getString(R.string._for) + " " +
-                quantity + " " +
-                getResources().getString(R.string.spots_) + " " +
-                getResources().getString(R.string.for_a_total_of) + ": $" +
-                totalPrice);
+                        offeredPrice + " " +
+                        getResources().getString(R.string._for) + " " +
+                        quantity + " " +
+                        getResources().getString(R.string.spots_) + " " +
+                        getResources().getString(R.string.for_a_total_of) + ": $" +
+                        totalPrice);
         alertDialogBuilder.setTitle(getResources().getString(R.string.Make_Offer) + " - " + getResources().getString(R.string.Confirm));
         alertDialogBuilder.setPositiveButton(R.string.Offer, new DialogInterface.OnClickListener() {
             @Override
@@ -1187,7 +1205,7 @@ public class MapsActivity extends AppCompatActivity
         alertDialog.show();
     }
 
-    private void ADdeleteSpot(){
+    private void ADdeleteSpot() {
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle(R.string.Delete);
         alertDialogBuilder.setMessage(R.string.Are_you_sure_you_want_to_delete_this_spot);
@@ -1207,7 +1225,7 @@ public class MapsActivity extends AppCompatActivity
         alertDialog.show();
     }
 
-    private void ADlogOut(){
+    private void ADlogOut() {
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this, R.style.AlertDialogCustomTheme);
         alertDialogBuilder.setTitle(R.string.Log_Out);
         alertDialogBuilder.setMessage(R.string.Are_you_sure_you_want_to_log_out);
@@ -1231,7 +1249,7 @@ public class MapsActivity extends AppCompatActivity
         alertDialog.show();
     }
 
-    private void validatePaymentMethod(){
+    private void validatePaymentMethod() {
         pd.setTitle(R.string.Verifying);
         pd.setMessage(getResources().getString(R.string.Checking_for_payment_methods));
         pd.setCancelable(false);
@@ -1248,25 +1266,24 @@ public class MapsActivity extends AppCompatActivity
                         try {
                             if (response.getString("status").equals("success")) {
                                 JSONArray jsonArray = new JSONArray(response.getJSONObject("customer").getString("paymentMethods"));
-                                if (jsonArray.length() > 0){
-                                    for (int i = 0; i < jsonArray.length(); i++){
-                                        if (jsonArray.getJSONObject(i).getBoolean("default")){
-                                            if (jsonArray.getJSONObject(i).has("cardType")){
+                                if (jsonArray.length() > 0) {
+                                    for (int i = 0; i < jsonArray.length(); i++) {
+                                        if (jsonArray.getJSONObject(i).getBoolean("default")) {
+                                            if (jsonArray.getJSONObject(i).has("cardType")) {
                                                 //means the default payment is a credit card
                                                 int len = jsonArray.getJSONObject(i).getString("maskedNumber").length() - 4;
                                                 String astr = "";
-                                                for (int j = 0; j < len; j++){
+                                                for (int j = 0; j < len; j++) {
                                                     astr += "*";
                                                 }
                                                 String last4 = astr + jsonArray.getJSONObject(i).getString("last4");
-                                                if (quantityAvailable > 1){
+                                                if (quantityAvailable > 1) {
                                                     ADselectQuantity(
                                                             jsonArray.getJSONObject(i).getString("cardType"),
                                                             last4,
                                                             jsonArray.getJSONObject(i).getString("imageUrl"),
                                                             jsonArray.getJSONObject(i).getString("token"));
-                                                }
-                                                else {
+                                                } else {
                                                     ADareYouSurePaymentMethod(
                                                             jsonArray.getJSONObject(i).getString("cardType"),
                                                             last4,
@@ -1274,17 +1291,15 @@ public class MapsActivity extends AppCompatActivity
                                                             jsonArray.getJSONObject(i).getString("token"),
                                                             1);
                                                 }
-                                            }
-                                            else{
+                                            } else {
                                                 //means the default payment is PayPal
-                                                if (quantityAvailable > 1){
+                                                if (quantityAvailable > 1) {
                                                     ADselectQuantity(
                                                             "PayPal",
                                                             jsonArray.getJSONObject(i).getString("email"),
                                                             jsonArray.getJSONObject(i).getString("imageUrl"),
                                                             jsonArray.getJSONObject(i).getString("token"));
-                                                }
-                                                else {
+                                                } else {
                                                     ADareYouSurePaymentMethod(
                                                             "PayPal",
                                                             jsonArray.getJSONObject(i).getString("email"),
@@ -1297,18 +1312,15 @@ public class MapsActivity extends AppCompatActivity
                                             break;
                                         }
                                     }
-                                }
-                                else {
+                                } else {
                                     pd.dismiss();
                                     ADnoPaymentMethod();
                                 }
-                            }
-                            else if (response.getString("status").equals("fail")) {
+                            } else if (response.getString("status").equals("fail")) {
                                 pd.dismiss();
                                 ADnoPaymentMethod();
                             }
-                        }
-                        catch (JSONException e){
+                        } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
@@ -1323,7 +1335,7 @@ public class MapsActivity extends AppCompatActivity
         queue.add(jsonObjectRequest);
     }
 
-    private void ADselectQuantity(final String paymentType, final String paymentCredentials, final String paymentImageUrl, final String paymentToken){
+    private void ADselectQuantity(final String paymentType, final String paymentCredentials, final String paymentImageUrl, final String paymentToken) {
         LayoutInflater inflater = getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.number_picker, null);
 
@@ -1356,7 +1368,7 @@ public class MapsActivity extends AppCompatActivity
         alertDialog.show();
     }
 
-    private void ADareYouSurePaymentMethod(String paymentType, String paymentCredentials, String paymentImageUrl, final String paymentToken, final int quantity){
+    private void ADareYouSurePaymentMethod(String paymentType, String paymentCredentials, String paymentImageUrl, final String paymentToken, final int quantity) {
         LayoutInflater inflater = getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.maps_activity_transaction_are_you_sure__alertdialog, null);
 
@@ -1364,10 +1376,9 @@ public class MapsActivity extends AppCompatActivity
         final float totalPrice = Float.valueOf(priceMarker) * quantity;
         TextView tvCompleteTransactionDialog = alertLayout.findViewById(R.id.tvCompleteTransactionDialog);
         String completeTransactionText;
-        if (quantity > 1){
+        if (quantity > 1) {
             completeTransactionText = getResources().getString(R.string.You_will_be_charged) + " $" + totalPrice + " ($" + priceMarker + " x " + quantity + ") " + getResources().getString(R.string.with_the_following_payment_method);
-        }
-        else {
+        } else {
             completeTransactionText = getResources().getString(R.string.You_will_be_charged) + " $" + totalPrice + " " + getResources().getString(R.string.with_the_following_payment_method);
         }
         tvCompleteTransactionDialog.setText(completeTransactionText);
@@ -1401,7 +1412,7 @@ public class MapsActivity extends AppCompatActivity
         alertDialog.show();
     }
 
-    private void ADotherPaymentMethod(final int quantity, final float totalPrice){
+    private void ADotherPaymentMethod(final int quantity, final float totalPrice) {
         pd.setTitle(R.string.Loading);
         pd.setMessage(getResources().getString(R.string.Loading_payment_methods));
         pd.setCancelable(false);
@@ -1422,23 +1433,23 @@ public class MapsActivity extends AppCompatActivity
                                 List<String> credentials = new ArrayList<>();
                                 final List<String> token = new ArrayList<>();
                                 JSONObject customerObj = new JSONObject(response.getString("customer"));
-                                if (customerObj.has("creditCards")){
+                                if (customerObj.has("creditCards")) {
                                     JSONArray creditCardsArray = new JSONArray(customerObj.getString("creditCards"));
-                                    for (int i = 0; i < creditCardsArray.length(); i++){
+                                    for (int i = 0; i < creditCardsArray.length(); i++) {
                                         paymentType.add("creditCard");
                                         paymentTypeName.add(creditCardsArray.getJSONObject(i).getString("cardType"));
                                         int len = creditCardsArray.getJSONObject(i).getString("maskedNumber").length() - 4;
                                         String astr = "";
-                                        for (int j = 0; j < len; j++){
+                                        for (int j = 0; j < len; j++) {
                                             astr += "*";
                                         }
                                         token.add(creditCardsArray.getJSONObject(i).getString("token"));
                                         credentials.add(astr + creditCardsArray.getJSONObject(i).getString("last4"));
                                     }
                                 }
-                                if (customerObj.has("paypalAccounts")){
+                                if (customerObj.has("paypalAccounts")) {
                                     JSONArray paypalAccountsArray = new JSONArray(customerObj.getString("paypalAccounts"));
-                                    for (int i = 0; i < paypalAccountsArray.length(); i++){
+                                    for (int i = 0; i < paypalAccountsArray.length(); i++) {
                                         paymentType.add("paypal");
                                         paymentTypeName.add("PayPal");
                                         token.add(paypalAccountsArray.getJSONObject(i).getString("token"));
@@ -1446,7 +1457,7 @@ public class MapsActivity extends AppCompatActivity
                                     }
                                 }
                                 CharSequence[] csArr = new CharSequence[paymentType.size()];
-                                for (int i = 0; i < paymentType.size(); i++){
+                                for (int i = 0; i < paymentType.size(); i++) {
                                     csArr[i] = paymentTypeName.get(i) + "\n" + credentials.get(i);
                                 }
                                 final String[] tokenString = new String[1];
@@ -1475,12 +1486,10 @@ public class MapsActivity extends AppCompatActivity
                                 final AlertDialog alertDialog = alertDialogBuilder.create();
                                 alertDialog.show();
 
-                            }
-                            else if (!response.getString("status").equals("fail")) {
+                            } else if (!response.getString("status").equals("fail")) {
                                 Toast.makeText(MapsActivity.this, "Error: could not retrieve payment methods", Toast.LENGTH_SHORT).show();
                             }
-                        }
-                        catch (JSONException e){
+                        } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
@@ -1495,7 +1504,7 @@ public class MapsActivity extends AppCompatActivity
         queue.add(jsonObjectRequest);
     }
 
-    private void ADnoPaymentMethod(){
+    private void ADnoPaymentMethod() {
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle(R.string.No_Payment_Method);
         alertDialogBuilder.setMessage(R.string.You_have_no_payment_method);
@@ -1523,7 +1532,7 @@ public class MapsActivity extends AppCompatActivity
         alertDialog.show();
     }
 
-    private void checkout(String token, final int quantity, float totalPrice){
+    private void checkout(String token, final int quantity, float totalPrice) {
         pd.setTitle(R.string.Completing);
         pd.setMessage(getResources().getString(R.string.Completing_transaction));
         pd.setCancelable(false);
@@ -1539,17 +1548,17 @@ public class MapsActivity extends AppCompatActivity
         }
 
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.POST, getString(R.string.URL) +"/payment/checkout", jsonObject, new Response.Listener<JSONObject>() {
+                (Request.Method.POST, getString(R.string.URL) + "/payment/checkout", jsonObject, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        try{
-                            if (response.getString("status").equals("success")){
+                        try {
+                            if (response.getString("status").equals("success")) {
                                 transactionBuyNow(quantity);
                             } else {
                                 ADerrorProcessingPayment();
                             }
-                        } catch (JSONException e){
+                        } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
@@ -1559,13 +1568,14 @@ public class MapsActivity extends AppCompatActivity
                     public void onErrorResponse(VolleyError error) {
                         error.printStackTrace();
                     }
-                }){
+                }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("Content-Type", "application/json");
                 return headers;
             }
+
             @Override
             public String getBodyContentType() {
                 return "application/json";
@@ -1575,7 +1585,7 @@ public class MapsActivity extends AppCompatActivity
         queue.add(jsObjRequest);
     }
 
-    private void ADerrorProcessingPayment(){
+    private void ADerrorProcessingPayment() {
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle(R.string.Error);
         alertDialogBuilder.setMessage(R.string.Error_processing_payment);
@@ -1589,7 +1599,7 @@ public class MapsActivity extends AppCompatActivity
         alertDialog.show();
     }
 
-    private void BSfilterMapType(){
+    private void BSfilterMapType() {
         Bundle bundle = new Bundle();
         bundle.putString("type", typeFilterSelected);
         bundle.putString("category", categoryFilterSelected);
@@ -1598,14 +1608,14 @@ public class MapsActivity extends AppCompatActivity
         bottomSheetFilterMap.show(getSupportFragmentManager(), bottomSheetFilterMap.getTag());
     }
 
-    private void refreshMap(){
-        if (mMap != null){
+    private void refreshMap() {
+        if (mMap != null) {
             mMap.clear();
             getAvailableSpots(typeFilterSelected, categoryFilterSelected);
         }
     }
 
-    private void startTrackingService(String lid, String lat, String lng, boolean isSeller){
+    private void startTrackingService(String lid, String lat, String lng, boolean isSeller) {
         PackageManager pm = getPackageManager();
         ComponentName componentName = new ComponentName("almanza1112.spottrade", "almanza1112.spottrade.nonActivity.tracking.TrackerService");
         pm.setComponentEnabledSetting(componentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
@@ -1617,8 +1627,8 @@ public class MapsActivity extends AppCompatActivity
         this.startService(serviceIntent);
     }
 
-    private void startNavigationApp(String lat, String lng, String label){
-        Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + lat + "," + lng+"(" + Uri.encode(label) + ")");
+    private void startNavigationApp(String lat, String lng, String label) {
+        Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + lat + "," + lng + "(" + Uri.encode(label) + ")");
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         //mapIntent.setPackage("com.google.android.apps.maps"); //this line of code opens up Google Maps only
         startActivity(mapIntent);
@@ -1634,21 +1644,21 @@ public class MapsActivity extends AppCompatActivity
         return false;
     }
 
-    private void checkOnGoingTransactions(){
-        progressBar.setVisibility(View.VISIBLE);
+    private void checkOnGoingTransactions() {
+        iProgressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/transaction/check?uid="+ SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)) + "&offersAllowed=" + offersAllowed, null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/transaction/check?uid=" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)) + "&offersAllowed=" + offersAllowed, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                try{
+                try {
                     Log.e("onGoing", response + "");
-                    if (response.getString("status").equals("success")){
+                    if (response.getString("status").equals("success")) {
                         JSONArray jsonArray = new JSONArray(response.getString("onGoingTransactions"));
                         String lidBought = jsonArray.getJSONObject(0).getString("lidMarker");
                         Map<String, String> userInfo = new HashMap<>();
                         List<String> ids = new ArrayList<>();
-                        for (int i = 0; i < jsonArray.length(); i++){
+                        for (int i = 0; i < jsonArray.length(); i++) {
                             String buyerID = jsonArray.getJSONObject(i).getString("buyerID");
                             String buyerProfilePhotoUrl = jsonArray.getJSONObject(i).getString("buyerProfilePhotoUrl");
                             ids.add(buyerID);
@@ -1656,21 +1666,21 @@ public class MapsActivity extends AppCompatActivity
                             //marker.setTag(locationObj.getString("_id"));
                         }
                         //getFirebaseData(lidBought);
-                        progressBar.setVisibility(View.GONE);
+                        iProgressBar.setVisibility(View.GONE);
                         //startTrackingService();
-                    } else if (response.getString("status").equals("fail") && response.getString("reason").equals("no onGoingTransactions")){
+                    } else if (response.getString("status").equals("fail") && response.getString("reason").equals("no onGoingTransactions")) {
                         getAvailableSpots(typeFilterSelected, categoryFilterSelected);
-                        progressBar.setVisibility(View.GONE);
+                        iProgressBar.setVisibility(View.GONE);
                     }
-                } catch (JSONException e){
-                    progressBar.setVisibility(View.GONE);
+                } catch (JSONException e) {
+                    iProgressBar.setVisibility(View.GONE);
                     Toast.makeText(MapsActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressBar.setVisibility(View.GONE);
+                iProgressBar.setVisibility(View.GONE);
                 Toast.makeText(MapsActivity.this, getResources().getString(R.string.Server_error), Toast.LENGTH_SHORT).show();
             }
         }
@@ -1679,21 +1689,20 @@ public class MapsActivity extends AppCompatActivity
     }
 
     boolean firstTime;
-    private void getFirebaseData(String lidBought){
-        searchMenuItem.setVisible(false);
-        filterMenuItem.setVisible(false);
+
+    private void getFirebaseData(String lidBought) {
         databaseReference = FirebaseDatabase.getInstance().getReference().child("tracking").child(lidBought);
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds: dataSnapshot.getChildren()){
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     BuyerTracker buyerTracker = new BuyerTracker();
                     buyerTracker.setKey(ds.getKey());
                     buyerTracker.setLat(ds.getValue(BuyerTracker.class).getLat());
                     buyerTracker.setLng(ds.getValue(BuyerTracker.class).getLng());
-                    if (!buyerTracker.getKey().equals(SharedPref.getSharedPreferences(MapsActivity.this, getString(R.string.logged_in_user_id)))){
+                    if (!buyerTracker.getKey().equals(SharedPref.getSharedPreferences(MapsActivity.this, getString(R.string.logged_in_user_id)))) {
                         LatLng locash = new LatLng(buyerTracker.getLat(), buyerTracker.getLng());
-                        if (!firstTime){
+                        if (!firstTime) {
                             marker = mMap.addMarker(new MarkerOptions()
                                     .position(locash)
                                     .icon(BitmapDescriptorFactory.fromBitmap(customMarkerProfilePhoto(SharedPref.getSharedPreferences(MapsActivity.this, getString(R.string.logged_in_user_photo_url))))));
@@ -1735,7 +1744,7 @@ public class MapsActivity extends AppCompatActivity
         ImageView ivMarker = customMarkerView.findViewById(R.id.ivMarker);
         TextView tvPrice = customMarkerView.findViewById(R.id.tvPrice);
 
-        if (type.equals("Sell")){
+        if (type.equals("Sell")) {
             ivMarker.setImageResource(R.drawable.spottrade_marker_primary);
             tvPrice.setTextColor(getResources().getColor(R.color.colorAccent));
         } else {
@@ -1758,7 +1767,7 @@ public class MapsActivity extends AppCompatActivity
         return returnedBitmap;
     }
 
-    private void goToViewOffers(String lid){
+    private void goToViewOffers(String lid) {
         Bundle bundle = new Bundle();
         bundle.putString("lidMarker", lid);
         ViewOffers viewOffers = new ViewOffers();
@@ -1776,7 +1785,7 @@ public class MapsActivity extends AppCompatActivity
         return format.format(updatedate);
     }
 
-    public void setSnackBar(String snackBarText){
+    public void setSnackBar(String snackBarText) {
         Snackbar snackbar = Snackbar.make(findViewById(R.id.coordinatorLayout), snackBarText, Snackbar.LENGTH_SHORT);
         snackbar.show();
     }
@@ -1815,5 +1824,38 @@ public class MapsActivity extends AppCompatActivity
                 }
             }
         });
+    }
+
+    private void startIntentService(Location midLatLng){
+        Intent intent = new Intent(this, FetchAddressIntentService.class);
+        mResultReceiver = new AddressResultReceiver(new Handler());
+        intent.putExtra(RECEIVER, mResultReceiver);
+        intent.putExtra(LOCATION_DATA_EXTRA, midLatLng);
+        startService(intent);
+    }
+
+    private class AddressResultReceiver extends ResultReceiver {
+
+        public AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            super.onReceiveResult(resultCode, resultData);
+
+            // Display the address string
+            // or error message sent from Intent Service
+            if (resultCode == SUCCESS_RESULT){
+                mAddressOutput = resultData.getString(RESULT_DATA_KEY);
+                tvMidAddress.setText(mAddressOutput);
+                Log.e("ADDRESS", mAddressOutput);
+            } else if (resultCode == SUCCESS_RESULT_USING_GOOGLE_MAPS){
+                mAddressOutput = resultData.getString(RESULT_DATA_KEY);
+                tvMidAddress.setText(mAddressOutput);
+                Log.e("ADDRESS_API", mAddressOutput);
+
+            }
+        }
     }
 }
