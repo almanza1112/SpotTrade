@@ -170,6 +170,7 @@ public class MapsActivity extends AppCompatActivity
     // for fetching address service and receiver for appearing mid map
     private TextView tvMidAddress;
     private static final int SUCCESS_RESULT = 0;
+    private static final int FAILURE_RESULT = 1;
     private static final int SUCCESS_RESULT_USING_GOOGLE_MAPS = 2;
     private static final String PACKAGE_NAME = "almanza1112.spottrade";
     private static final String RECEIVER = PACKAGE_NAME + ".RECEIVER";
@@ -1849,12 +1850,11 @@ public class MapsActivity extends AppCompatActivity
             if (resultCode == SUCCESS_RESULT){
                 mAddressOutput = resultData.getString(RESULT_DATA_KEY);
                 tvMidAddress.setText(mAddressOutput);
-                Log.e("ADDRESS", mAddressOutput);
             } else if (resultCode == SUCCESS_RESULT_USING_GOOGLE_MAPS){
                 mAddressOutput = resultData.getString(RESULT_DATA_KEY);
                 tvMidAddress.setText(mAddressOutput);
-                Log.e("ADDRESS_API", mAddressOutput);
-
+            } else if (resultCode == FAILURE_RESULT){
+                setSnackBar("Unable to get location");
             }
         }
     }

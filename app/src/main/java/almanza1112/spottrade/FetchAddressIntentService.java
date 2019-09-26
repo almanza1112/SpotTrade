@@ -90,7 +90,8 @@ public class FetchAddressIntentService extends IntentService {
                 // join them and send them to MapsActivity
 
                 for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
-                    addressFragments.add(address.getAddressLine(i));
+                    //addressFragments.add(address.getAddressLine(i)); // this is for the address that includes state, zipcode, and country
+                    addressFragments.add(address.getFeatureName() + " " + address.getThoroughfare() + ", " + address.getLocality()); // this address format is street number, street name, and city/town
                 }
                 Log.e(TAG, "Address Found");
                 addressFound = true;
@@ -127,7 +128,30 @@ public class FetchAddressIntentService extends IntentService {
                     // get first object i.e. just one address
                     JSONObject resultsObject = results.getJSONObject(0);
                     // get formatted address
-                    String formattedAddressApi = resultsObject.getString("formatted_address").toString();
+                    //String formattedAddressApi = resultsObject.getString("formatted_address"); // this is for the address that includes state, zipcode, and country
+                    JSONArray addressComponentsArray = resultsObject.getJSONArray("address_components"); // access the address components array to get street number, street name, and city/town
+                    String streetNumber = "";
+                    String route = "";
+                    String locality = "";
+                    for (int i = 0; i < addressComponentsArray.length(); i++){
+                        String type = addressComponentsArray.getJSONObject(i).getJSONArray("types").get(0).toString();
+
+                        switch (type){
+                            case "street_number":
+                                streetNumber = addressComponentsArray.getJSONObject(i).getString("long_name");
+                                break;
+
+                            case "route":
+                                route = addressComponentsArray.getJSONObject(i).getString("long_name");
+                                break;
+
+                            case "locality":
+                                locality = addressComponentsArray.getJSONObject(i).getString("long_name");
+                                break;
+                        }
+                    }
+
+                    String formattedAddressApi = streetNumber + " " + route + " " + " " + locality;
                     Log.e(TAG, "Address found using Google Maps API");
                     addressFound = true;
                     deliverResultsToReceiver(SUCCESS_RESULT_USING_GOOGLE_MAPS, formattedAddressApi);
@@ -137,8 +161,6 @@ public class FetchAddressIntentService extends IntentService {
                 errorMessage = "Google Maps API Failed";
                 deliverResultsToReceiver(FAILURE_RESULT, errorMessage);
             }
-
-
         }
 
         if (!addressFound && !isOnline()){
