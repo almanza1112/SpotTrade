@@ -28,7 +28,6 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.design.button.MaterialButton;
-import android.support.design.chip.Chip;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -146,7 +145,6 @@ public class MapsActivity extends AppCompatActivity
     private View iProgressBar;
 
     // for filter map tags
-    private Chip cType, cCategory;
     private String typeFilterSelected = "All", categoryFilterSelected = "All";
     private boolean offersAllowed;
 
@@ -192,7 +190,7 @@ public class MapsActivity extends AppCompatActivity
     Personal personalFragment;
     BottomSheetFilterMap bottomSheetFilterMap;
 
-    // For onOfferAccepted
+    // for onOfferAccepted
     boolean isOfferAccepted;
     String lidBought, idBought, latBought, lngBought, profilePhotoUrlBought;
 
@@ -211,9 +209,7 @@ public class MapsActivity extends AppCompatActivity
         findViewById(R.id.ivFilterIcon).setOnClickListener(this);
         findViewById(R.id.ivSearchIcon).setOnClickListener(this);
 
-        cType = findViewById(R.id.cType);
-        cCategory = findViewById(R.id.cCategory);
-
+        // for marker persistent bottom sheet
         iBottomSheetMarker = findViewById(R.id.iBottomSheetMarker);
         rlToolbar = iBottomSheetMarker.findViewById(R.id.rlToolbar);
         bsToolbar = iBottomSheetMarker.findViewById(R.id.bsToolBar);
@@ -231,36 +227,6 @@ public class MapsActivity extends AppCompatActivity
         mbBuyNow = iBottomSheetMarker.findViewById(R.id.mbBuyNow);
         mbMakeOffer = iBottomSheetMarker.findViewById(R.id.mbMakeOffer);
         bottomSheetBehavior = BottomSheetBehavior.from(iBottomSheetMarker);
-        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View view, int i) {
-                switch (i) {
-                    case BottomSheetBehavior.STATE_HIDDEN:
-
-                        break;
-                    case BottomSheetBehavior.STATE_EXPANDED:
-                        rlToolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-                        break;
-
-                    case BottomSheetBehavior.STATE_COLLAPSED:
-                        rlToolbar.setBackgroundColor(Color.TRANSPARENT);
-                        break;
-
-                    case BottomSheetBehavior.STATE_DRAGGING:
-                        rlToolbar.setBackgroundColor(Color.TRANSPARENT);
-                        break;
-
-                    case BottomSheetBehavior.STATE_SETTLING:
-
-                        break;
-                }
-            }
-
-            @Override
-            public void onSlide(@NonNull View view, float v) {
-
-            }
-        });
 
         final RelativeLayout rlToolbar = findViewById(R.id.rlToolbar);
         //Toolbar toolbar = findViewById(R.id.toolbar);
@@ -342,6 +308,7 @@ public class MapsActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         /*
+        // This code that is commented out is for when you want to open the nav drawer using the menu/home button of the toolbar
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, ivMenu, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
             @Override
             public void onDrawerOpened(View drawerView) {
@@ -447,24 +414,6 @@ public class MapsActivity extends AppCompatActivity
 
             case R.id.bCancelOffer:
                 transactionCancelOffer();
-                break;
-                */
-
-            case R.id.cType:
-
-                break;
-
-            case R.id.cCategory:
-
-                break;
-
-                /*
-            case R.id.ivCloseType:
-                getAvailableSpots("All", categoryFilterSelected);
-                break;
-
-            case R.id.ivCloseCategory:
-                getAvailableSpots(typeFilterSelected, "All");
                 break;
                 */
             case R.id.ivCloseBottomSheet:
@@ -920,24 +869,6 @@ public class MapsActivity extends AppCompatActivity
                             marker.setTag(locationObj.getString("_id"));
                         }
                         iProgressBar.setVisibility(View.GONE);
-                        // Following is for the filtered tags
-                        if (type.equals("All") && category.equals("All")) {
-                            cType.setVisibility(View.GONE);
-                            cCategory.setVisibility(View.GONE);
-                        } else {
-                            if (type.equals("All")) {
-                                cType.setVisibility(View.GONE);
-                            } else {
-                                cType.setVisibility(View.VISIBLE);
-                                cType.setText(type);
-                            }
-                            if (category.equals("All")) {
-                                cCategory.setVisibility(View.GONE);
-                            } else {
-                                cCategory.setVisibility(View.VISIBLE);
-                                cCategory.setText(category);
-                            }
-                        }
 
                         typeFilterSelected = type;
                         categoryFilterSelected = category;

@@ -65,29 +65,6 @@
                     android:src="@mipmap/ic_search_black_24dp" />
             </RelativeLayout>
 
-            <android.support.design.chip.ChipGroup
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_below="@+id/rlToolbar"
-                android:layout_marginTop="1dp"
-                android:layout_marginLeft="@dimen/contentPadding"
-                android:layout_marginRight="@dimen/contentPadding">
-                <android.support.design.chip.Chip
-                    android:id="@+id/cType"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    fab:chipBackgroundColor="@color/colorAccent"
-                    android:textColor="@android:color/white"
-                    android:visibility="gone"/>
-                <android.support.design.chip.Chip
-                    android:id="@+id/cCategory"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    fab:chipBackgroundColor="@color/colorAccent"
-                    android:textColor="@android:color/white"
-                    android:visibility="gone"/>
-            </android.support.design.chip.ChipGroup>
         </RelativeLayout>
 
         <include android:id="@+id/iBottomSheetMarker"
