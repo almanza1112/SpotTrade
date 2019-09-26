@@ -91,7 +91,7 @@
         </RelativeLayout>
 
         <include android:id="@+id/iBottomSheetMarker"
-            layout="@layout/bottomsheet_marker" />
+            layout="@layout/maps_activity_marker_bottomsheet" />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fabMyLocation"

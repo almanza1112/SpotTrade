@@ -14,7 +14,6 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -28,6 +27,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.design.button.MaterialButton;
 import android.support.design.chip.Chip;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.NavigationView;
@@ -41,25 +41,18 @@ import android.support.v4.view.OnApplyWindowInsetsListener;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.WindowInsetsCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -92,7 +85,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -163,8 +155,9 @@ public class MapsActivity extends AppCompatActivity
     private View iBottomSheetMarker;
     private RelativeLayout.LayoutParams rlToolbarLayoutParams;
     private RelativeLayout rlToolbar, bsToolbar;
-    private TextView tvDescription, tvTimeAndDateAvailable, tvQuantityAvailable, tvSellerRequesterFirstNameAndRating, tvLocationName, tvLocationAddress, tvCategory, tvType, tvPrice;
-    private ImageView ivSellerRequesterProfilePhoto, ivCloseBottomSheet;
+    private TextView tvDescription, tvTimeAndDateAvailable, tvQuantityAvailable, tvSellerRequesterFirstNameAndRating, tvLocationName, tvLocationAddress, tvCategoryAndPrice, tvType;
+    private ImageView ivCloseBottomSheet;
+    private MaterialButton mbBuyNow, mbMakeOffer;
     private int quantityAvailable;
 
     // for fetching address service and receiver for appearing mid map
@@ -227,16 +220,16 @@ public class MapsActivity extends AppCompatActivity
         rlToolbarLayoutParams = (RelativeLayout.LayoutParams) bsToolbar.getLayoutParams();
         ivCloseBottomSheet = iBottomSheetMarker.findViewById(R.id.ivCloseBottomSheet);
         ivCloseBottomSheet.setOnClickListener(this);
-        tvCategory = iBottomSheetMarker.findViewById(R.id.tvCategory);
+        tvCategoryAndPrice = iBottomSheetMarker.findViewById(R.id.tvCategoryAndPrice);
         tvType = iBottomSheetMarker.findViewById(R.id.tvType);
-        tvPrice = iBottomSheetMarker.findViewById(R.id.tvPrice);
         tvLocationName = iBottomSheetMarker.findViewById(R.id.tvLocationName);
         tvLocationAddress = iBottomSheetMarker.findViewById(R.id.tvLocationAddress);
-        ivSellerRequesterProfilePhoto = iBottomSheetMarker.findViewById(R.id.ivSellerRequesterProfilePhoto);
         tvSellerRequesterFirstNameAndRating = iBottomSheetMarker.findViewById(R.id.tvSellerRequesterFirstNameAndRating);
         tvQuantityAvailable = iBottomSheetMarker.findViewById(R.id.tvQuantityAvailable);
         tvTimeAndDateAvailable = iBottomSheetMarker.findViewById(R.id.tvStartTimeAndDate);
         tvDescription = iBottomSheetMarker.findViewById(R.id.tvDescription);
+        mbBuyNow = iBottomSheetMarker.findViewById(R.id.mbBuyNow);
+        mbMakeOffer = iBottomSheetMarker.findViewById(R.id.mbMakeOffer);
         bottomSheetBehavior = BottomSheetBehavior.from(iBottomSheetMarker);
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
@@ -722,15 +715,13 @@ public class MapsActivity extends AppCompatActivity
                     priceMarker = response.getString("price");
                     quantityAvailable = response.getInt("quantity");
 
-                    tvCategory.setText(response.getString("category"));
+                    tvCategoryAndPrice.setText(response.getString("category") + " - $"+priceMarker);
                     tvLocationName.setText(response.getString("name"));
                     tvLocationAddress.setText(response.getString("address"));
                     JSONObject sellerInfoObj = response.getJSONObject("sellerInfo");
                     tvSellerRequesterFirstNameAndRating.setText(sellerInfoObj.getString("sellerFirstName") + " " + sellerInfoObj.getString("sellerOverallRating") + "(" + sellerInfoObj.getString("sellerTotalRatings") + ")");
-                    tvQuantityAvailable.setText(String.valueOf(quantityAvailable));
-                    tvPrice.setText("$" + priceMarker);
+                    tvQuantityAvailable.setText(String.valueOf(quantityAvailable) + " " + getResources().getString(R.string.available));
                     tvTimeAndDateAvailable.setText(epochToDateString(response.getLong("dateTimeStart")));
-                    Picasso.get().load(sellerInfoObj.getString("sellerProfilePhotoUrl")).fit().centerCrop().into(ivSellerRequesterProfilePhoto);
 
                     typeMarker = response.getString("type");
                     if (typeMarker.equals("Sell")) {
@@ -747,6 +738,12 @@ public class MapsActivity extends AppCompatActivity
                         tvDescription.setText("\"" + response.getString("description") + "\"");
                     } else {
                         tvDescription.setVisibility(View.GONE);
+                    }
+
+                    if (!response.getBoolean("offerAllowed")){
+                        mbMakeOffer.setVisibility(View.GONE);
+                    } else {
+                        mbMakeOffer.setVisibility(View.VISIBLE);
                     }
 
                     double dLat = Double.valueOf(response.getString("latitude"));
@@ -919,8 +916,7 @@ public class MapsActivity extends AppCompatActivity
 
                             marker = mMap.addMarker(new MarkerOptions()
                                     .position(locash)
-                                    .icon(BitmapDescriptorFactory.fromBitmap(customMarkerPrice("$" + locationObj.getString("price"), locationObj.getString("type"))))
-                                    .title(locationObj.getString("name")));
+                                    .icon(BitmapDescriptorFactory.fromBitmap(customMarkerPrice("$" + locationObj.getString("price"), locationObj.getString("type")))));
                             marker.setTag(locationObj.getString("_id"));
                         }
                         iProgressBar.setVisibility(View.GONE);
