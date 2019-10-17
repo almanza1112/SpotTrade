@@ -573,7 +573,7 @@ public class CreateSpot extends Fragment implements View.OnClickListener, Compou
         pd.setMessage(getResources().getString(R.string.Adding_spot_to_SpotTrade_database));
         RequestQueue queue = Volley.newRequestQueue(getActivity());
         final JSONObject jsonObject = new JSONObject();
-        final JSONObject sellerInfoObj = new JSONObject();
+        final JSONObject posterInfoObj = new JSONObject();
         try {
             jsonObject.put("type", type);
             jsonObject.put("category", category);
@@ -586,10 +586,10 @@ public class CreateSpot extends Fragment implements View.OnClickListener, Compou
             jsonObject.put("longitude", String.valueOf(longitude));
             jsonObject.put("description", tietDescription.getText().toString());
             jsonObject.put("quantity", quantity);
-            jsonObject.put("hasBuyer", false);
+            jsonObject.put("hasAcceptor", false);
 
-            sellerInfoObj.put("sellerID", SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)));
-            jsonObject.put("sellerInfo", sellerInfoObj);
+            posterInfoObj.put("posterId", SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)));
+            jsonObject.put("posterInfo", posterInfoObj);
 
             Calendar startCalendar = Calendar.getInstance();
             if (!cbNow.isChecked()){

@@ -42,10 +42,10 @@ import almanza1112.spottrade.nonActivity.SharedPref;
 public class HistorySpot extends Fragment {
 
     private ProgressBar progressBar;
-    private TextView tvLocationName, tvLocationAddress, tvDate, tvSellerText, tvSellerName,
-            tvBuyerText, tvBuyerName, tvQuantity, tvPrice, tvTotal, tvDescription, tvFeedback;
-    private ImageView ivStaticMap, ivSellerProfilePhoto, ivBuyerProfilePhoto;
-    private CardView cvSellerProfilePhoto, cvBuyerProfilePhoto;
+    private TextView tvLocationName, tvLocationAddress, tvDate, tvPosterText, tvPosterName,
+            tvAcceptorText, tvAcceptorName, tvQuantity, tvPrice, tvTotal, tvDescription, tvFeedback;
+    private ImageView ivStaticMap, ivPosterProfilePhoto, ivAcceptorProfilePhoto;
+    private CardView cvPosterProfilePhoto, cvAcceptorProfilePhoto;
 
     @Nullable
     @Override
@@ -73,14 +73,14 @@ public class HistorySpot extends Fragment {
         tvLocationAddress = view.findViewById(R.id.tvLocationAddress);
         ivStaticMap = view.findViewById(R.id.ivStaticMap);
         tvDate = view.findViewById(R.id.tvDate);
-        tvSellerText = view.findViewById(R.id.tvSellerText);
-        tvSellerName = view.findViewById(R.id.tvSellerName);
-        tvBuyerText = view.findViewById(R.id.tvBuyerText);
-        tvBuyerName = view.findViewById(R.id.tvBuyerName);
-        cvSellerProfilePhoto = view.findViewById(R.id.cvSellerProfilePhoto);
-        ivSellerProfilePhoto = view.findViewById(R.id.ivSellerProfilePhoto);
-        cvBuyerProfilePhoto = view.findViewById(R.id.cvBuyerProfilePhoto);
-        ivBuyerProfilePhoto = view.findViewById(R.id.ivBuyerProfilePhoto);
+        tvPosterText = view.findViewById(R.id.tvPosterText);
+        tvPosterName = view.findViewById(R.id.tvPosterName);
+        tvAcceptorText = view.findViewById(R.id.tvAcceptorText);
+        tvAcceptorName = view.findViewById(R.id.tvAcceptorName);
+        cvPosterProfilePhoto = view.findViewById(R.id.cvPosterProfilePhoto);
+        ivPosterProfilePhoto = view.findViewById(R.id.ivPosterProfilePhoto);
+        cvAcceptorProfilePhoto = view.findViewById(R.id.cvAcceptorProfilePhoto);
+        ivAcceptorProfilePhoto = view.findViewById(R.id.ivAcceptorProfilePhoto);
         tvQuantity = view.findViewById(R.id.tvQuantity);
         tvPrice = view.findViewById(R.id.tvPrice);
         tvTotal = view.findViewById(R.id.tvTotal);
@@ -127,44 +127,44 @@ public class HistorySpot extends Fragment {
                                 "&size=1000x150&scale=2&" +
                                 "key=" + getResources().getString(R.string.google_maps_key);
                         Picasso.get().load(url).fit().into(ivStaticMap);
-                        String dateTime = epochToDateString(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getLong("datePurchased")); // TODO: change "datePurchased" to "dateTransactionCompleted"
+                        String dateTime = epochToDateString(locationObj.getJSONArray("acceptorInfo").getJSONObject(0).getLong("datePurchased")); // TODO: change "datePurchased" to "dateTransactionCompleted"
                         tvDate.setText(dateTime);
                         String type = locationObj.getString("type");
-                        String sellerID = locationObj.getJSONObject("sellerInfo").getString("sellerID");
+                        String posterId = locationObj.getJSONObject("posterInfo").getString("posterId");
                         //Check if the logged in user is the seller for type Sell
-                        if (type.equals("Sell") && sellerID.equals(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)))){
-                            //If logged in user is the seller of type Sell then make tvSellerText
+                        if (type.equals("Sell") && posterId.equals(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)))){
+                            //If logged in user is the seller of type Sell then make tvPosterText
                             // "You" and then add the name of the other user as the buyer
-                            cvBuyerProfilePhoto.setVisibility(View.VISIBLE);
+                            cvAcceptorProfilePhoto.setVisibility(View.VISIBLE);
                             Picasso.
                                     get().
-                                    load(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerProfilePhotoUrl")).
+                                    load(locationObj.getJSONArray("acceptorInfo").getJSONObject(0).getString("acceptorProfilePhotoUrl")).
                                     fit().
-                                    into(ivBuyerProfilePhoto);
-                            tvSellerText.setText(getResources().getString(R.string.Seller));
-                            tvSellerName.setText(getResources().getString(R.string.You));
-                            tvBuyerText.setText(getResources().getString(R.string.Buyer));
-                            tvBuyerName.setText(
-                                    locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerFirstName") + " " +
-                                    locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerLastName") + " " +
-                                            locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerOverallRating") + " (" +
-                                            locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("buyerTotalRatings") + ")");
-                        } else if (type.equals("Sell") && !sellerID.equals(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)))){
-                            cvSellerProfilePhoto.setVisibility(View.VISIBLE);
+                                    into(ivAcceptorProfilePhoto);
+                            tvPosterText.setText(getResources().getString(R.string.Seller));
+                            tvPosterName.setText(getResources().getString(R.string.You));
+                            tvAcceptorText.setText(getResources().getString(R.string.Buyer));
+                            tvAcceptorName.setText(
+                                    locationObj.getJSONArray("acceptorInfo").getJSONObject(0).getString("acceptorFirstName") + " " +
+                                    locationObj.getJSONArray("acceptorInfo").getJSONObject(0).getString("acceptorLastName") + " " +
+                                            locationObj.getJSONArray("acceptorInfo").getJSONObject(0).getString("acceptorOverallRating") + " (" +
+                                            locationObj.getJSONArray("acceptorInfo").getJSONObject(0).getString("acceptorTotalRatings") + ")");
+                        } else if (type.equals("Sell") && !posterId.equals(SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)))){
+                            cvPosterProfilePhoto.setVisibility(View.VISIBLE);
                             Picasso.
                                     get().
-                                    load(locationObj.getJSONObject("sellerInfo").getString("sellerProfilePhotoUrl")).
-                                    into(ivSellerProfilePhoto);
-                            tvSellerText.setText(getResources().getString(R.string.Seller));
-                            tvSellerName.setText(
-                                    locationObj.getJSONObject("sellerInfo").getString("sellerFirstName") + " " +
-                                    locationObj.getJSONObject("sellerInfo").getString("sellerLastName") + " " +
-                                    locationObj.getJSONObject("sellerInfo").getString("sellerOverallRating") + "(" +
-                                    locationObj.getJSONObject("sellerInfo").getString("sellerTotalRatings") + ")");
-                            tvBuyerText.setText(getResources().getString(R.string.Buyer));
-                            tvBuyerName.setText(getResources().getString(R.string.You));
+                                    load(locationObj.getJSONObject("posterInfo").getString("posterProfilePhotoUrl")).
+                                    into(ivPosterProfilePhoto);
+                            tvPosterText.setText(getResources().getString(R.string.Seller));
+                            tvPosterName.setText(
+                                    locationObj.getJSONObject("posterInfo").getString("posterFirstName") + " " +
+                                    locationObj.getJSONObject("posterInfo").getString("posterLastName") + " " +
+                                    locationObj.getJSONObject("posterInfo").getString("posterOverallRating") + "(" +
+                                    locationObj.getJSONObject("posterInfo").getString("posterTotalRatings") + ")");
+                            tvAcceptorText.setText(getResources().getString(R.string.Buyer));
+                            tvAcceptorName.setText(getResources().getString(R.string.You));
                         }
-                        int quantityBought = locationObj.getJSONArray("buyerInfo").getJSONObject(0).getInt("quantityBought");
+                        int quantityBought = locationObj.getJSONArray("acceptorInfo").getJSONObject(0).getInt("quantityBought");
                         double price = Double.valueOf(locationObj.getString("price"));
                         double total = quantityBought * price;
                         tvQuantity.setText(quantityBought + "");

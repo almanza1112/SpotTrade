@@ -131,7 +131,7 @@ public class History extends Fragment {
         progressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(getActivity());
 
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/history?sellerID="+ SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)) + "&type=" + type, null, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.URL) + "/location/history?posterId="+ SharedPref.getSharedPreferences(getActivity(), getResources().getString(R.string.logged_in_user_id)) + "&type=" + type, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try{
@@ -150,9 +150,9 @@ public class History extends Fragment {
                         String lat, lng;
                         for (int i = 0; i < jsonArray.length(); i++){
                             JSONObject locationObj = jsonArray.getJSONObject(i);
-                            id.add(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getString("_id"));
+                            id.add(locationObj.getJSONArray("acceptorInfo").getJSONObject(0).getString("_id"));
                             type.add(locationObj.getString("type"));
-                            String convertedDate = epochToDateString(locationObj.getJSONArray("buyerInfo").getJSONObject(0).getLong("dateTransactionCompleted"));
+                            String convertedDate = epochToDateString(locationObj.getJSONArray("acceptorInfo").getJSONObject(0).getLong("dateTransactionCompleted"));
                             dateCompleted.add(convertedDate);
                             locationName.add(locationObj.getString("name"));
                             locationAddress.add(locationObj.getString("address"));

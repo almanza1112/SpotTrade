@@ -63,7 +63,7 @@
         android:orientation="vertical"
         android:background="@android:color/white">
         <TextView
-            android:id="@+id/tvSellerRequesterFirstNameAndRating"
+            android:id="@+id/tvPosterFirstNameAndRating"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="@dimen/contentPadding"

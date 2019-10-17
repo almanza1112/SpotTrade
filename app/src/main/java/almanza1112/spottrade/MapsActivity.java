@@ -153,7 +153,7 @@ public class MapsActivity extends AppCompatActivity
     private View iBottomSheetMarker;
     private RelativeLayout.LayoutParams rlToolbarLayoutParams;
     private RelativeLayout rlToolbar, bsToolbar;
-    private TextView tvDescription, tvTimeAndDateAvailable, tvQuantityAvailable, tvSellerRequesterFirstNameAndRating, tvLocationName, tvLocationAddress, tvCategoryAndPrice, tvType;
+    private TextView tvDescription, tvTimeAndDateAvailable, tvQuantityAvailable, tvPosterFirstNameAndRating, tvLocationName, tvLocationAddress, tvCategoryAndPrice, tvType;
     private ImageView ivCloseBottomSheet;
     private MaterialButton mbBuyNow, mbMakeOffer;
     private int quantityAvailable;
@@ -220,7 +220,7 @@ public class MapsActivity extends AppCompatActivity
         tvType = iBottomSheetMarker.findViewById(R.id.tvType);
         tvLocationName = iBottomSheetMarker.findViewById(R.id.tvLocationName);
         tvLocationAddress = iBottomSheetMarker.findViewById(R.id.tvLocationAddress);
-        tvSellerRequesterFirstNameAndRating = iBottomSheetMarker.findViewById(R.id.tvSellerRequesterFirstNameAndRating);
+        tvPosterFirstNameAndRating = iBottomSheetMarker.findViewById(R.id.tvPosterFirstNameAndRating);
         tvQuantityAvailable = iBottomSheetMarker.findViewById(R.id.tvQuantityAvailable);
         tvTimeAndDateAvailable = iBottomSheetMarker.findViewById(R.id.tvStartTimeAndDate);
         tvDescription = iBottomSheetMarker.findViewById(R.id.tvDescription);
@@ -660,6 +660,7 @@ public class MapsActivity extends AppCompatActivity
             @Override
             public void onResponse(JSONObject response) {
                 try {
+                    Log.e("response", response+"");
                     lidMarker = response.getString("_id");
                     priceMarker = response.getString("price");
                     quantityAvailable = response.getInt("quantity");
@@ -667,8 +668,8 @@ public class MapsActivity extends AppCompatActivity
                     tvCategoryAndPrice.setText(response.getString("category") + " - $"+priceMarker);
                     tvLocationName.setText(response.getString("name"));
                     tvLocationAddress.setText(response.getString("address"));
-                    JSONObject sellerInfoObj = response.getJSONObject("sellerInfo");
-                    tvSellerRequesterFirstNameAndRating.setText(sellerInfoObj.getString("sellerFirstName") + " " + sellerInfoObj.getString("sellerOverallRating") + "(" + sellerInfoObj.getString("sellerTotalRatings") + ")");
+                    JSONObject posterInfoObj = response.getJSONObject("posterInfo");
+                    tvPosterFirstNameAndRating.setText(posterInfoObj.getString("posterFirstName") + " " + posterInfoObj.getString("posterOverallRating") + "(" + posterInfoObj.getString("posterTotalRatings") + ")");
                     tvQuantityAvailable.setText(String.valueOf(quantityAvailable) + " " + getResources().getString(R.string.available));
                     tvTimeAndDateAvailable.setText(epochToDateString(response.getLong("dateTimeStart")));
 
@@ -917,14 +918,15 @@ public class MapsActivity extends AppCompatActivity
     private void transactionBuyNow(int quantity) {
         final JSONObject jObject = new JSONObject();
         try {
+            jObject.put("lid", lidMarker);
             jObject.put("buyerID", SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)));
-            jObject.put("quantityAvailable", quantity);
+            jObject.put("quantityBought", quantity);
         } catch (JSONException e) {
             e.printStackTrace();
         }
         RequestQueue queue = Volley.newRequestQueue(this);
 
-        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/location/transaction/buy/" + lidMarker, jObject, new Response.Listener<JSONObject>() {
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getString(R.string.URL) + "/location/transaction/buy/", jObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 pd.dismiss();

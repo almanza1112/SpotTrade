@@ -129,7 +129,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/quarterContentPadding">
                         <TextView
-                            android:id="@+id/tvSellerText"
+                            android:id="@+id/tvPosterText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentLeft="true"
@@ -137,18 +137,18 @@
                             android:textAppearance="@android:style/TextAppearance.Small"
                             android:textColor="@android:color/black"/>
                         <TextView
-                            android:id="@+id/tvSellerName"
+                            android:id="@+id/tvPosterName"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_below="@+id/tvSellerText"
+                            android:layout_below="@+id/tvPosterText"
                             android:layout_marginRight="@dimen/quarterContentPadding"
                             android:textAppearance="@android:style/TextAppearance.Small"
                             android:textColor="@android:color/darker_gray"/>
                         <android.support.v7.widget.CardView
-                            android:id="@+id/cvSellerProfilePhoto"
+                            android:id="@+id/cvPosterProfilePhoto"
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:layout_toRightOf="@+id/tvSellerName"
+                            android:layout_toRightOf="@+id/tvPosterName"
                             card_view:elevation="0dp"
                             card_view:cardCornerRadius="20dp"
                             android:innerRadius="0dp"
@@ -156,7 +156,7 @@
                             android:thicknessRatio="1.9"
                             android:visibility="gone">
                             <ImageView
-                                android:id="@+id/ivSellerProfilePhoto"
+                                android:id="@+id/ivPosterProfilePhoto"
                                 android:layout_height="40dp"
                                 android:layout_width="match_parent"
                                 android:layout_alignParentTop="true"
@@ -170,7 +170,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content">
                         <TextView
-                            android:id="@+id/tvBuyerText"
+                            android:id="@+id/tvAcceptorText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentLeft="true"
@@ -178,18 +178,18 @@
                             android:textAppearance="@android:style/TextAppearance.Small"
                             android:textColor="@android:color/black"/>
                         <TextView
-                            android:id="@+id/tvBuyerName"
+                            android:id="@+id/tvAcceptorName"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_below="@+id/tvBuyerText"
+                            android:layout_below="@+id/tvAcceptorText"
                             android:layout_marginRight="@dimen/quarterContentPadding"
                             android:textAppearance="@android:style/TextAppearance.Small"
                             android:textColor="@android:color/darker_gray"/>
                         <android.support.v7.widget.CardView
-                            android:id="@+id/cvBuyerProfilePhoto"
+                            android:id="@+id/cvAcceptorProfilePhoto"
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:layout_toRightOf="@id/tvBuyerName"
+                            android:layout_toRightOf="@id/tvAcceptorName"
                             card_view:elevation="0dp"
                             card_view:cardCornerRadius="20dp"
                             android:innerRadius="0dp"
@@ -197,7 +197,7 @@
                             android:thicknessRatio="1.9"
                             android:visibility="gone">
                             <ImageView
-                                android:id="@+id/ivBuyerProfilePhoto"
+                                android:id="@+id/ivAcceptorProfilePhoto"
                                 android:layout_height="40dp"
                                 android:layout_width="match_parent"
                                 android:layout_alignParentTop="true"

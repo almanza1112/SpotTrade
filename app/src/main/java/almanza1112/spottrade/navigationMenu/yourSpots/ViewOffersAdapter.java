@@ -124,7 +124,7 @@ class ViewOffersAdapter extends RecyclerView.Adapter<ViewOffersAdapter.RecyclerV
             jObject.put("lid", lid);
             jObject.put("_id", id); // id of the item in offers array
             jObject.put("userID", uid);
-            jObject.put("sellerID", SharedPref.getSharedPreferences(activity, activity.getResources().getString(R.string.logged_in_user_id)));
+            jObject.put("posterId", SharedPref.getSharedPreferences(activity, activity.getResources().getString(R.string.logged_in_user_id)));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -173,7 +173,7 @@ class ViewOffersAdapter extends RecyclerView.Adapter<ViewOffersAdapter.RecyclerV
             jObject.put("quantityBought", quantity);
             jObject.put("offerPrice", price);
             jObject.put("buyerID", uid);
-            jObject.put("sellerID", SharedPref.getSharedPreferences(activity, activity.getResources().getString(R.string.logged_in_user_id)));
+            jObject.put("posterId", SharedPref.getSharedPreferences(activity, activity.getResources().getString(R.string.logged_in_user_id)));
         } catch (JSONException e) {
             e.printStackTrace();
         }
