@@ -17,7 +17,7 @@
             android:layout_alignParentLeft="true"
             android:text="@string/Filter_Spots"
             android:textAppearance="@android:style/TextAppearance.Material.DialogWindowTitle"/>
-        <android.support.design.button.MaterialButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/mbDone"
             android:layout_width="wrap_content"
             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -44,19 +44,19 @@
         android:layout_marginLeft="@dimen/contentPadding"
         android:layout_marginRight="@dimen/contentPadding"
         android:layout_marginBottom="@dimen/contentPadding">
-        <android.support.v7.widget.AppCompatRadioButton
+        <androidx.appcompat.widget.AppCompatRadioButton
             android:id="@+id/rbAllType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingRight="@dimen/contentPadding"
             android:text="@string/All"/>
-        <android.support.v7.widget.AppCompatRadioButton
+        <androidx.appcompat.widget.AppCompatRadioButton
             android:id="@+id/rbSell"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingRight="@dimen/contentPadding"
             android:text="@string/Sell"/>
-        <android.support.v7.widget.AppCompatRadioButton
+        <androidx.appcompat.widget.AppCompatRadioButton
             android:id="@+id/rbRequest"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -84,18 +84,18 @@
         android:layout_marginLeft="@dimen/contentPadding"
         android:layout_marginRight="@dimen/contentPadding"
         android:layout_marginBottom="@dimen/contentPadding">
-        <android.support.v7.widget.AppCompatRadioButton
+        <androidx.appcompat.widget.AppCompatRadioButton
             android:id="@+id/rbAllCategory"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingRight="@dimen/contentPadding"
             android:text="@string/All"/>
-        <android.support.v7.widget.AppCompatRadioButton
+        <androidx.appcompat.widget.AppCompatRadioButton
             android:id="@+id/rbParking"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/Parking"/>
-        <android.support.v7.widget.AppCompatRadioButton
+        <androidx.appcompat.widget.AppCompatRadioButton
             android:id="@+id/rbLine"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -103,7 +103,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-            <android.support.v7.widget.AppCompatRadioButton
+            <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/rbOtherCategory"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -127,7 +127,7 @@
         android:layout_marginRight="@dimen/contentPadding"
         android:background="@color/LightGrayAndroid" />
 
-    <android.support.v7.widget.SwitchCompat
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/sOffersAllowed"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

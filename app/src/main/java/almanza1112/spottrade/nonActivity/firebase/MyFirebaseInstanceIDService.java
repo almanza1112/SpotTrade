@@ -14,7 +14,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.FirebaseInstanceIdService;
+//import com.google.firebase.iid.FirebaseInstanceIdService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,9 +22,11 @@ import org.json.JSONObject;
 import almanza1112.spottrade.R;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
-public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
+public class MyFirebaseInstanceIDService
+        //extends FirebaseInstanceIdService
+{
 
-    @Override
+    //@Override
     public void onTokenRefresh() {
         Log.e("onTokenRefresh", "called");
         //Get hold of the registration token
@@ -34,6 +36,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
 
     //Implement this method if you want to store the token on your server
     public void sendRegistrationToServer(String token) {
+        /*
         final JSONObject jObject = new JSONObject();
         try {
             jObject.put("firebaseTokenID", token);
@@ -57,6 +60,8 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         }
         );
         queue.add(jsonObjectRequest);
+        */
+
     }
 
 }

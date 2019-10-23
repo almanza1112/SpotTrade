@@ -6,10 +6,23 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.support.v4.app.NotificationCompat;
+
+import almanza1112.spottrade.nonActivity.SharedPref;
+import androidx.core.app.NotificationCompat;
 import android.util.Log;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import almanza1112.spottrade.MapsActivity;
 import almanza1112.spottrade.R;
@@ -20,6 +33,15 @@ import almanza1112.spottrade.R;
 
 public class MyFirebaseMessageService extends FirebaseMessagingService {
     private static final String TAG = "MessageService";
+
+    @Override
+    public void onNewToken(String refreshedToken){
+        Log.e("onTokenRefresh", "called");
+        //Get hold of the registration token
+        //String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+        //sendRegistrationToServer(refreshedToken);
+    }
+
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         Log.e(TAG, "From: " + remoteMessage.getFrom());
@@ -97,6 +119,33 @@ public class MyFirebaseMessageService extends FirebaseMessagingService {
         In this example, the notification’s ID is 001
         */
         mNotificationManager.notify(0, mBuilder.build());
+    }
+
+    //Implement this method if you want to store the token on your server
+    public void sendRegistrationToServer(String token) {
+        final JSONObject jObject = new JSONObject();
+        try {
+            jObject.put("firebaseTokenID", token);
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, getResources().getString(R.string.URL) + "/user/update/" + SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_id)), jObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.e("responseUp", response +"");
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        }
+        );
+        queue.add(jsonObjectRequest);
     }
 
 }

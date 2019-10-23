@@ -2,15 +2,15 @@ package almanza1112.spottrade.navigationMenu.yourSpots;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.support.v4.app.FragmentTransaction;
+import androidx.fragment.app.FragmentTransaction;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,8 +35,6 @@ import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -158,6 +156,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.ivEditLocation:
+                /**
                 try {
                     Intent intent =
                             new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
@@ -166,7 +165,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
                 } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
                     e.printStackTrace();
                     Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
-                }
+                } **/
                 break;
 
             case R.id.ivEditType:
@@ -219,6 +218,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE){
+            /**
             if (resultCode == RESULT_OK){
                 Place place = PlaceAutocomplete.getPlace(getActivity(), data);
                 JSONObject jsonObject = new JSONObject();
@@ -232,7 +232,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(getActivity(), data);
                 Toast.makeText(getActivity(), status.getStatusMessage(), Toast.LENGTH_SHORT).show();
-            }
+            } **/
         }
     }
 

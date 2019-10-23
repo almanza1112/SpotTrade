@@ -19,7 +19,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -27,20 +27,20 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.design.button.MaterialButton;
-import android.support.design.widget.BottomSheetBehavior;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.OnApplyWindowInsetsListener;
-import android.support.v4.view.ViewCompat;
-import android.support.v4.view.WindowInsetsCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.AppCompatActivity;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.navigation.NavigationView;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.core.view.OnApplyWindowInsetsListener;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -64,16 +64,11 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.facebook.login.LoginManager;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -165,7 +160,10 @@ public class MapsActivity extends AppCompatActivity
     private static final int SUCCESS_RESULT_USING_GOOGLE_MAPS = 2;
     private static final String PACKAGE_NAME = "almanza1112.spottrade";
     private static final String RECEIVER = PACKAGE_NAME + ".RECEIVER";
-    private static final String RESULT_DATA_KEY = PACKAGE_NAME + ".RESULT_DATA_KEY";
+    private static final String RESULT_LOCATION_NAME = PACKAGE_NAME + ".RESULT_LOCATION_NAME";
+    private static final String RESULT_LOCATION_ADDRESS = PACKAGE_NAME + ".RESULT_LOCATION_ADDRESS";
+    private static final String RESULT_LOCATION_LATITUDE = PACKAGE_NAME + ".RESULT_LOCATION_LATITUDE";
+    private static final String RESULT_LOCATION_LONGITUDE = PACKAGE_NAME + ".RESULT_LOCATION_LONGITUDE";
     private static final String LOCATION_DATA_EXTRA = PACKAGE_NAME + ".LOCATION_DATA_EXTRA";
     private FusedLocationProviderClient mFusedLocationClient;
     protected Location mLastKnownLocation;
@@ -174,8 +172,11 @@ public class MapsActivity extends AppCompatActivity
 
 
     private boolean isMarkerClicked;
-    private double latitude = 0, longitude = 0;
-    private String locationName = "empty", locationAddress = "empty";
+
+    private double midLatitude = 0;
+    private double midLongitude = 0;
+    private String midLocationName = "empty";
+    private String midLocationAddress = "empty";
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private String lidMarker, priceMarker, typeMarker;
 
@@ -301,7 +302,7 @@ public class MapsActivity extends AppCompatActivity
         }
 
         findViewById(R.id.fabMyLocation).setOnClickListener(this);
-        findViewById(R.id.fabSpot).setOnClickListener(this);
+        findViewById(R.id.fabCreateSpot).setOnClickListener(this);
 
         drawer = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
@@ -339,7 +340,7 @@ public class MapsActivity extends AppCompatActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.ivMenuIcon:
-                drawer.openDrawer(Gravity.START);
+                drawer.openDrawer(GravityCompat.START);
                 break;
 
             case R.id.ivFilterIcon:
@@ -347,24 +348,25 @@ public class MapsActivity extends AppCompatActivity
                 break;
 
             case R.id.ivSearchIcon:
+                /**
                 try {
                     Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN).build(this);
                     startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
                 } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
                     e.printStackTrace();
                     Toast.makeText(this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
-                }
+                } **/
                 break;
 
             case R.id.fabMyLocation:
                 getMyLocation();
                 break;
-            case R.id.fabSpot:
+            case R.id.fabCreateSpot:
                 Bundle bundle = new Bundle();
-                bundle.putString("locationName", locationName);
-                bundle.putString("locationAddress", locationAddress);
-                bundle.putDouble("latitude", latitude);
-                bundle.putDouble("longitude", longitude);
+                bundle.putString("locationName", midLocationName);
+                bundle.putString("locationAddress", midLocationAddress);
+                bundle.putDouble("latitude", midLatitude);
+                bundle.putDouble("longitude", midLongitude);
                 createSpotFragment = new CreateSpot();
                 createSpotFragment.setArguments(bundle);
                 FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -502,19 +504,20 @@ public class MapsActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
+            /**
             if (resultCode == RESULT_OK) {
                 Place place = PlaceAutocomplete.getPlace(this, data);
-                latitude = place.getLatLng().latitude;
-                longitude = place.getLatLng().longitude;
-                locationName = place.getName().toString();
-                locationAddress = place.getAddress().toString();
-                LatLng locash = new LatLng(latitude, longitude);
+                midLatitude = place.getLatLng().latitude;
+                midLongitude = place.getLatLng().longitude;
+                midLocationName = place.getName().toString();
+                midLocationAddress = place.getAddress().toString();
+                LatLng locash = new LatLng(midLatitude, midLongitude);
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(locash, 16));
 
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(this, data);
                 Toast.makeText(this, status.getStatusMessage(), Toast.LENGTH_SHORT).show();
-            }
+            } **/
         }
     }
 
@@ -1777,10 +1780,10 @@ public class MapsActivity extends AppCompatActivity
             // Display the address string
             // or error message sent from Intent Service
             if (resultCode == SUCCESS_RESULT){
-                mAddressOutput = resultData.getString(RESULT_DATA_KEY);
+                mAddressOutput = resultData.getString(RESULT_LOCATION_ADDRESS);
                 tvMidAddress.setText(mAddressOutput);
             } else if (resultCode == SUCCESS_RESULT_USING_GOOGLE_MAPS){
-                mAddressOutput = resultData.getString(RESULT_DATA_KEY);
+                mAddressOutput = resultData.getString(RESULT_LOCATION_ADDRESS);
                 tvMidAddress.setText(mAddressOutput);
             } else if (resultCode == FAILURE_RESULT){
                 setSnackBar("Unable to get location");

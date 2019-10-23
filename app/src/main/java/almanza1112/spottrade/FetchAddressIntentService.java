@@ -8,7 +8,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.os.ResultReceiver;
 import android.text.TextUtils;
 import android.util.Log;
@@ -35,7 +35,10 @@ public class FetchAddressIntentService extends IntentService {
     private static final int SUCCESS_RESULT_USING_GOOGLE_MAPS = 2;
     private static final String PACKAGE_NAME = "almanza1112.spottrade";
     private static final String RECEIVER = PACKAGE_NAME + ".RECEIVER";
-    private static final String RESULT_DATA_KEY = PACKAGE_NAME + ".RESULT_DATA_KEY";
+    private static final String RESULT_LOCATION_NAME = PACKAGE_NAME + ".RESULT_LOCATION_NAME";
+    private static final String RESULT_LOCATION_ADDRESS = PACKAGE_NAME + ".RESULT_LOCATION_ADDRESS";
+    private static final String RESULT_LOCATION_LATITUDE = PACKAGE_NAME + ".RESULT_LOCATION_LATITUDE";
+    private static final String RESULT_LOCATION_LONGITUDE = PACKAGE_NAME + ".RESULT_LOCATION_LONGITUDE";
     private static final String LOCATION_DATA_EXTRA = PACKAGE_NAME + ".LOCATION_DATA_EXTRA";
     protected ResultReceiver mReceiver;
     private boolean geoCoderSuccessful;
@@ -92,6 +95,8 @@ public class FetchAddressIntentService extends IntentService {
                 for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
                     //addressFragments.add(address.getAddressLine(i)); // this is for the address that includes state, zipcode, and country
                     addressFragments.add(address.getFeatureName() + " " + address.getThoroughfare() + ", " + address.getLocality()); // this address format is street number, street name, and city/town
+                    Log.e(TAG, "\nlat: " + address.getLatitude() + "\nlong: " + address.getLongitude() + "\nname: " + address.getFeatureName() + "\nsublocality: " + address.getSubLocality());
+                    //Log.e(TAG, address + "");
                 }
                 Log.e(TAG, "Address Found");
                 addressFound = true;
@@ -177,7 +182,7 @@ public class FetchAddressIntentService extends IntentService {
 
     private void deliverResultsToReceiver(int failureResult, String message) {
         Bundle bundle = new Bundle();
-        bundle.putString(RESULT_DATA_KEY, message);
+        bundle.putString(RESULT_LOCATION_ADDRESS, message);
         mReceiver.send(failureResult, bundle);
     }
 

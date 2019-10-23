@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.DrawerLayout
+<androidx.drawerlayout.widget.DrawerLayout
     android:id="@+id/drawer_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -7,7 +7,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:fab="http://schemas.android.com/apk/res-auto">
 
-    <android.support.design.widget.CoordinatorLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinatorLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -70,21 +70,21 @@
         <include android:id="@+id/iBottomSheetMarker"
             layout="@layout/maps_activity_marker_bottomsheet" />
 
-        <android.support.design.widget.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabMyLocation"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@mipmap/ic_crosshairs_gps_grey600_24dp"
             fab:backgroundTint="@android:color/white"
             android:elevation="4dp"
-            fab:layout_anchor="@+id/fabSpot"
+            fab:layout_anchor="@+id/fabCreateSpot"
             fab:layout_anchorGravity="top|end"
             android:layout_gravity="top|end"
             fab:fabSize="mini"
             android:layout_marginRight="12dp"
             fab:useCompatPadding="true"/>
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fabSpot"
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabCreateSpot"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingTop="19dp"
@@ -96,8 +96,8 @@
             fab:fabSize="normal"
             android:src="@mipmap/ic_create_white_24dp"
             fab:rippleColor="@color/colorAccentDark"/>
-    </android.support.design.widget.CoordinatorLayout>
-    <android.support.design.widget.NavigationView
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
@@ -105,4 +105,4 @@
         android:background="@android:color/white"
         fab:headerLayout="@layout/nav_header_main"
         fab:menu="@menu/activity_main_drawer" />
-</android.support.v4.widget.DrawerLayout>
+</androidx.drawerlayout.widget.DrawerLayout>

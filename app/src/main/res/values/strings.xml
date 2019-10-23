@@ -4,7 +4,7 @@
     <string name="navigation_drawer_close">navigation drawer close</string>
 
     <!-- HTTP Connection -->
-    <string name="URL">http://10.0.0.85:3000</string> <!--IMPORTANT: change the IP address for network_security_config.xml as well -->
+    <string name="URL">http://10.0.0.94:3000</string> <!--IMPORTANT: change the IP address for network_security_config.xml as well -->
     <!--
     <string name="URL">https://spottrade.herokuapp.com</string>
     -->

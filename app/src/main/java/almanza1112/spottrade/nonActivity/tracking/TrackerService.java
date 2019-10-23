@@ -22,8 +22,7 @@ import com.google.firebase.database.DataSnapshot;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-        import android.app.PendingIntent;
-        import android.app.Service;
+import android.app.Service;
         import android.content.Intent;
         import android.content.IntentFilter;
 import android.graphics.Color;
@@ -33,19 +32,17 @@ import android.location.Location;
         import android.os.Environment;
         import android.os.IBinder;
         import android.os.PowerManager;
-        import android.support.v4.app.NotificationCompat;
-        import android.support.v4.content.LocalBroadcastManager;
+        import androidx.core.app.NotificationCompat;
+        import androidx.localbroadcastmanager.content.LocalBroadcastManager;
         import android.util.Log;
-        import android.widget.Toast;
 
-        import java.io.File;
+import java.io.File;
         import java.io.FileWriter;
         import java.util.HashMap;
         import java.util.Map;
         import java.util.LinkedList;
 
-        import almanza1112.spottrade.MapsActivity;
-        import almanza1112.spottrade.R;
+import almanza1112.spottrade.R;
         import almanza1112.spottrade.nonActivity.SharedPref;
 
 public class TrackerService extends Service implements LocationListener {

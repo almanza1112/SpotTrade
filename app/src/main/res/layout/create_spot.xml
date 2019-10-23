@@ -13,7 +13,7 @@
         android:background="@android:color/white"
         android:orientation="vertical"
         android:focusable="true">
-        <android.support.v7.widget.Toolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
@@ -93,27 +93,27 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/halfContentPadding"
                     android:text="@string/Type"/>
-                <android.support.design.chip.ChipGroup
+                <com.google.android.material.chip.ChipGroup
                     android:id="@+id/cgType"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/contentPadding"
                     app:singleSelection="true">
-                    <android.support.design.chip.Chip
+                    <com.google.android.material.chip.Chip
                         android:id="@+id/cSell"
                         style="@style/CustomChipChoice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/Sell"
                         android:checkable="true"/>
-                    <android.support.design.chip.Chip
+                    <com.google.android.material.chip.Chip
                         android:id="@+id/cRequest"
                         style="@style/CustomChipChoice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/Request"
                         android:checkable="true"/>
-                </android.support.design.chip.ChipGroup>
+                </com.google.android.material.chip.ChipGroup>
 
                 <TextView
                     style="@style/TextTitle"
@@ -121,33 +121,33 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/halfContentPadding"
                     android:text="@string/Category"/>
-                <android.support.design.chip.ChipGroup
+                <com.google.android.material.chip.ChipGroup
                     android:id="@+id/cgCategory"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:singleSelection="true">
-                    <android.support.design.chip.Chip
+                    <com.google.android.material.chip.Chip
                         android:id="@+id/cParking"
                         style="@style/CustomChipChoice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/Parking"
                         android:checkable="true"/>
-                    <android.support.design.chip.Chip
+                    <com.google.android.material.chip.Chip
                         android:id="@+id/cLine"
                         style="@style/CustomChipChoice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/Line"
                         android:checkable="true"/>
-                    <android.support.design.chip.Chip
+                    <com.google.android.material.chip.Chip
                         android:id="@+id/cOther"
                         style="@style/CustomChipChoice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/Other"
                         android:checkable="true"/>
-                </android.support.design.chip.ChipGroup>
+                </com.google.android.material.chip.ChipGroup>
             </LinearLayout>
         </LinearLayout>
 
@@ -163,14 +163,14 @@
                 android:src="@mipmap/ic_currency_usd_grey600_24dp"
                 android:layout_marginRight="@dimen/contentPadding"
                 android:layout_marginEnd="@dimen/contentPadding"/>
-            <android.support.design.widget.TextInputLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilPrice"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginLeft="@dimen/contentPadding"
                 android:layout_marginStart="@dimen/contentPadding">
-                <android.support.design.widget.TextInputEditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/tietPrice"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -178,7 +178,7 @@
                     android:layout_marginStart="-4dp"
                     android:hint="@string/Price"
                     android:inputType="number" />
-            </android.support.design.widget.TextInputLayout>
+            </com.google.android.material.textfield.TextInputLayout>
             <CheckBox
                 android:id="@+id/cbOffers"
                 android:layout_width="wrap_content"
@@ -325,7 +325,7 @@
                 android:layout_marginEnd="@dimen/contentPadding"
                 android:layout_marginRight="@dimen/contentPadding"
                 android:src="@mipmap/ic_format_title_grey600_24dp"/>
-            <android.support.design.widget.TextInputLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -333,17 +333,17 @@
                 android:layout_marginLeft="@dimen/contentPadding"
                 app:counterEnabled="true"
                 app:counterMaxLength="120">
-                <android.support.design.widget.TextInputEditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/tietDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/Description"
                     android:layout_marginStart="-4dp"
                     android:layout_marginLeft="-4dp"/>
-            </android.support.design.widget.TextInputLayout>
+            </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
-        <android.support.design.button.MaterialButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/mbCreateSpot"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
