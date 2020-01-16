@@ -8,6 +8,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
+
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -40,14 +45,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import almanza1112.spottrade.R;
 import almanza1112.spottrade.nonActivity.SharedPref;
 
 import static android.app.Activity.RESULT_OK;
+import static com.facebook.FacebookSdk.getApplicationContext;
 
 /**
  * Created by almanza1112 on 8/16/17.
@@ -59,12 +67,14 @@ public class EditSpot extends Fragment implements View.OnClickListener{
     private ProgressBar progressBar;
     private String lid;
     private int quantity;
-    private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private Snackbar snackbar;
     TextView tvLocationName, tvLocationAddress, tvType, tvCategory, tvPrice, tvQuantity, tvDescription,
             tvViewOffers, tvDate, tvTime;
     private int year, month, day, hour, minute, epochTime;
     private Calendar calendar;
+
+    // for Places Autocomplete
+    private int AUTOCOMPLETE_REQUEST_CODE = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -156,16 +166,15 @@ public class EditSpot extends Fragment implements View.OnClickListener{
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.ivEditLocation:
-                /**
-                try {
-                    Intent intent =
-                            new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
-                                    .build(getActivity());
-                    startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
-                } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
-                    e.printStackTrace();
-                    Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
-                } **/
+                if (!Places.isInitialized()) {
+                    Places.initialize(getApplicationContext(), getString(R.string.google_maps_key), Locale.US);
+                }
+                // Set the fields to specify which types of place date to return after the user has made a selection
+                List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+
+                // Start the autocomplete
+                Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields).build(getActivity());
+                startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
                 break;
 
             case R.id.ivEditType:
@@ -217,7 +226,7 @@ public class EditSpot extends Fragment implements View.OnClickListener{
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE){
+        if (requestCode == AUTOCOMPLETE_REQUEST_CODE){
             /**
             if (resultCode == RESULT_OK){
                 Place place = PlaceAutocomplete.getPlace(getActivity(), data);

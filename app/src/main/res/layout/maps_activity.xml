@@ -5,67 +5,51 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:fab="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinatorLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <RelativeLayout
-            android:id="@+id/relativeLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+
             <TextView
                 android:id="@+id/tvMidAddress"
                 android:layout_centerInParent="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:translationZ="5dp"/>
+
             <fragment
                 android:id="@+id/map"
                 android:name="com.google.android.gms.maps.SupportMapFragment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 tools:context="almanza1112.spottrade.MapsActivity" />
-            <RelativeLayout
-                android:id="@+id/rlToolbar"
+
+            <FrameLayout
                 android:layout_width="match_parent"
+                android:fitsSystemWindows="true"
                 android:layout_height="wrap_content">
                 <include
                     android:id="@+id/iProgressBar"
                     layout="@layout/progress_bar"
                     android:visibility="gone"/>
-                <ImageView
-                    android:id="@+id/ivMenuIcon"
-                    android:background="?attr/selectableItemBackground"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="@dimen/contentPadding"
-                    android:tint="@color/colorPrimaryDark"
-                    android:layout_alignParentLeft="true"
-                    android:src="@mipmap/ic_menu_grey600_24dp"/>
-                <ImageView
-                    android:id="@+id/ivFilterIcon"
-                    android:background="?attr/selectableItemBackground"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_toLeftOf="@+id/ivSearchIcon"
-                    android:tint="@color/colorPrimaryDark"
-                    android:padding="@dimen/contentPadding"
-                    android:src="@mipmap/ic_filter_variant_grey600_24dp"/>
-                <ImageView
-                    android:id="@+id/ivSearchIcon"
-                    android:background="?attr/selectableItemBackground"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:tint="@color/colorPrimaryDark"
-                    android:padding="@dimen/contentPadding"
-                    android:src="@mipmap/ic_search_black_24dp" />
-            </RelativeLayout>
-
-        </RelativeLayout>
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cvToolbar"
+                    android:layout_width="match_parent"
+                    android:layout_margin="4dp"
+                    app:cardUseCompatPadding="true"
+                    app:cardCornerRadius="4dp"
+                    app:cardElevation="2dp"
+                    android:layout_height="wrap_content">
+                    <androidx.appcompat.widget.Toolbar
+                        android:id="@+id/toolbar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="?android:actionBarSize"/>
+                </androidx.cardview.widget.CardView>
+            </FrameLayout>
 
         <include android:id="@+id/iBottomSheetMarker"
             layout="@layout/maps_activity_marker_bottomsheet" />
@@ -75,14 +59,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@mipmap/ic_crosshairs_gps_grey600_24dp"
-            fab:backgroundTint="@android:color/white"
+            app:backgroundTint="@android:color/white"
             android:elevation="4dp"
-            fab:layout_anchor="@+id/fabCreateSpot"
-            fab:layout_anchorGravity="top|end"
+            app:layout_anchor="@+id/fabCreateSpot"
+            app:layout_anchorGravity="top|end"
             android:layout_gravity="top|end"
-            fab:fabSize="mini"
+            app:fabSize="mini"
             android:layout_marginRight="12dp"
-            fab:useCompatPadding="true"/>
+            app:useCompatPadding="true"/>
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabCreateSpot"
             android:layout_width="wrap_content"
@@ -90,12 +74,12 @@
             android:paddingTop="19dp"
             android:layout_marginRight="@dimen/contentPadding"
             android:layout_marginBottom="@dimen/contentPadding"
-            fab:layout_anchor="@id/relativeLayout"
-            fab:layout_anchorGravity="bottom|end"
+            app:layout_anchor="@id/map"
+            app:layout_anchorGravity="bottom|end"
             android:elevation="4dp"
-            fab:fabSize="normal"
+            app:fabSize="normal"
             android:src="@mipmap/ic_create_white_24dp"
-            fab:rippleColor="@color/colorAccentDark"/>
+            app:rippleColor="@color/colorAccentDark"/>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
@@ -103,6 +87,6 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@android:color/white"
-        fab:headerLayout="@layout/nav_header_main"
-        fab:menu="@menu/activity_main_drawer" />
+        app:headerLayout="@layout/nav_header_main"
+        app:menu="@menu/activity_main_drawer" />
 </androidx.drawerlayout.widget.DrawerLayout>

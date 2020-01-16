@@ -15,7 +15,6 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
@@ -27,23 +26,34 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.snackbar.Snackbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
-import androidx.core.view.OnApplyWindowInsetsListener;
 import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -93,6 +103,7 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -113,6 +124,8 @@ import almanza1112.spottrade.nonActivity.tracking.TrackerService;
 import almanza1112.spottrade.navigationMenu.yourSpots.ViewOffers;
 import almanza1112.spottrade.navigationMenu.yourSpots.YourSpots;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+
 public class MapsActivity extends AppCompatActivity
         implements View.OnClickListener,
         OnMapReadyCallback,
@@ -125,19 +138,33 @@ public class MapsActivity extends AppCompatActivity
         Personal.ProfilePhotoChangedListener,
         BottomSheetFilterMap.FilterMapListener {
 
+    private static final String TAG = "MapsActivity";
+
+    // for the google maps location
     private GoogleMap mMap;
-    Location myLocation;
-    private ProgressDialog pd = null;
-    NavigationView navigationView;
-    DrawerLayout drawer;
-    LatLng currentLocation, spotLocation;
-    private ImageView ivProfilePhoto;
     private Marker marker;
     private GoogleApiClient mGoogleApiClient;
 
+    // for the navigationDrawer/menu
+    NavigationView navigationView;
+    DrawerLayout drawer;
+    private ImageView ivProfilePhoto;
+
+    private ProgressDialog pd = null;
+    LatLng currentLocation, spotLocation;
+
     // for toolbar
+    private Toolbar toolbar;
+    private CardView cvToolbar;
     private RelativeLayout.LayoutParams tb;
     private View iProgressBar;
+
+    // for Floating Action Buttons
+    private FloatingActionButton fabCreateSpot;
+    private FloatingActionButton fabMyLocation;
+
+    // for creating a spot
+    private boolean isCreateSpotStarted = false;
 
     // for filter map tags
     private String typeFilterSelected = "All", categoryFilterSelected = "All";
@@ -170,6 +197,12 @@ public class MapsActivity extends AppCompatActivity
     private AddressResultReceiver mResultReceiver;
     private String mAddressOutput;
 
+    // for Place Autocomplete
+    private static final int AUTOCOMPLETE_REQUEST_CODE = 1;
+
+    // for mid-map LatLng
+    private LatLng midCurrentLocation;
+
 
     private boolean isMarkerClicked;
 
@@ -177,7 +210,6 @@ public class MapsActivity extends AppCompatActivity
     private double midLongitude = 0;
     private String midLocationName = "empty";
     private String midLocationAddress = "empty";
-    private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private String lidMarker, priceMarker, typeMarker;
 
     private final int ACCESS_FINE_LOCATION_PERMISSION_MAP = 5;
@@ -197,6 +229,9 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (!Places.isInitialized()) {
+            Places.initialize(getApplicationContext(), getString(R.string.google_maps_key), Locale.US);
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_activity);
 
@@ -206,9 +241,26 @@ public class MapsActivity extends AppCompatActivity
 
         // for toolbar
         iProgressBar = findViewById(R.id.iProgressBar);
-        findViewById(R.id.ivMenuIcon).setOnClickListener(this);
-        findViewById(R.id.ivFilterIcon).setOnClickListener(this);
-        findViewById(R.id.ivSearchIcon).setOnClickListener(this);
+        cvToolbar = findViewById(R.id.cvToolbar);
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setHomeButtonEnabled(true);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+        // This code below gets the status height for fragments toolbars
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
+            final int statusBarHeight = insets.getSystemWindowInsetTop();
+            SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.status_bar_height), String.valueOf(statusBarHeight));
+            //tb = (RelativeLayout.LayoutParams) rlToolbar.getLayoutParams();
+            //tb.setMargins(0, statusBarHeight, 0, 0);
+            //rlToolbarLayoutParams.setMargins(0, statusBarHeight, 0, 0); // for persistent bottom sheet marker
+            return insets;
+        });
+
+        // for Floating Action Buttons
+        fabCreateSpot = findViewById(R.id.fabCreateSpot);
+        fabMyLocation = findViewById(R.id.fabMyLocation);
 
         // for marker persistent bottom sheet
         iBottomSheetMarker = findViewById(R.id.iBottomSheetMarker);
@@ -229,27 +281,9 @@ public class MapsActivity extends AppCompatActivity
         mbMakeOffer = iBottomSheetMarker.findViewById(R.id.mbMakeOffer);
         bottomSheetBehavior = BottomSheetBehavior.from(iBottomSheetMarker);
 
-        final RelativeLayout rlToolbar = findViewById(R.id.rlToolbar);
-        //Toolbar toolbar = findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), new OnApplyWindowInsetsListener() {
-            @Override
-            public WindowInsetsCompat onApplyWindowInsets(View v, WindowInsetsCompat insets) {
-                final int statusBarHeight = insets.getSystemWindowInsetTop();
-                SharedPref.setSharedPreferences(MapsActivity.this, getResources().getString(R.string.status_bar_height), String.valueOf(statusBarHeight));
-                tb = (RelativeLayout.LayoutParams) rlToolbar.getLayoutParams();
-                tb.setMargins(0, statusBarHeight, 0, 0);
-                rlToolbarLayoutParams.setMargins(0, statusBarHeight, 0, 0); // for persistent bottom sheet marker
-                return insets;
-            }
-        });
-
         final TypedArray ta = getTheme().obtainStyledAttributes(new int[]{android.R.attr.actionBarSize});
         int actionBarHeight = (int) ta.getDimension(0, 0);
         SharedPref.setSharedPreferences(this, getResources().getString(R.string.action_bar_height), String.valueOf(actionBarHeight));
-
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
 
         pd = new ProgressDialog(this);
 
@@ -267,7 +301,7 @@ public class MapsActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        // For notifications
+        // for notifications
         try {
             String pendingData = getIntent().getExtras().getString("message");
             JSONObject dataObj = new JSONObject(pendingData);
@@ -304,13 +338,11 @@ public class MapsActivity extends AppCompatActivity
         findViewById(R.id.fabMyLocation).setOnClickListener(this);
         findViewById(R.id.fabCreateSpot).setOnClickListener(this);
 
+        // for the navigation drawer/side menu
         drawer = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        /*
-        // This code that is commented out is for when you want to open the nav drawer using the menu/home button of the toolbar
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, ivMenu, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
@@ -324,7 +356,8 @@ public class MapsActivity extends AppCompatActivity
         };
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-        */
+
+        // for the menu photo/email aka account info area on the top
         View navHeaderView = navigationView.getHeaderView(0);
         ivProfilePhoto = navHeaderView.findViewById(R.id.ivProfilePhoto);
         if (SharedPref.getSharedPreferences(this, getResources().getString(R.string.logged_in_user_photo_url)) != null) {
@@ -339,29 +372,13 @@ public class MapsActivity extends AppCompatActivity
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.ivMenuIcon:
-                drawer.openDrawer(GravityCompat.START);
-                break;
-
-            case R.id.ivFilterIcon:
-                BSfilterMapType();
-                break;
-
-            case R.id.ivSearchIcon:
-                /**
-                try {
-                    Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN).build(this);
-                    startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
-                } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
-                    e.printStackTrace();
-                    Toast.makeText(this, getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
-                } **/
-                break;
-
             case R.id.fabMyLocation:
                 getMyLocation();
                 break;
+
             case R.id.fabCreateSpot:
+                createSpot();
+                /*
                 Bundle bundle = new Bundle();
                 bundle.putString("locationName", midLocationName);
                 bundle.putString("locationAddress", midLocationAddress);
@@ -374,6 +391,8 @@ public class MapsActivity extends AppCompatActivity
                 fragmentTransaction.add(R.id.drawer_layout, createSpotFragment);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
+
+                 */
                 break;
 
             case R.id.bDelete:
@@ -424,7 +443,6 @@ public class MapsActivity extends AppCompatActivity
         }
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         Fragment fragment = null;
@@ -483,6 +501,8 @@ public class MapsActivity extends AppCompatActivity
         } else {
             if (count > 0) {
                 getSupportFragmentManager().popBackStack();
+            } else if (isCreateSpotStarted){
+                showToolbarAndFABs();
             } else if (isMarkerClicked) {
                 isMarkerClicked = false;
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
@@ -493,9 +513,33 @@ public class MapsActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.maps_menu, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
+        }
+        switch (item.getItemId()){
+            case android.R.id.home:
+                onBackPressed();
+                break;
+
+            case R.id.iSearch:
+                // Set the fields to specify which types of place date to return after the user has made a selection
+                List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS);
+
+                // Start the autocomplete
+                Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields).build(this);
+                startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
+                break;
+
+            case R.id.iFilterMaps:
+                BSfilterMapType();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -503,21 +547,21 @@ public class MapsActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
-            /**
+        if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                Place place = PlaceAutocomplete.getPlace(this, data);
+                Place place = Autocomplete.getPlaceFromIntent(data);
                 midLatitude = place.getLatLng().latitude;
                 midLongitude = place.getLatLng().longitude;
-                midLocationName = place.getName().toString();
-                midLocationAddress = place.getAddress().toString();
+                midLocationName = place.getName();
+                midLocationAddress = place.getAddress();
+                toolbar.setTitle(midLocationName);
+                toolbar.setSubtitle(midLocationAddress);
                 LatLng locash = new LatLng(midLatitude, midLongitude);
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(locash, 16));
-
-            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
-                Status status = PlaceAutocomplete.getStatus(this, data);
+            } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
+                Status status = Autocomplete.getStatusFromIntent(data);
                 Toast.makeText(this, status.getStatusMessage(), Toast.LENGTH_SHORT).show();
-            } **/
+            }
         }
     }
 
@@ -539,14 +583,13 @@ public class MapsActivity extends AppCompatActivity
         mMap = googleMap;
 
         try {
-            // Customise the styling of the base map using a JSON object defined
-            // in a raw resource file.
+            // Customise the styling of the base map using a JSON object define in a raw resource file.
             boolean success = googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.style_json));
             if (!success) {
-                Log.e("raw", "Style parsing failed.");
+                Log.e(TAG, "Style parsing failed.");
             }
         } catch (Resources.NotFoundException e) {
-            Log.e("raw", "Can't find style. Error: ", e);
+            Log.e(TAG, "Can't find style. Error: ", e);
         }
 
         // Get LocationManager object from System Service LOCATION_SERVICE
@@ -557,48 +600,43 @@ public class MapsActivity extends AppCompatActivity
         Criteria criteria = new Criteria();
 
         // Get the name of the best provider
-        String provider = locationManager.getBestProvider(criteria, true);
-        this.provider = provider;
+        this.provider = locationManager.getBestProvider(criteria, true);
 
-        myLocation = null;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION_PERMISSION_MAP);
+        if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION_PERMISSION_MAP);
         } else {
-            // Get Current Location
-            myLocation = locationManager.getLastKnownLocation(provider);
-            //mMap.setMyLocationEnabled(true);
-            double latitude = 0;
-            double longitude = 0;
-
-            try {
-                latitude = myLocation.getLatitude();
-                longitude = myLocation.getLongitude();
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            }
-
-            currentLocation = new LatLng(latitude, longitude);
-
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+            mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                    currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
+                }
+            });
         }
 
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        mMap.setMyLocationEnabled(true); // this is for the blue dot that shows exactly where you are in the map
         mMap.getUiSettings().setMyLocationButtonEnabled(false);
-
-        mMap.getUiSettings().setMapToolbarEnabled(false); //disables the bottom right buttons that appear when you click on a marker
+        mMap.getUiSettings().setMapToolbarEnabled(false); // false disables the bottom right buttons that appear when you click on a marker
         mMap.getUiSettings().setRotateGesturesEnabled(false);
         mMap.setOnMarkerClickListener(this);
 
-        mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
-            @Override
-            public void onCameraIdle() {
+        // This gets the current address in the middle of the map
+        mMap.setOnCameraIdleListener(() -> {
+            if (ContextCompat.checkSelfPermission(MapsActivity.this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 LatLng midLatLng = mMap.getCameraPosition().target;
                 Location midLocation = new Location("");
+                midCurrentLocation = new LatLng(midLocation.getLatitude(), midLocation.getLongitude());
                 midLocation.setLatitude(midLatLng.latitude);
                 midLocation.setLongitude(midLatLng.longitude);
-                startIntentService(midLocation);
+                //startIntentService(midLocation);
+            } else {
+                // Ask for permission
+                ActivityCompat.requestPermissions(MapsActivity.this, new String[]{ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION_PERMISSION_MAP);
             }
+
+
         });
     }
 
@@ -609,31 +647,15 @@ public class MapsActivity extends AppCompatActivity
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             switch (requestCode) {
                 case ACCESS_FINE_LOCATION_PERMISSION_MAP:
-                    LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                    Criteria criteria = new Criteria();
-                    String provider = locationManager.getBestProvider(criteria, true);
-                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        // TODO: Consider calling
-                        //    ActivityCompat#requestPermissions
-                        // here to request the missing permissions, and then overriding
-                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                        //                                          int[] grantResults)
-                        // to handle the case where the user grants the permission. See the documentation
-                        // for ActivityCompat#requestPermissions for more details.
-                        return;
-                    }
-                    myLocation = locationManager.getLastKnownLocation(provider);
-                    mMap.setMyLocationEnabled(true);
-                    double latitude = 0;
-                    double longitude = 0;
-                    try {
-                        latitude = myLocation.getLatitude();
-                        longitude = myLocation.getLongitude();
-                    } catch (NullPointerException e) {
-                        e.printStackTrace();
-                    }
-                    currentLocation = new LatLng(latitude, longitude);
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
+                    mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+                    mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+
+                            currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
+                        }
+                    });
                     break;
 
                 case ACCESS_FINE_LOCATION_PERMISSION_TRACKING:
@@ -811,7 +833,7 @@ public class MapsActivity extends AppCompatActivity
         public void onConnected(Bundle bundle) {
             LocationRequest request = new LocationRequest();
             request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(MapsActivity.this, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, request, new LocationListener() {
@@ -1463,6 +1485,36 @@ public class MapsActivity extends AppCompatActivity
 
         final AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+    }
+
+    // for creating a spot
+    private void createSpot(){
+        hideToolbarAndFABs();
+    }
+
+    private void hideToolbarAndFABs(){
+        isCreateSpotStarted = true;
+        cvToolbar.animate()
+                .translationX(-toolbar.getWidth())
+                .alpha(1.0f)
+                .setDuration(250)
+                .start();
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(midCurrentLocation, 18));
+
+        fabMyLocation.hide();
+        fabCreateSpot.hide();
+    }
+
+    private void showToolbarAndFABs(){
+        isCreateSpotStarted = false;
+        cvToolbar.animate()
+                .translationX(0)
+                .alpha(1.0f)
+                .start();
+
+        fabMyLocation.show();
+        fabCreateSpot.show();
     }
 
     private void checkout(String token, final int quantity, float totalPrice) {

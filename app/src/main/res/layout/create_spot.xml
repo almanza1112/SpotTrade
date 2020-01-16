@@ -221,22 +221,13 @@
                 android:layout_marginBottom="@dimen/contentPadding"
                 android:orientation="vertical">
                 <TextView
-                    android:id="@+id/tvStartTitle"
-                    style="@style/TextTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_marginBottom="@dimen/halfContentPadding"
-                    android:text="Start"/>
-                <TextView
                     android:id="@+id/tvStartDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/tvStartTitle"
                     android:layout_alignParentLeft="true"
                     android:layout_toLeftOf="@+id/cbNow"
                     android:layout_marginBottom="@dimen/quarterContentPadding"
-                    android:text="@string/Date"
+                    android:text="@string/Start_Date"
                     android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textColor="@color/grey600"/>
                 <TextView
@@ -246,7 +237,7 @@
                     android:layout_below="@+id/tvStartDate"
                     android:layout_alignParentLeft="true"
                     android:layout_toLeftOf="@+id/cbNow"
-                    android:text="@string/Time"
+                    android:text="@string/Start_Time"
                     android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textColor="@color/grey600" />
                 <CheckBox
@@ -270,22 +261,13 @@
                 android:layout_below="@+id/rlStartDateTime"
                 android:orientation="vertical">
                 <TextView
-                    android:id="@+id/tvEndTitle"
-                    style="@style/TextTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_marginBottom="@dimen/halfContentPadding"
-                    android:text="End"/>
-                <TextView
                     android:id="@+id/tvEndDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/tvEndTitle"
                     android:layout_alignParentLeft="true"
                     android:layout_toLeftOf="@+id/cbUntilBought"
                     android:layout_marginBottom="@dimen/quarterContentPadding"
-                    android:text="@string/Date"
+                    android:text="@string/End_Date"
                     android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textColor="@color/grey600"/>
                 <TextView
@@ -295,7 +277,7 @@
                     android:layout_below="@+id/tvEndDate"
                     android:layout_alignParentLeft="true"
                     android:layout_toLeftOf="@+id/cbUntilBought"
-                    android:text="@string/Time"
+                    android:text="@string/End_Time"
                     android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textColor="@color/grey600" />
                 <CheckBox

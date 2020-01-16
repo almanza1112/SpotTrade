@@ -2,6 +2,13 @@ package almanza1112.spottrade;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+
+import com.google.android.gms.common.api.Status;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.chip.Chip;
 import androidx.fragment.app.Fragment;
 import android.app.ProgressDialog;
@@ -16,6 +23,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,14 +49,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import almanza1112.spottrade.navigationMenu.account.payment.AddPaymentMethod;
 import almanza1112.spottrade.nonActivity.SharedPref;
+
+import static android.app.Activity.RESULT_OK;
+import static com.facebook.FacebookSdk.getApplicationContext;
 
 /**
  * Created by almanza1112 on 6/29/17.
@@ -60,14 +73,18 @@ public class CreateSpot extends Fragment implements View.OnClickListener, Compou
     private TextInputEditText tietDescription, tietPrice;
     private Chip cSell, cRequest, cParking, cLine, cOther;
     private CheckBox cbOffers, cbNow, cbUntilBought;
-    private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 0;
     private double latitude, longitude;
     private String type, category, locationName, locationAddress;
     private int quantity = 1;
     int startYear, startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay, endHour, endMinute;
 
+    // for Places Autocomplete
+    private int AUTOCOMPLETE_REQUEST_CODE = 0;
+
     private ProgressDialog pd = null;
     private Calendar startCalendar, endCalendar;
+
+    private static final String TAG = ".CreateSpot";
 
     @Nullable
     @Override
@@ -231,7 +248,7 @@ public class CreateSpot extends Fragment implements View.OnClickListener, Compou
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         quantity = npQuantity.getValue();
-                        tvQuantity.setText(String.valueOf(quantity) + " " + getResources().getString(R.string.available));
+                        tvQuantity.setText(quantity + " " + getResources().getString(R.string.available));
                     }
                 });
 
@@ -322,13 +339,15 @@ public class CreateSpot extends Fragment implements View.OnClickListener, Compou
                 break;
 
             default:
-                /**
-                try {
-                    Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN).build(getActivity());
-                    startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
-                } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
-                    Toast.makeText(getActivity(), getResources().getString(R.string.Error_service_unavailable), Toast.LENGTH_SHORT).show();
-                } **/
+                if (!Places.isInitialized()) {
+                    Places.initialize(getApplicationContext(), getString(R.string.google_maps_key), Locale.US);
+                }
+                // Set the fields to specify which types of place date to return after the user has made a selection
+                List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS);
+
+                // Start the autocomplete
+                Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields).build(getActivity());
+                startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
                 break;
         }
     }
@@ -368,14 +387,14 @@ public class CreateSpot extends Fragment implements View.OnClickListener, Compou
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE){
-            /**
+        if (requestCode == AUTOCOMPLETE_REQUEST_CODE){
             if (resultCode == RESULT_OK){
-                Place place = PlaceAutocomplete.getPlace(getActivity(), data);
+                Place place = Autocomplete.getPlaceFromIntent(data);
+
                 latitude = place.getLatLng().latitude;
                 longitude = place.getLatLng().longitude;
-                locationName = place.getName().toString();
-                locationAddress = place.getAddress().toString();
+                locationName = place.getName();
+                locationAddress = place.getAddress();
 
                 tvLocationName.setText(locationName);
                 tvLocationAddress.setText(locationAddress);
@@ -384,11 +403,10 @@ public class CreateSpot extends Fragment implements View.OnClickListener, Compou
                 tvLocationName.setVisibility(View.VISIBLE);
                 tvLocationAddress.setVisibility(View.VISIBLE);
 
-
-            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
-                Status status = PlaceAutocomplete.getStatus(getActivity(), data);
+            } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
+                Status status = Autocomplete.getStatusFromIntent(data);
                 Toast.makeText(getActivity(), status.getStatusMessage(), Toast.LENGTH_SHORT).show();
-            } **/
+            }
         }
     }
 

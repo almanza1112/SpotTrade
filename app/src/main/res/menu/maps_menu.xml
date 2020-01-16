@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/iSearch"
+        android:title="@string/Search"
+        android:icon="@mipmap/ic_magnify_grey600_24dp"
+        android:iconTint="@color/grey600"
+        app:showAsAction="always" />
+
+    <item android:id="@+id/iFilterMaps"
+        android:icon="@mipmap/ic_filter_variant_grey600_24dp"
+        android:title="@string/Filter"
+        app:showAsAction="always" />
+
+</menu>

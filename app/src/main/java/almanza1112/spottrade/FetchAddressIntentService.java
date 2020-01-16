@@ -13,12 +13,22 @@ import android.os.ResultReceiver;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.PlaceLikelihood;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -44,7 +54,7 @@ public class FetchAddressIntentService extends IntentService {
     private boolean geoCoderSuccessful;
     protected String response;
     protected boolean addressFound;
-    private boolean testAPI = false; // set to true only when you want to test the google maps api
+    private boolean testAPI = true; // set to true only when you want to test the google maps api
 
     public FetchAddressIntentService() {
         super("name");
@@ -59,7 +69,6 @@ public class FetchAddressIntentService extends IntentService {
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
         // get the location passed through this service through extra
-
         Location location = intent.getParcelableExtra(LOCATION_DATA_EXTRA);
         mReceiver = intent.getParcelableExtra(RECEIVER);
 
@@ -95,7 +104,7 @@ public class FetchAddressIntentService extends IntentService {
                 for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
                     //addressFragments.add(address.getAddressLine(i)); // this is for the address that includes state, zipcode, and country
                     addressFragments.add(address.getFeatureName() + " " + address.getThoroughfare() + ", " + address.getLocality()); // this address format is street number, street name, and city/town
-                    Log.e(TAG, "\nlat: " + address.getLatitude() + "\nlong: " + address.getLongitude() + "\nname: " + address.getFeatureName() + "\nsublocality: " + address.getSubLocality());
+                    //Log.e(TAG, "\nlat: " + address.getLatitude() + "\nlong: " + address.getLongitude() + "\nname: " + address.getFeatureName() + "\nsublocality: " + address.getSubLocality());
                     //Log.e(TAG, address + "");
                 }
                 Log.e(TAG, "Address Found");
@@ -108,12 +117,15 @@ public class FetchAddressIntentService extends IntentService {
             // geoCoder fallback code
             // API call to Google Maps API
 
+
             GetHttp googleMapsApi = new GetHttp();
 
             String url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + location.getLatitude() + "," + location.getLongitude() + "&key=" + getResources().getString(R.string.google_maps_key) + "&sensor=true";
 
             try {
                 response = googleMapsApi.run(url);
+                Log.e(TAG, response);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -130,6 +142,7 @@ public class FetchAddressIntentService extends IntentService {
                 String status = jsonObject.getString("status").toString();
                 if (status.equalsIgnoreCase("OK")){
                     JSONArray results = jsonObject.getJSONArray("results");
+                    Log.e(TAG, results + "");
                     // get first object i.e. just one address
                     JSONObject resultsObject = results.getJSONObject(0);
                     // get formatted address
@@ -173,7 +186,9 @@ public class FetchAddressIntentService extends IntentService {
             Log.e(TAG, errorMessage);
             deliverResultsToReceiver(FAILURE_RESULT, errorMessage);
         }
+
     }
+
 
     private boolean isOnline(){
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -196,6 +211,7 @@ public class FetchAddressIntentService extends IntentService {
                     .build();
 
             try (Response response = client.newCall(request).execute()){
+
                 return response.body().string();
             }
         }

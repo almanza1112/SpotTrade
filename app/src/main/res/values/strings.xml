@@ -4,7 +4,7 @@
     <string name="navigation_drawer_close">navigation drawer close</string>
 
     <!-- HTTP Connection -->
-    <string name="URL">http://10.0.0.94:3000</string> <!--IMPORTANT: change the IP address for network_security_config.xml as well -->
+    <string name="URL">http://10.0.0.85:3000</string> <!--IMPORTANT: change the IP address for network_security_config.xml as well -->
     <!--
     <string name="URL">https://spottrade.herokuapp.com</string>
     -->
@@ -106,6 +106,8 @@
     <string name="Edit_Price">Edit Price</string>
     <string name="Edit_Type">Edit Type</string>
     <string name="Email">Email</string>
+    <string name="End_Date">End Date</string>
+    <string name="End_Time">End Time</string>
     <string name="Enter_the_confirmation_code_that_was_sent_to_your_phone">Enter the confirmation code that was sent to your phone</string>
     <string name="Error">Error</string>
     <string name="Error_invalid_argument">Error: invalid argument</string>
@@ -200,6 +202,8 @@
     <string name="Spots">Spots</string>
     <string name="spots_">spots</string>
     <string name="Spot_successfully_deleted">Spot successfully deleted</string>
+    <string name="Start_Date">Start Date</string>
+    <string name="Start_Time">Start Time</string>
     <string name="Time">Time</string>
     <string name="Type">Type</string>
     <string name="Unable_to_delete">Unable to delete</string>
